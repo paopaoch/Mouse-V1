@@ -39,37 +39,55 @@ class NeuroNN(nn.Module):
         self.scaling_g = scaling_g * np.ones(neuron_num)
         self.w_ff = w_ff * np.ones(neuron_num)
         self.sig_ext = sig_ext * np.ones(neuron_num)
-        self.T = np.ones(neuron_num) # need to update this
-        self.T_inv = np.reciprocal(self.T) # need to update this
-        self.tau = np.ones(neuron_num) # need to update this
-        self.tau_ref = np.ones(neuron_num) # need to update this
+        T_alpha = 0.5
+        T_E = 0.01
+        T_I = 0.01 * T_alpha
+        self.T = np.concatenate([T_E * np.ones(neuron_num_e), T_I * np.ones(neuron_num_i)])
+        self.T_inv = np.reciprocal(self.T)
+
+        # Membrane time constants for excitatory and inhibitory
+        tau_alpha = 1
+        tau_E = 0.01
+        tau_I = 0.01 * tau_alpha
+        # Membrane time constant vector for all cells
+        self.tau = np.concatenate([tau_E * np.ones(neuron_num_e), tau_I * np.ones(neuron_num_i)])
+
+        # Refractory periods for exitatory and inhibitory
+        tau_ref_E = 0.005
+        tau_ref_I = 0.001
+        self.tau_ref = np.concatenate([tau_ref_E * np.ones(neuron_num_e), tau_ref_I * np.ones(neuron_num_i)])
 
         self.weights = None
         self.weights2 = None
         self.update_weight_matrix()
+
+        # # Contrast and orientation ranges
+        # self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
+        self.orientations = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165]
+        self.contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
 
         # plt.imshow(self.weights)
         # plt.colorbar()
         # plt.show()
 
 
-    def forward(self, contrast, grating_orientations, preferred_orientations):
+    def forward(self):
         """Implementation of the forward step in pytorch.
         """
         self.update_weight_matrix()
-        r_fp, avg_step = self.get_steady_state_output(contrast, grating_orientations, preferred_orientations)
-        return r_fp, avg_step
+        tuning_curves = self.run_all_orientation_and_contrast()
+        return tuning_curves
 
 
     # ------------------GET WEIGHT MATRIX--------------------------
 
 
-    def update_weight_matrix(self):
+    def update_weight_matrix(self) -> None:
         self.weights = self.generate_weight_matrix()
         self.weights2 = np.square(self.weights)
 
 
-    def generate_weight_matrix(self):
+    def generate_weight_matrix(self) -> np.ndarray:
         # Calculate matrix relating to the hyperparameters and connection types
         connection_matrix = self._generate_connection_matrix() # Generate connection matrix randomly
         efficacy_matrix = self._generate_parameter_matrix(self.hyperparameters.data[0], connection_matrix)
@@ -128,7 +146,7 @@ class NeuroNN(nn.Module):
     #---------------------RUN THE NETWORK TO GET STEADY STATE OUTPUT------------------------
 
 
-    def get_steady_state_output(self, contrast, grating_orientations): # Preferred orientation might be constant?
+    def get_steady_state_output(self, contrast, grating_orientations):
         input_mean, input_sd = self._stim_to_inputs(contrast, grating_orientations, self.pref)
         r_fp, avg_step = self._solve_fixed_point(input_mean, input_sd, )
         return r_fp, avg_step
@@ -161,6 +179,27 @@ class NeuroNN(nn.Module):
         r_fp, avg_step = Euler2fixedpt(drdt_func, r_init)
         return r_fp, avg_step
 
+    
+    # -------------------------RUN OUTPUT TO GET TUNING CURVES--------------------
+
+
+    def run_all_orientation_and_contrast(self) -> np.ndarray:
+        start = time.time()
+        all_rates = []
+        for contrast in self.contrasts:
+            steady_states = []
+            for orientation in self.orientations:
+                rate, _ = self.get_steady_state_output(contrast, orientation)
+                steady_states.append(rate)
+            all_rates.append(steady_states)
+        output = self._transform_all_rates_to_tuning_curves(np.array(all_rates))
+        print("run all", time.time() - start)
+        return output
+    
+
+    @staticmethod
+    def _transform_all_rates_to_tuning_curves(all_rates: np.ndarray):
+        return np.transpose(all_rates, (2, 0, 1))
 
 # x = torch.arange(1000)
 # Parameters are arranged as EE, EI, IE, II
@@ -168,16 +207,38 @@ J_array = [1.99, 1.9, -1.01, -0.79]
 P_array = [0.11, 0.11, 0.45, 0.45]
 w_array = [32, 32, 32, 32]
 
-# # Contrast and orientation ranges
-orientations = np.array([0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165])
-contrasts = np.array([0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.])
+# # # Contrast and orientation ranges
+# orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
+orientations = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165]
+# contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
 
-contrasts = 0.186966
-orientations = 15
+# contrasts = 0.186966
+# orientations = 15
 
 nnn = NeuroNN(J_array, P_array, w_array, 100)
+tuning_curves = nnn.forward()
 
-print(nnn.get_steady_state_output(contrasts, orientations))
+plt.plot(orientations, tuning_curves[40][7])
+plt.plot(orientations, tuning_curves[40][6])
+plt.plot(orientations, tuning_curves[40][5])
+plt.plot(orientations, tuning_curves[40][4])
+plt.plot(orientations, tuning_curves[40][3])
+plt.plot(orientations, tuning_curves[40][2])
+plt.plot(orientations, tuning_curves[40][1])
+plt.plot(orientations, tuning_curves[40][0])
+plt.show()
+
+
+plt.plot(orientations, tuning_curves[90][7])
+plt.plot(orientations, tuning_curves[90][6])
+plt.plot(orientations, tuning_curves[90][5])
+plt.plot(orientations, tuning_curves[90][4])
+plt.plot(orientations, tuning_curves[90][3])
+plt.plot(orientations, tuning_curves[90][2])
+plt.plot(orientations, tuning_curves[90][1])
+plt.plot(orientations, tuning_curves[90][0])
+plt.show()
+
 
 # def training_loop(model, optimizer, n=1000):
 #     "Training loop for torch model."
