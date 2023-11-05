@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import torch
 from torch import nn, optim
 from torch.functional import F
-from sim_utils import Phi, circ_gauss, Euler2fixedpt
+from sim_utils_torch import Phi, circ_gauss, Euler2fixedpt
 from tqdm import tqdm
 
 
@@ -55,32 +55,32 @@ class NeuroNN(nn.Module):
         self.neuron_num_i = neuron_num_i
         # self.neuron_types = neuron_types
 
-        pref_E = np.linspace(0, 179.99, neuron_num_e, False)
-        pref_I = np.linspace(0, 179.99, neuron_num_i, False)
-        self.pref = np.concatenate([pref_E, pref_I])
+        pref_E = torch.linspace(0, 179.99, neuron_num_e)
+        pref_I = torch.linspace(0, 179.99, neuron_num_i)
+        self.pref = torch.cat([pref_E, pref_I])
         self._generate_diff_thetas_matrix()
 
         # Global Parameters
-        self.scaling_g = scaling_g * np.ones(neuron_num)
-        self.w_ff = w_ff * np.ones(neuron_num)
-        self.sig_ext = sig_ext * np.ones(neuron_num)
+        self.scaling_g = scaling_g * torch.ones(neuron_num)
+        self.w_ff = w_ff * torch.ones(neuron_num)
+        self.sig_ext = sig_ext * torch.ones(neuron_num)
         T_alpha = 0.5
         T_E = 0.01
         T_I = 0.01 * T_alpha
-        self.T = np.concatenate([T_E * np.ones(neuron_num_e), T_I * np.ones(neuron_num_i)])
-        self.T_inv = np.reciprocal(self.T)
+        self.T = torch.cat([T_E * torch.ones(neuron_num_e), T_I * torch.ones(neuron_num_i)])
+        self.T_inv = torch.reciprocal(self.T)
 
         # Membrane time constants for excitatory and inhibitory
         tau_alpha = 1
         tau_E = 0.01
         tau_I = 0.01 * tau_alpha
         # Membrane time constant vector for all cells
-        self.tau = np.concatenate([tau_E * np.ones(neuron_num_e), tau_I * np.ones(neuron_num_i)])
+        self.tau = torch.cat([tau_E * torch.ones(neuron_num_e), tau_I * torch.ones(neuron_num_i)])
 
         # Refractory periods for exitatory and inhibitory
         tau_ref_E = 0.005
         tau_ref_I = 0.001
-        self.tau_ref = np.concatenate([tau_ref_E * np.ones(neuron_num_e), tau_ref_I * np.ones(neuron_num_i)])
+        self.tau_ref = torch.cat([tau_ref_E * torch.ones(neuron_num_e), tau_ref_I * torch.ones(neuron_num_i)])
 
         self.weights = None
         self.weights2 = None
@@ -99,7 +99,7 @@ class NeuroNN(nn.Module):
     def forward(self):
         """Implementation of the forward step in pytorch.
         """
-        print(self.hyperparameters.data)
+        # print(self.hyperparameters.data)
         self.update_weight_matrix()
         tuning_curves = self.run_all_orientation_and_contrast()
         return tuning_curves
@@ -110,10 +110,10 @@ class NeuroNN(nn.Module):
 
     def update_weight_matrix(self) -> None:
         self.weights = self.generate_weight_matrix()
-        self.weights2 = np.square(self.weights)
+        self.weights2 = torch.square(self.weights)
 
 
-    def generate_weight_matrix(self) -> np.ndarray:
+    def generate_weight_matrix(self) -> torch.Tensor:
         # Calculate matrix relating to the hyperparameters and connection types
         connection_matrix = self._generate_connection_matrix() # Generate connection matrix randomly
         efficacy_matrix = self._generate_parameter_matrix(self.hyperparameters.data[0], connection_matrix)
@@ -121,12 +121,12 @@ class NeuroNN(nn.Module):
         width_matrix = self._generate_parameter_matrix(self.hyperparameters.data[2], connection_matrix)
         self._generate_z_matrix(width=width_matrix)
         
-        weight_matrix = efficacy_matrix * self._sigmoid(prob_matrix*self.z_matrix - np.random.rand(self.neuron_num, self.neuron_num))
+        weight_matrix = efficacy_matrix * self._sigmoid(prob_matrix*self.z_matrix - torch.rand(self.neuron_num, self.neuron_num))
         return weight_matrix
 
 
     def _generate_connection_matrix(self): # We can save the output of this function to a global var to prevent re running.
-        connection_matrix = np.zeros((self.neuron_num, self.neuron_num), dtype=int)
+        connection_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32)
 
         # Set values for EE connections
         connection_matrix[self.neuron_num_e:, self.neuron_num_e:] = 3
@@ -140,27 +140,29 @@ class NeuroNN(nn.Module):
         return connection_matrix
     
 
-    def _generate_parameter_matrix(self, params: torch.Tensor, connection_matrix: np.ndarray): # can combine
-        params_matrix = params[connection_matrix.astype(int)]
-        return np.array(params_matrix)
+    def _generate_parameter_matrix(self, params: torch.Tensor, connection_matrix: torch.Tensor):
+        connection_matrix = connection_matrix.type(torch.int64)
+        params_matrix = params[connection_matrix]
+        return params_matrix
     
 
     def _generate_diff_thetas_matrix(self):
-        output_orientations = np.tile(self.pref, (self.neuron_num, 1))
+        # output_orientations = np.tile(self.pref, (self.neuron_num, 1))
+        output_orientations = self.pref.repeat(self.neuron_num, 1)
         input_orientations = output_orientations.T
-        diff_orientations = np.abs(input_orientations - output_orientations)
+        diff_orientations = torch.abs(input_orientations - output_orientations)
         self.diff_orientations = diff_orientations
         return diff_orientations
 
 
-    def _generate_z_matrix(self, width: np.ndarray):
-        self.z_matrix = np.exp((np.cos(2 * np.pi/180 * self.diff_orientations) - 1) / (4 * (np.pi/180 * width)**2))
+    def _generate_z_matrix(self, width: torch.Tensor):
+        self.z_matrix = torch.exp((torch.cos(2 * torch.pi / 180 * self.diff_orientations) - 1) / (4 * (torch.pi / 180 * width)**2))
         return self.z_matrix
 
 
     @staticmethod
     def _sigmoid(array):
-        return 1 / (1 + np.exp(-32*array)) 
+        return 1 / (1 + torch.exp(-32 * array))
 
 
     #---------------------RUN THE NETWORK TO GET STEADY STATE OUTPUT------------------------
@@ -168,14 +170,14 @@ class NeuroNN(nn.Module):
 
     def get_steady_state_output(self, contrast, grating_orientations):
         input_mean, input_sd = self._stim_to_inputs(contrast, grating_orientations, self.pref)
-        r_fp, avg_step = self._solve_fixed_point(input_mean, input_sd, )
+        r_fp, avg_step = self._solve_fixed_point(input_mean, input_sd)
         return r_fp, avg_step
 
 
     def _get_mu_sigma(self, weights_matrix, weights_2_matrix, rate, input_mean, input_sd, tau):
         # Find net input mean and variance given inputs
         mu = tau * (weights_matrix @ rate) + input_mean
-        sigma = np.sqrt(tau * (weights_2_matrix @ rate) + input_sd**2)
+        sigma = torch.sqrt(tau * (weights_2_matrix @ rate) + input_sd**2)
         return mu, sigma
     
 
@@ -188,7 +190,7 @@ class NeuroNN(nn.Module):
 
 
     def _solve_fixed_point(self, input_mean, input_sd): # tau_ref varies with E and I
-        r_init = np.zeros(self.neuron_num)
+        r_init = torch.zeros(self.neuron_num)
         # Define the function to be solved for
         def drdt_func(rate):
             return self.T_inv * (Phi(*self._get_mu_sigma(self.weights, self.weights2, rate, input_mean, input_sd, self.tau), 
@@ -203,7 +205,7 @@ class NeuroNN(nn.Module):
     # -------------------------RUN OUTPUT TO GET TUNING CURVES--------------------
 
 
-    def run_all_orientation_and_contrast(self) -> np.ndarray: # Change this to numpy mathmul
+    def run_all_orientation_and_contrast(self) -> torch.Tensor: # Change this to numpy mathmul
         all_rates = []
         for contrast in self.contrasts:
             steady_states = []
@@ -211,13 +213,14 @@ class NeuroNN(nn.Module):
                 rate, _ = self.get_steady_state_output(contrast, orientation)
                 steady_states.append(rate)
             all_rates.append(steady_states)
-        output = self._transform_all_rates_to_tuning_curves(np.array(all_rates))
+        print(all_rates)
+        output = torch.tensor(all_rates).permute(2, 0, 1)
         return output
     
 
-    @staticmethod
-    def _transform_all_rates_to_tuning_curves(all_rates: np.ndarray):
-        return np.transpose(all_rates, (2, 0, 1))
+    # @staticmethod
+    # def _transform_all_rates_to_tuning_curves(all_rates: torch.Tensor):
+    #     return torch.transpose(all_rates, (2, 0, 1))
 
 # x = torch.arange(1000)
 # # # Contrast and orientation ranges
@@ -283,9 +286,7 @@ def training_loop(model, optimizer, Y, n=2):
         optimizer.zero_grad()
         preds = model()
         loss = loss_function(preds, Y)
-        print(loss)
         loss.backward()
-        print(model.hyperparameters)
         optimizer.step()
         losses.append(loss)
     return losses
