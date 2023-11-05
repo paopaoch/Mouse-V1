@@ -1,11 +1,36 @@
-import math
+import pandas as pd
 import time
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-from torch import nn
+from torch import nn, optim
 from torch.functional import F
 from sim_utils import Phi, circ_gauss, Euler2fixedpt
+from tqdm import tqdm
+
+
+class MMDLossFunction(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+
+    def forward(self, X, Y):
+        XX = torch.mean(self.kernel(X[None, :, :, :], X[:, None, :, :]))
+        XY = torch.mean(self.kernel(X[None, :, :, :], Y[:, None, :, :]))
+        YY = torch.mean(self.kernel(Y[None, :, :, :], Y[:, None, :, :]))
+
+        # XX.requires_grad_(True)
+        # XY.requires_grad_(True)
+        # YY.requires_grad_(True)
+        output = XX - 2 * XY + YY
+        output.requires_grad_(True)
+        return output
+
+
+    @staticmethod
+    def kernel(x, y, w=1, axes=(-2, -1)):
+        x, y = torch.tensor(x), torch.tensor(y)
+        return torch.exp(-torch.sum((x - y) ** 2, dim=axes) / (2 * w**2))
 
 
 class NeuroNN(nn.Module):
@@ -17,7 +42,7 @@ class NeuroNN(nn.Module):
         super().__init__()
 
         # initialize weights with input parameters
-        hyperparameters = torch.FloatTensor([J_array] + [P_array] + [w_array])
+        hyperparameters = torch.tensor([J_array] + [P_array] + [w_array], requires_grad=True)
 
         # make hyperparameters torch parameters
         self.hyperparameters = nn.Parameter(hyperparameters)
@@ -62,8 +87,8 @@ class NeuroNN(nn.Module):
         self.update_weight_matrix()
 
         # # Contrast and orientation ranges
-        # self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
-        self.orientations = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165]
+        self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
+        # self.orientations = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165]
         self.contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
 
         # plt.imshow(self.weights)
@@ -74,6 +99,7 @@ class NeuroNN(nn.Module):
     def forward(self):
         """Implementation of the forward step in pytorch.
         """
+        print(self.hyperparameters.data)
         self.update_weight_matrix()
         tuning_curves = self.run_all_orientation_and_contrast()
         return tuning_curves
@@ -95,14 +121,11 @@ class NeuroNN(nn.Module):
         width_matrix = self._generate_parameter_matrix(self.hyperparameters.data[2], connection_matrix)
         self._generate_z_matrix(width=width_matrix)
         
-        start = time.time()
         weight_matrix = efficacy_matrix * self._sigmoid(prob_matrix*self.z_matrix - np.random.rand(self.neuron_num, self.neuron_num))
-        print("sigmoid equation", time.time() - start)
         return weight_matrix
 
 
     def _generate_connection_matrix(self): # We can save the output of this function to a global var to prevent re running.
-        start = time.time()
         connection_matrix = np.zeros((self.neuron_num, self.neuron_num), dtype=int)
 
         # Set values for EE connections
@@ -114,14 +137,11 @@ class NeuroNN(nn.Module):
         # Set values for II connections
         connection_matrix[:self.neuron_num_e, :self.neuron_num_e] = 0
 
-        print(time.time() - start)
         return connection_matrix
     
 
     def _generate_parameter_matrix(self, params: torch.Tensor, connection_matrix: np.ndarray): # can combine
-        start = time.time()
         params_matrix = params[connection_matrix.astype(int)]
-        print("params", time.time() - start)
         return np.array(params_matrix)
     
 
@@ -183,8 +203,7 @@ class NeuroNN(nn.Module):
     # -------------------------RUN OUTPUT TO GET TUNING CURVES--------------------
 
 
-    def run_all_orientation_and_contrast(self) -> np.ndarray:
-        start = time.time()
+    def run_all_orientation_and_contrast(self) -> np.ndarray: # Change this to numpy mathmul
         all_rates = []
         for contrast in self.contrasts:
             steady_states = []
@@ -193,7 +212,6 @@ class NeuroNN(nn.Module):
                 steady_states.append(rate)
             all_rates.append(steady_states)
         output = self._transform_all_rates_to_tuning_curves(np.array(all_rates))
-        print("run all", time.time() - start)
         return output
     
 
@@ -202,55 +220,109 @@ class NeuroNN(nn.Module):
         return np.transpose(all_rates, (2, 0, 1))
 
 # x = torch.arange(1000)
-# Parameters are arranged as EE, EI, IE, II
-J_array = [1.99, 1.9, -1.01, -0.79]
-P_array = [0.11, 0.11, 0.45, 0.45]
-w_array = [32, 32, 32, 32]
-
 # # # Contrast and orientation ranges
 # orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
-orientations = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165]
+# orientations = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165]
 # contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
 
 # contrasts = 0.186966
 # orientations = 15
 
-nnn = NeuroNN(J_array, P_array, w_array, 100)
-tuning_curves = nnn.forward()
+# nnn = NeuroNN(J_array, P_array, w_array, 100)
+# tuning_curves = nnn.forward()
 
-plt.plot(orientations, tuning_curves[40][7])
-plt.plot(orientations, tuning_curves[40][6])
-plt.plot(orientations, tuning_curves[40][5])
-plt.plot(orientations, tuning_curves[40][4])
-plt.plot(orientations, tuning_curves[40][3])
-plt.plot(orientations, tuning_curves[40][2])
-plt.plot(orientations, tuning_curves[40][1])
-plt.plot(orientations, tuning_curves[40][0])
-plt.show()
-
-
-plt.plot(orientations, tuning_curves[90][7])
-plt.plot(orientations, tuning_curves[90][6])
-plt.plot(orientations, tuning_curves[90][5])
-plt.plot(orientations, tuning_curves[90][4])
-plt.plot(orientations, tuning_curves[90][3])
-plt.plot(orientations, tuning_curves[90][2])
-plt.plot(orientations, tuning_curves[90][1])
-plt.plot(orientations, tuning_curves[90][0])
-plt.show()
+# plt.plot(orientations, tuning_curves[40][7])
+# plt.plot(orientations, tuning_curves[40][6])
+# plt.plot(orientations, tuning_curves[40][5])
+# plt.plot(orientations, tuning_curves[40][4])
+# plt.plot(orientations, tuning_curves[40][3])
+# plt.plot(orientations, tuning_curves[40][2])
+# plt.plot(orientations, tuning_curves[40][1])
+# plt.plot(orientations, tuning_curves[40][0])
+# plt.show()
 
 
-# def training_loop(model, optimizer, n=1000):
-#     "Training loop for torch model."
-#     losses = []
-#     for i in range(n):
-#         preds = model(x)
-#         loss = F.mse_loss(preds, y) # WILL CHANGE TO MMD LOSS
-#         loss.backward()
-#         optimizer.step()
-#         optimizer.zero_grad()
-#         losses.append(loss)
-#     return losses
+# plt.plot(orientations, tuning_curves[95][7])
+# plt.plot(orientations, tuning_curves[95][6])
+# plt.plot(orientations, tuning_curves[95][5])
+# plt.plot(orientations, tuning_curves[95][4])
+# plt.plot(orientations, tuning_curves[95][3])
+# plt.plot(orientations, tuning_curves[95][2])
+# plt.plot(orientations, tuning_curves[95][1])
+# plt.plot(orientations, tuning_curves[95][0])
+# plt.show()
 
+
+'''TICKETS
+
+    1. Change np array operations to torch tensor operations for GPU
+    2. Translate sim_utils to torch tensor operations
+    3. Data exploration: units of trial average response
+
+'''
+# NOTE: Take the average of the spacial freq and phase in the data
+
+# NOTE: Optogenetics mice
+
+J_array = [1.99, 1.9, -1.01, -0.79]
+P_array = [0.11, 0.11, 0.45, 0.45]
+w_array = [32, 32, 32, 32]
+
+model = NeuroNN(J_array, P_array, w_array, 100)
+
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+def training_loop(model, optimizer, Y, n=2):
+    "Training loop for torch model."
+
+    loss_function = MMDLossFunction()
+    model.train()
+
+    losses = []
+    for _ in range(n):
+        optimizer.zero_grad()
+        preds = model()
+        loss = loss_function(preds, Y)
+        print(loss)
+        loss.backward()
+        print(model.hyperparameters)
+        optimizer.step()
+        losses.append(loss)
+    return losses
+
+
+df = pd.read_csv("./data/K-Data.csv")
+
+
+v1 = df.query("region == 'V1'")
+m = v1.m.unique()[2]
+v1_data = v1[v1.m == m]
+# v1_data = v1_data.query("grat_spat_freq == 0.332966").query("grat_phase == [180]")
+v1_data = v1_data[['u', 'unit_type', 'grat_orientation', 'grat_contrast', 'response', 'smoothed_response']].reset_index(drop=True)
+v1_data = v1_data.groupby(['unit_type','u', 'grat_contrast', 'grat_orientation'], as_index=False).mean()
+
+
+# Get unique values for each column
+unique_u = v1_data['u'].unique()
+unique_contrast = v1_data['grat_contrast'].unique()
+unique_orientation = v1_data['grat_orientation'].unique()
+
+
+# Create a 3D numpy array filled with NaN values
+shape = (len(unique_u), len(unique_contrast), len(unique_orientation))
+result_array = np.full(shape, np.nan)
+
+
+# Iterate through the DataFrame and fill the array
+for index, row in v1_data.iterrows():
+    u_index = np.where(unique_u == row['u'])[0][0]
+    contrast_index = np.where(unique_contrast == row['grat_contrast'])[0][0]
+    orientation_index = np.where(unique_orientation == row['grat_orientation'])[0][0]
+    
+    result_array[u_index, contrast_index, orientation_index] = row['response']
+
+
+loss = training_loop(model, optimizer, result_array)
+print(loss)
 
 # https://towardsdatascience.com/how-to-use-pytorch-as-a-general-optimizer-a91cbf72a7fb
