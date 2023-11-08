@@ -29,7 +29,12 @@ class MMDLossFunction(nn.Module):
 
     @staticmethod
     def kernel(x, y, w=1, axes=(-2, -1)):
-        x, y = torch.tensor(x), torch.tensor(y)
+        if type(x) != torch.Tensor:
+            x = torch.tensor(x)
+        
+        if type(y) != torch.Tensor:
+            y = torch.tensor(y)
+
         return torch.exp(-torch.sum((x - y) ** 2, dim=axes) / (2 * w**2))
 
 
@@ -42,10 +47,19 @@ class NeuroNN(nn.Module):
         super().__init__()
 
         # initialize weights with input parameters
-        hyperparameters = torch.tensor([J_array] + [P_array] + [w_array], requires_grad=True)
+        # hyperparameters = torch.tensor([J_array] + [P_array] + [w_array], requires_grad=True)
+
+        j_hyper = torch.tensor(J_array, requires_grad=True)
+        self.j_hyperparameter = nn.Parameter(j_hyper)
+
+        p_hyper = torch.tensor(P_array, requires_grad=True)
+        self.p_hyperparameter = nn.Parameter(p_hyper)
+
+        w_hyper = torch.tensor(w_array, requires_grad=True)
+        self.w_hyperparameter = nn.Parameter(w_hyper)
 
         # make hyperparameters torch parameters
-        self.hyperparameters = nn.Parameter(hyperparameters)
+        # self.hyperparameters = nn.Parameter(hyperparameters)
 
         self.neuron_num = neuron_num
         neuron_num_e = int(neuron_num * ratio)
@@ -116,9 +130,9 @@ class NeuroNN(nn.Module):
     def generate_weight_matrix(self) -> torch.Tensor:
         # Calculate matrix relating to the hyperparameters and connection types
         connection_matrix = self._generate_connection_matrix() # Generate connection matrix randomly
-        efficacy_matrix = self._generate_parameter_matrix(self.hyperparameters.data[0], connection_matrix)
-        prob_matrix = self._generate_parameter_matrix(self.hyperparameters.data[1], connection_matrix)
-        width_matrix = self._generate_parameter_matrix(self.hyperparameters.data[2], connection_matrix)
+        efficacy_matrix = self._generate_parameter_matrix(self.j_hyperparameter, connection_matrix)
+        prob_matrix = self._generate_parameter_matrix(self.p_hyperparameter, connection_matrix)
+        width_matrix = self._generate_parameter_matrix(self.w_hyperparameter, connection_matrix)
         self._generate_z_matrix(width=width_matrix)
         
         weight_matrix = efficacy_matrix * self._sigmoid(prob_matrix*self.z_matrix - torch.rand(self.neuron_num, self.neuron_num))
@@ -184,13 +198,15 @@ class NeuroNN(nn.Module):
     def _stim_to_inputs(self, contrast, grating_orientations, preferred_orientations):
         '''Set the inputs based on the contrast and orientation of the stimulus'''
         # Distribute parameters over all neurons based on type
-        input_mean = contrast * 20 * self.scaling_g * circ_gauss(grating_orientations - preferred_orientations, self.w_ff)
+        input_mean = circ_gauss(grating_orientations - preferred_orientations, self.w_ff)
+
+        # input_mean = contrast * 20 * self.scaling_g * circ_gauss(grating_orientations - preferred_orientations, self.w_ff)
         input_sd = self.sig_ext
         return input_mean, input_sd
 
 
     def _solve_fixed_point(self, input_mean, input_sd): # tau_ref varies with E and I
-        r_init = torch.zeros(self.neuron_num)
+        r_init = torch.zeros(self.neuron_num) # Need to change this to a matrix
         # Define the function to be solved for
         def drdt_func(rate):
             return self.T_inv * (Phi(*self._get_mu_sigma(self.weights, self.weights2, rate, input_mean, input_sd, self.tau), 
@@ -206,15 +222,14 @@ class NeuroNN(nn.Module):
 
 
     def run_all_orientation_and_contrast(self) -> torch.Tensor: # Change this to numpy mathmul
-        all_rates = []
+        all_rates = torch.empty(0)
         for contrast in self.contrasts:
-            steady_states = []
+            steady_states = torch.empty(0)
             for orientation in self.orientations:
                 rate, _ = self.get_steady_state_output(contrast, orientation)
-                steady_states.append(rate)
-            all_rates.append(steady_states)
-        print(all_rates)
-        output = torch.tensor(all_rates).permute(2, 0, 1)
+                steady_states = torch.cat((steady_states, rate.unsqueeze(0)))
+            all_rates = torch.cat((all_rates, steady_states.unsqueeze(0)))
+        output = all_rates.permute(2, 0, 1)
         return output
     
 
@@ -255,40 +270,30 @@ class NeuroNN(nn.Module):
 # plt.plot(orientations, tuning_curves[95][0])
 # plt.show()
 
-
-'''TICKETS
-
-    1. Change np array operations to torch tensor operations for GPU
-    2. Translate sim_utils to torch tensor operations
-    3. Data exploration: units of trial average response
-
-'''
 # NOTE: Take the average of the spacial freq and phase in the data
 
 # NOTE: Optogenetics mice
 
-J_array = [1.99, 1.9, -1.01, -0.79]
-P_array = [0.11, 0.11, 0.45, 0.45]
-w_array = [32, 32, 32, 32]
-
-model = NeuroNN(J_array, P_array, w_array, 100)
-
-optimizer = optim.Adam(model.parameters(), lr=0.001)
-
-def training_loop(model, optimizer, Y, n=2):
+def training_loop(model, optimizer, Y, n=220):
     "Training loop for torch model."
 
     loss_function = MMDLossFunction()
     model.train()
 
     losses = []
-    for _ in range(n):
+    for i in range(n):
         optimizer.zero_grad()
         preds = model()
         loss = loss_function(preds, Y)
         loss.backward()
         optimizer.step()
         losses.append(loss)
+        print(f"ITTER: {i}", loss)
+        print(model.j_hyperparameter)
+        print(model.p_hyperparameter)
+        print(model.w_hyperparameter)
+        print("\n")
+        
     return losses
 
 
@@ -321,6 +326,16 @@ for index, row in v1_data.iterrows():
     orientation_index = np.where(unique_orientation == row['grat_orientation'])[0][0]
     
     result_array[u_index, contrast_index, orientation_index] = row['response']
+
+print(result_array.shape)
+
+J_array = [1.99, 1.9, -1.01, -0.79]
+P_array = [0.11, 0.11, 0.45, 0.45]
+w_array = [32., 32., 32., 32.]
+
+model = NeuroNN(J_array, P_array, w_array, 200)
+
+optimizer = optim.Adam(model.parameters(), lr=0.01)
 
 
 loss = training_loop(model, optimizer, result_array)
