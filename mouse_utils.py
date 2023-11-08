@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 from torch import nn, optim
-from torch.functional import F
 from sim_utils_torch import Phi, circ_gauss, Euler2fixedpt
 from tqdm import tqdm
 
@@ -14,15 +13,12 @@ class MMDLossFunction(nn.Module):
         super().__init__()
 
 
-    def forward(self, X, Y):
+    def forward(self, X, Y, avg_step):
         XX = torch.mean(self.kernel(X[None, :, :, :], X[:, None, :, :]))
         XY = torch.mean(self.kernel(X[None, :, :, :], Y[:, None, :, :]))
         YY = torch.mean(self.kernel(Y[None, :, :, :], Y[:, None, :, :]))
 
-        # XX.requires_grad_(True)
-        # XY.requires_grad_(True)
-        # YY.requires_grad_(True)
-        output = XX - 2 * XY + YY
+        output = XX - 2 * XY + YY + avg_step
         output.requires_grad_(True)
         return output
 
@@ -43,11 +39,7 @@ class NeuroNN(nn.Module):
     """
 
     def __init__(self, J_array: list, P_array: list, w_array: list, neuron_num: int, ratio=0.8, scaling_g=1, w_ff=30, sig_ext=5):
-        # need error handling here for shape of parameters
         super().__init__()
-
-        # initialize weights with input parameters
-        # hyperparameters = torch.tensor([J_array] + [P_array] + [w_array], requires_grad=True)
 
         j_hyper = torch.tensor(J_array, requires_grad=True)
         self.j_hyperparameter = nn.Parameter(j_hyper)
@@ -58,16 +50,11 @@ class NeuroNN(nn.Module):
         w_hyper = torch.tensor(w_array, requires_grad=True)
         self.w_hyperparameter = nn.Parameter(w_hyper)
 
-        # make hyperparameters torch parameters
-        # self.hyperparameters = nn.Parameter(hyperparameters)
-
         self.neuron_num = neuron_num
         neuron_num_e = int(neuron_num * ratio)
         neuron_num_i = neuron_num - neuron_num_e
-        # neuron_types = np.array([1] * neuron_num_e + [-1] * neuron_num_i)
         self.neuron_num_e = neuron_num_e
         self.neuron_num_i = neuron_num_i
-        # self.neuron_types = neuron_types
 
         pref_E = torch.linspace(0, 179.99, neuron_num_e)
         pref_I = torch.linspace(0, 179.99, neuron_num_i)
@@ -102,21 +89,14 @@ class NeuroNN(nn.Module):
 
         # # Contrast and orientation ranges
         self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
-        # self.orientations = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165]
         self.contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
-
-        # plt.imshow(self.weights)
-        # plt.colorbar()
-        # plt.show()
 
 
     def forward(self):
-        """Implementation of the forward step in pytorch.
-        """
-        # print(self.hyperparameters.data)
+        """Implementation of the forward step in pytorch."""
         self.update_weight_matrix()
-        tuning_curves = self.run_all_orientation_and_contrast()
-        return tuning_curves
+        tuning_curves, avg_step = self.run_all_orientation_and_contrast()
+        return tuning_curves, avg_step
 
 
     # ------------------GET WEIGHT MATRIX--------------------------
@@ -129,17 +109,21 @@ class NeuroNN(nn.Module):
 
     def generate_weight_matrix(self) -> torch.Tensor:
         # Calculate matrix relating to the hyperparameters and connection types
-        connection_matrix = self._generate_connection_matrix() # Generate connection matrix randomly
+        connection_matrix = self._generate_connection_matrix()
+        sign_matrix = self._generate_sign_matrix()
+        p_hyperparameter = torch.abs(self.p_hyperparameter * torch.tensor([1, 1, 1, 1]))
+        p_hyperparameter = p_hyperparameter / p_hyperparameter.sum()
+
         efficacy_matrix = self._generate_parameter_matrix(self.j_hyperparameter, connection_matrix)
-        prob_matrix = self._generate_parameter_matrix(self.p_hyperparameter, connection_matrix)
+        prob_matrix = self._generate_parameter_matrix(p_hyperparameter, connection_matrix)
         width_matrix = self._generate_parameter_matrix(self.w_hyperparameter, connection_matrix)
         self._generate_z_matrix(width=width_matrix)
         
-        weight_matrix = efficacy_matrix * self._sigmoid(prob_matrix*self.z_matrix - torch.rand(self.neuron_num, self.neuron_num))
+        weight_matrix = sign_matrix * efficacy_matrix * self._sigmoid(prob_matrix*self.z_matrix - torch.rand(self.neuron_num, self.neuron_num))
         return weight_matrix
 
 
-    def _generate_connection_matrix(self): # We can save the output of this function to a global var to prevent re running.
+    def _generate_connection_matrix(self):
         connection_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32)
 
         # Set values for EE connections
@@ -152,6 +136,21 @@ class NeuroNN(nn.Module):
         connection_matrix[:self.neuron_num_e, :self.neuron_num_e] = 0
 
         return connection_matrix
+    
+
+    def _generate_sign_matrix(self):
+        sign_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32)
+
+        # Set values for EE connections
+        sign_matrix[self.neuron_num_e:, self.neuron_num_e:] = 1
+        # Set values for EI connections
+        sign_matrix[:self.neuron_num_e, self.neuron_num_e:] = 1
+        # Set values for IE connections
+        sign_matrix[self.neuron_num_e:, :self.neuron_num_e] = -1
+        # Set values for II connections
+        sign_matrix[:self.neuron_num_e, :self.neuron_num_e] = -1
+
+        return sign_matrix
     
 
     def _generate_parameter_matrix(self, params: torch.Tensor, connection_matrix: torch.Tensor):
@@ -198,9 +197,9 @@ class NeuroNN(nn.Module):
     def _stim_to_inputs(self, contrast, grating_orientations, preferred_orientations):
         '''Set the inputs based on the contrast and orientation of the stimulus'''
         # Distribute parameters over all neurons based on type
-        input_mean = circ_gauss(grating_orientations - preferred_orientations, self.w_ff)
+        # input_mean = circ_gauss(grating_orientations - preferred_orientations, self.w_ff)
 
-        # input_mean = contrast * 20 * self.scaling_g * circ_gauss(grating_orientations - preferred_orientations, self.w_ff)
+        input_mean = contrast * 20 * self.scaling_g * circ_gauss(grating_orientations - preferred_orientations, self.w_ff)
         input_sd = self.sig_ext
         return input_mean, input_sd
 
@@ -223,56 +222,22 @@ class NeuroNN(nn.Module):
 
     def run_all_orientation_and_contrast(self) -> torch.Tensor: # Change this to numpy mathmul
         all_rates = torch.empty(0)
+        avg_step_sum = torch.tensor(0)
+        count = torch.tensor(0)
         for contrast in self.contrasts:
             steady_states = torch.empty(0)
             for orientation in self.orientations:
-                rate, _ = self.get_steady_state_output(contrast, orientation)
+                rate, avg_step = self.get_steady_state_output(contrast, orientation)
                 steady_states = torch.cat((steady_states, rate.unsqueeze(0)))
+                avg_step_sum = avg_step_sum + avg_step
+                count = count + torch.tensor(1)
             all_rates = torch.cat((all_rates, steady_states.unsqueeze(0)))
         output = all_rates.permute(2, 0, 1)
-        return output
-    
+        return output, avg_step_sum / count
 
-    # @staticmethod
-    # def _transform_all_rates_to_tuning_curves(all_rates: torch.Tensor):
-    #     return torch.transpose(all_rates, (2, 0, 1))
-
-# x = torch.arange(1000)
-# # # Contrast and orientation ranges
-# orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
-# orientations = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155, 160, 165]
-# contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
-
-# contrasts = 0.186966
-# orientations = 15
-
-# nnn = NeuroNN(J_array, P_array, w_array, 100)
-# tuning_curves = nnn.forward()
-
-# plt.plot(orientations, tuning_curves[40][7])
-# plt.plot(orientations, tuning_curves[40][6])
-# plt.plot(orientations, tuning_curves[40][5])
-# plt.plot(orientations, tuning_curves[40][4])
-# plt.plot(orientations, tuning_curves[40][3])
-# plt.plot(orientations, tuning_curves[40][2])
-# plt.plot(orientations, tuning_curves[40][1])
-# plt.plot(orientations, tuning_curves[40][0])
-# plt.show()
-
-
-# plt.plot(orientations, tuning_curves[95][7])
-# plt.plot(orientations, tuning_curves[95][6])
-# plt.plot(orientations, tuning_curves[95][5])
-# plt.plot(orientations, tuning_curves[95][4])
-# plt.plot(orientations, tuning_curves[95][3])
-# plt.plot(orientations, tuning_curves[95][2])
-# plt.plot(orientations, tuning_curves[95][1])
-# plt.plot(orientations, tuning_curves[95][0])
-# plt.show()
-
-# NOTE: Take the average of the spacial freq and phase in the data
 
 # NOTE: Optogenetics mice
+
 
 def training_loop(model, optimizer, Y, n=220):
     "Training loop for torch model."
@@ -283,8 +248,8 @@ def training_loop(model, optimizer, Y, n=220):
     losses = []
     for i in range(n):
         optimizer.zero_grad()
-        preds = model()
-        loss = loss_function(preds, Y)
+        preds, avg_step = model()
+        loss = loss_function(preds, Y, avg_step)
         loss.backward()
         optimizer.step()
         losses.append(loss)
@@ -293,7 +258,7 @@ def training_loop(model, optimizer, Y, n=220):
         print(model.p_hyperparameter)
         print(model.w_hyperparameter)
         print("\n")
-        
+
     return losses
 
 
@@ -327,16 +292,17 @@ for index, row in v1_data.iterrows():
     
     result_array[u_index, contrast_index, orientation_index] = row['response']
 
-print(result_array.shape)
-
-J_array = [1.99, 1.9, -1.01, -0.79]
+J_array = [1.99, 1.9, 1.01, 0.79]
 P_array = [0.11, 0.11, 0.45, 0.45]
 w_array = [32., 32., 32., 32.]
 
-model = NeuroNN(J_array, P_array, w_array, 200)
+# J_array = [ 1.5343,  3.2766, -1.0630,  0.1529]
+# P_array = [-0.3363,  1.4607,  1.6201, -0.2662]
+# w_array = [32.4697, 33.3625, 33.0394, 31.8233]
 
-optimizer = optim.Adam(model.parameters(), lr=0.01)
+model = NeuroNN(J_array, P_array, w_array, 169)
 
+optimizer = optim.Adam(model.parameters(), lr=0.05)
 
 loss = training_loop(model, optimizer, result_array)
 print(loss)
