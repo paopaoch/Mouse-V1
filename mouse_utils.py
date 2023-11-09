@@ -92,9 +92,9 @@ class NeuroNN(nn.Module):
         self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
         self.contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
 
-        plt.imshow(self.weights.data)
-        plt.colorbar()
-        plt.show()
+        # plt.imshow(self.weights.data)
+        # plt.colorbar()
+        # plt.show()
 
     def forward(self):
         """Implementation of the forward step in pytorch."""
@@ -117,10 +117,12 @@ class NeuroNN(nn.Module):
         sign_matrix = self._generate_sign_matrix()
         p_hyperparameter = torch.abs(self.p_hyperparameter * torch.tensor([1, 1, 1, 1]))
         p_hyperparameter = p_hyperparameter / p_hyperparameter.sum()
+        j_hyperparameter = torch.abs(self.j_hyperparameter * torch.tensor([1, 1, 1, 1]))
+        w_hyperparameter = torch.abs(self.w_hyperparameter * torch.tensor([1, 1, 1, 1]))
 
-        efficacy_matrix = self._generate_parameter_matrix(self.j_hyperparameter, connection_matrix)
+        efficacy_matrix = self._generate_parameter_matrix(j_hyperparameter, connection_matrix)
         prob_matrix = self._generate_parameter_matrix(p_hyperparameter, connection_matrix)
-        width_matrix = self._generate_parameter_matrix(self.w_hyperparameter, connection_matrix)
+        width_matrix = self._generate_parameter_matrix(w_hyperparameter, connection_matrix)
         self._generate_z_matrix(width=width_matrix)
         
         weight_matrix = sign_matrix * efficacy_matrix * self._sigmoid(prob_matrix*self.z_matrix - torch.rand(self.neuron_num, self.neuron_num))
@@ -130,13 +132,9 @@ class NeuroNN(nn.Module):
     def _generate_connection_matrix(self):
         connection_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32)
 
-        # Set values for EE connections
         connection_matrix[self.neuron_num_e:, self.neuron_num_e:] = 3
-        # Set values for EI connections
         connection_matrix[:self.neuron_num_e, self.neuron_num_e:] = 2
-        # Set values for IE connections
         connection_matrix[self.neuron_num_e:, :self.neuron_num_e] = 1
-        # Set values for II connections
         connection_matrix[:self.neuron_num_e, :self.neuron_num_e] = 0
 
         return connection_matrix
@@ -145,14 +143,10 @@ class NeuroNN(nn.Module):
     def _generate_sign_matrix(self):
         sign_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32)
 
-        # Set values for EE connections
-        sign_matrix[self.neuron_num_e:, self.neuron_num_e:] = 1
-        # Set values for EI connections
-        sign_matrix[:self.neuron_num_e, self.neuron_num_e:] = 1
-        # Set values for IE connections
-        sign_matrix[self.neuron_num_e:, :self.neuron_num_e] = -1
-        # Set values for II connections
-        sign_matrix[:self.neuron_num_e, :self.neuron_num_e] = -1
+        sign_matrix[self.neuron_num_e:, self.neuron_num_e:] = -1
+        sign_matrix[:self.neuron_num_e, self.neuron_num_e:] = -1
+        sign_matrix[self.neuron_num_e:, :self.neuron_num_e] = 1
+        sign_matrix[:self.neuron_num_e, :self.neuron_num_e] = 1
 
         return sign_matrix
     
@@ -242,7 +236,7 @@ class NeuroNN(nn.Module):
 # NOTE: Optogenetics mice
 
 
-def training_loop(model, optimizer, Y, n=220):
+def training_loop(model, optimizer, Y, n=60):
     "Training loop for torch model."
 
     loss_function = MMDLossFunction()
@@ -256,7 +250,7 @@ def training_loop(model, optimizer, Y, n=220):
         loss.backward()
         optimizer.step()
         losses.append(loss)
-        print(f"ITTER: {i}", loss)
+        print(f"ITTER: {i + 1}", loss)
         print(model.j_hyperparameter)
         print(model.p_hyperparameter)
         print(model.w_hyperparameter)
@@ -299,8 +293,16 @@ J_array = [1.99, 1.9, 1.01, 0.79]
 P_array = [0.11, 0.11, 0.45, 0.45]
 w_array = [32., 32., 32., 32.]
 
+# J_array = [9.04e-02, 3.82e-05, 7.62e-5, 2.52]
+# P_array = [1.93e-02,  8.78,  1.79e-04,  2.85]
+# w_array = [8.78, 166, 1.23e-2, 1.81e2]
 
-model = NeuroNN(J_array, P_array, w_array, 180)
+# J_array = [1.0039, 1.8456, 1.1008, 0.7891]
+# P_array = [0.0767,  0.4697,  1.0641,  0.8943]
+# w_array = [31.9805, 31.9982, 32.0028, 32.0000]
+
+
+model = NeuroNN(J_array, P_array, w_array, 2000)
 # Move the entire model to GPU (if available)
 if torch.cuda.is_available():
     model = model.to('cuda')
@@ -310,7 +312,7 @@ else:
     print("GPU not available. Keeping the model on CPU.")
 
 
-optimizer = optim.SGD(model.parameters(), lr=1)
+optimizer = optim.SGD(model.parameters(), lr=0.005)
 
 loss = training_loop(model, optimizer, result_array)
 print(loss)
