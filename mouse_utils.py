@@ -18,7 +18,7 @@ class MMDLossFunction(nn.Module):
         XY = torch.mean(self.kernel(X[None, :, :, :], Y[:, None, :, :]))
         YY = torch.mean(self.kernel(Y[None, :, :, :], Y[:, None, :, :]))
 
-        output = XX - 2 * XY + YY + avg_step
+        output = XX - 2 * XY + YY + avg_step * 0.02
         output.requires_grad_(True)
         return output
 
@@ -65,6 +65,7 @@ class NeuroNN(nn.Module):
         self.scaling_g = scaling_g * torch.ones(neuron_num)
         self.w_ff = w_ff * torch.ones(neuron_num)
         self.sig_ext = sig_ext * torch.ones(neuron_num)
+        
         T_alpha = 0.5
         T_E = 0.01
         T_I = 0.01 * T_alpha
@@ -91,6 +92,9 @@ class NeuroNN(nn.Module):
         self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
         self.contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
 
+        plt.imshow(self.weights.data)
+        plt.colorbar()
+        plt.show()
 
     def forward(self):
         """Implementation of the forward step in pytorch."""
@@ -160,7 +164,6 @@ class NeuroNN(nn.Module):
     
 
     def _generate_diff_thetas_matrix(self):
-        # output_orientations = np.tile(self.pref, (self.neuron_num, 1))
         output_orientations = self.pref.repeat(self.neuron_num, 1)
         input_orientations = output_orientations.T
         diff_orientations = torch.abs(input_orientations - output_orientations)
@@ -296,13 +299,18 @@ J_array = [1.99, 1.9, 1.01, 0.79]
 P_array = [0.11, 0.11, 0.45, 0.45]
 w_array = [32., 32., 32., 32.]
 
-# J_array = [ 1.5343,  3.2766, -1.0630,  0.1529]
-# P_array = [-0.3363,  1.4607,  1.6201, -0.2662]
-# w_array = [32.4697, 33.3625, 33.0394, 31.8233]
 
-model = NeuroNN(J_array, P_array, w_array, 169)
+model = NeuroNN(J_array, P_array, w_array, 180)
+# Move the entire model to GPU (if available)
+if torch.cuda.is_available():
+    model = model.to('cuda')
+    # Alternatively, you can use model_gpu = model.cuda()
+    print("Model moved to GPU.")
+else:
+    print("GPU not available. Keeping the model on CPU.")
 
-optimizer = optim.Adam(model.parameters(), lr=0.05)
+
+optimizer = optim.SGD(model.parameters(), lr=1)
 
 loss = training_loop(model, optimizer, result_array)
 print(loss)
