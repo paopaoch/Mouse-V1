@@ -92,7 +92,7 @@ class NeuroNN(nn.Module):
         self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
         self.contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
 
-        # plt.imshow(self.weights.data)
+        # plt.imshow(self.weights.data, cmap="seismic", vmin=-np.max(np.abs(np.array(self.weights.data))), vmax=np.max(np.abs(np.array(self.weights.data))))
         # plt.colorbar()
         # plt.show()
 
@@ -115,10 +115,10 @@ class NeuroNN(nn.Module):
         # Calculate matrix relating to the hyperparameters and connection types
         connection_matrix = self._generate_connection_matrix()
         sign_matrix = self._generate_sign_matrix()
-        p_hyperparameter = torch.abs(self.p_hyperparameter * torch.tensor([1, 1, 1, 1]))
+        j_hyperparameter = torch.exp(self.j_hyperparameter * torch.tensor([1, 1, 1, 1]))
+        p_hyperparameter = torch.exp(self.p_hyperparameter * torch.tensor([1, 1, 1, 1]))
         p_hyperparameter = p_hyperparameter / p_hyperparameter.sum()
-        j_hyperparameter = torch.abs(self.j_hyperparameter * torch.tensor([1, 1, 1, 1]))
-        w_hyperparameter = torch.abs(self.w_hyperparameter * torch.tensor([1, 1, 1, 1]))
+        w_hyperparameter = torch.exp(self.w_hyperparameter * torch.tensor([1, 1, 1, 1]))
 
         efficacy_matrix = self._generate_parameter_matrix(j_hyperparameter, connection_matrix)
         prob_matrix = self._generate_parameter_matrix(p_hyperparameter, connection_matrix)
@@ -217,7 +217,7 @@ class NeuroNN(nn.Module):
     # -------------------------RUN OUTPUT TO GET TUNING CURVES--------------------
 
 
-    def run_all_orientation_and_contrast(self) -> torch.Tensor: # Change this to numpy mathmul
+    def run_all_orientation_and_contrast(self) -> torch.Tensor:  # Change this to numpy mathmul
         all_rates = torch.empty(0)
         avg_step_sum = torch.tensor(0)
         count = torch.tensor(0)
@@ -242,21 +242,17 @@ def training_loop(model, optimizer, Y, n=60):
     loss_function = MMDLossFunction()
     model.train()
 
-    losses = []
     for i in range(n):
         optimizer.zero_grad()
         preds, avg_step = model()
         loss = loss_function(preds, Y, avg_step)
         loss.backward()
         optimizer.step()
-        losses.append(loss)
         print(f"ITTER: {i + 1}", loss)
         print(model.j_hyperparameter)
         print(model.p_hyperparameter)
         print(model.w_hyperparameter)
         print("\n")
-
-    return losses
 
 
 df = pd.read_csv("./data/K-Data.csv")
@@ -289,20 +285,22 @@ for index, row in v1_data.iterrows():
     
     result_array[u_index, contrast_index, orientation_index] = row['response']
 
-J_array = [1.99, 1.9, 1.01, 0.79]
-P_array = [0.11, 0.11, 0.45, 0.45]
-w_array = [32., 32., 32., 32.]
+# J_array = [1.99, 1.9, 1.01, 0.79]  # Need to make parameters of an exponential
+# P_array = [0.11, 0.11, 0.45, 0.45]
+# w_array = [32., 32., 32., 32.]
+
+
+J_array = [0.69, 0.64, 0., -0.29]
+P_array = [-2.21, -2.21, -0.8, -0.8]
+w_array = [3.46, 3.46, 3.46, 3.46]
+
 
 # J_array = [9.04e-02, 3.82e-05, 7.62e-5, 2.52]
 # P_array = [1.93e-02,  8.78,  1.79e-04,  2.85]
 # w_array = [8.78, 166, 1.23e-2, 1.81e2]
 
-# J_array = [1.0039, 1.8456, 1.1008, 0.7891]
-# P_array = [0.0767,  0.4697,  1.0641,  0.8943]
-# w_array = [31.9805, 31.9982, 32.0028, 32.0000]
 
-
-model = NeuroNN(J_array, P_array, w_array, 2000)
+model = NeuroNN(J_array, P_array, w_array, 3000)
 # Move the entire model to GPU (if available)
 if torch.cuda.is_available():
     model = model.to('cuda')
@@ -312,9 +310,8 @@ else:
     print("GPU not available. Keeping the model on CPU.")
 
 
-optimizer = optim.SGD(model.parameters(), lr=0.005)
+optimizer = optim.SGD(model.parameters(), lr=0.1)
 
-loss = training_loop(model, optimizer, result_array)
-print(loss)
+training_loop(model, optimizer, result_array)
 
 # https://towardsdatascience.com/how-to-use-pytorch-as-a-general-optimizer-a91cbf72a7fb
