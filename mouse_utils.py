@@ -14,11 +14,12 @@ class MMDLossFunction(nn.Module):
 
 
     def forward(self, X, Y, avg_step):
+        print(avg_step.data)
         XX = torch.mean(self.kernel(X[None, :, :, :], X[:, None, :, :]))
         XY = torch.mean(self.kernel(X[None, :, :, :], Y[:, None, :, :]))
         YY = torch.mean(self.kernel(Y[None, :, :, :], Y[:, None, :, :]))
 
-        output = XX - 2 * XY + YY + avg_step * 0.02
+        output = XX - 2 * XY + YY + avg_step * 0.002
         output.requires_grad_(True)
         return output
 
@@ -35,7 +36,12 @@ class MMDLossFunction(nn.Module):
 
 
 class NeuroNN(nn.Module):
-    """Custom Pytorch model for gradient optimization.
+    """
+    ### This class wraps the logic for the forward pass for modelling the mouse V1
+
+    The forward pass performs two computations:
+    1. Update the weight matrix
+    2. Solves for fixed point at all contrast and orientation combinations
     """
 
     def __init__(self, J_array: list, P_array: list, w_array: list, neuron_num: int, ratio=0.8, scaling_g=1, w_ff=30, sig_ext=5):
@@ -92,12 +98,23 @@ class NeuroNN(nn.Module):
         self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
         self.contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
 
+        self.connection_matrix = self._generate_connection_matrix()
+        self.sign_matrix = self._generate_sign_matrix()
+
         # plt.imshow(self.weights.data, cmap="seismic", vmin=-np.max(np.abs(np.array(self.weights.data))), vmax=np.max(np.abs(np.array(self.weights.data))))
         # plt.colorbar()
+        # plt.title("Connection weight matrix for 2000 neurons")
+        # plt.xlabel("Neuron index")
+        # plt.ylabel("Neuron index")
         # plt.show()
+        
+        # plt.savefig("./plots/weights_example_2000")
 
     def forward(self):
-        """Implementation of the forward step in pytorch."""
+        """
+        Implementation of the forward step in pytorch. 
+        First updates the weights then solves the fix point for all orientation and contrasts.
+        """
         self.update_weight_matrix()
         tuning_curves, avg_step = self.run_all_orientation_and_contrast()
         return tuning_curves, avg_step
@@ -107,29 +124,44 @@ class NeuroNN(nn.Module):
 
 
     def update_weight_matrix(self) -> None:
+        """Update self.weights and self.weights2 which is the weights and weights squares respectively."""
         self.weights = self.generate_weight_matrix()
         self.weights2 = torch.square(self.weights)
 
 
     def generate_weight_matrix(self) -> torch.Tensor:
-        # Calculate matrix relating to the hyperparameters and connection types
-        connection_matrix = self._generate_connection_matrix()
-        sign_matrix = self._generate_sign_matrix()
+        """
+        Method to generate a random weight matrix connection from the parameters J, P, w.
+        
+        Steps:
+        1. constraints the parameters to be positive and the probability values to be between 0 and 1.
+        2. transform the parameters to a matrix of size self.neuron_num by self.neuron_num for matrix arithmetics
+        3. using the parameters matrix, calculate the weight matrix then adjust the signs of the matrix to obey Dales's law.
+        """
         j_hyperparameter = torch.exp(self.j_hyperparameter * torch.tensor([1, 1, 1, 1]))
         p_hyperparameter = torch.exp(self.p_hyperparameter * torch.tensor([1, 1, 1, 1]))
-        p_hyperparameter = p_hyperparameter / p_hyperparameter.sum()
+        p_hyperparameter = self._sigmoid(p_hyperparameter, 2)
         w_hyperparameter = torch.exp(self.w_hyperparameter * torch.tensor([1, 1, 1, 1]))
 
-        efficacy_matrix = self._generate_parameter_matrix(j_hyperparameter, connection_matrix)
-        prob_matrix = self._generate_parameter_matrix(p_hyperparameter, connection_matrix)
-        width_matrix = self._generate_parameter_matrix(w_hyperparameter, connection_matrix)
+        efficacy_matrix = self._generate_parameter_matrix(j_hyperparameter)
+        prob_matrix = self._generate_parameter_matrix(p_hyperparameter)
+        width_matrix = self._generate_parameter_matrix(w_hyperparameter)
         self._generate_z_matrix(width=width_matrix)
+         
+        weight_matrix = self.sign_matrix * efficacy_matrix * self._sigmoid(prob_matrix*self.z_matrix - torch.rand(self.neuron_num, self.neuron_num), 32)
         
-        weight_matrix = sign_matrix * efficacy_matrix * self._sigmoid(prob_matrix*self.z_matrix - torch.rand(self.neuron_num, self.neuron_num))
         return weight_matrix
 
 
     def _generate_connection_matrix(self):
+        """
+        Returns a matrix size self.neuron_num by self.neuron_num which tells the type of the connection
+        
+        1. 0 -> ee
+        2. 1 -> ei
+        3. 2 -> ie
+        4. 3 -> ii
+        """
         connection_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32)
 
         connection_matrix[self.neuron_num_e:, self.neuron_num_e:] = 3
@@ -141,6 +173,14 @@ class NeuroNN(nn.Module):
     
 
     def _generate_sign_matrix(self):
+        """
+        Returns a matrix size self.neuron_num by self.neuron_num which tells weight sign
+        
+        1. 0 -> ee -> +
+        2. 1 -> ei -> +
+        3. 2 -> ie -> -
+        4. 3 -> ii -> -
+        """
         sign_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32)
 
         sign_matrix[self.neuron_num_e:, self.neuron_num_e:] = -1
@@ -151,13 +191,22 @@ class NeuroNN(nn.Module):
         return sign_matrix
     
 
-    def _generate_parameter_matrix(self, params: torch.Tensor, connection_matrix: torch.Tensor):
-        connection_matrix = connection_matrix.type(torch.int64)
+    def _generate_parameter_matrix(self, params: torch.Tensor):
+        """
+        Generate matrix of size self.neuron_num by self.neuron_num where 
+        each index corresponds to the parameter value which depends on
+        the connection type eg. e -> e.
+        """
+        connection_matrix = self.connection_matrix.type(torch.int64)
         params_matrix = params[connection_matrix]
         return params_matrix
     
 
     def _generate_diff_thetas_matrix(self):
+        """
+        Generate matrix of size self.neuron_num by self.neuron_num which 
+        corresponds to the difference in preffered orientations of the neurons.
+        """
         output_orientations = self.pref.repeat(self.neuron_num, 1)
         input_orientations = output_orientations.T
         diff_orientations = torch.abs(input_orientations - output_orientations)
@@ -166,13 +215,19 @@ class NeuroNN(nn.Module):
 
 
     def _generate_z_matrix(self, width: torch.Tensor):
+        """
+        Generate matrix of size self.neuron_num by self.neuron_num which 
+        corresponds to the probability of connection depending on the circular gaussian and
+        the difference in preferred orientation.
+        """
         self.z_matrix = torch.exp((torch.cos(2 * torch.pi / 180 * self.diff_orientations) - 1) / (4 * (torch.pi / 180 * width)**2))
         return self.z_matrix
 
 
     @staticmethod
-    def _sigmoid(array):
-        return 1 / (1 + torch.exp(-32 * array))
+    def _sigmoid(array, steepness=1):
+        """returns the sigmoidal value of the input tensor. The default steepness is 1."""
+        return 1 / (1 + torch.exp(-steepness * array))
 
 
     #---------------------RUN THE NETWORK TO GET STEADY STATE OUTPUT------------------------
@@ -193,9 +248,6 @@ class NeuroNN(nn.Module):
 
     def _stim_to_inputs(self, contrast, grating_orientations, preferred_orientations):
         '''Set the inputs based on the contrast and orientation of the stimulus'''
-        # Distribute parameters over all neurons based on type
-        # input_mean = circ_gauss(grating_orientations - preferred_orientations, self.w_ff)
-
         input_mean = contrast * 20 * self.scaling_g * circ_gauss(grating_orientations - preferred_orientations, self.w_ff)
         input_sd = self.sig_ext
         return input_mean, input_sd
@@ -217,7 +269,7 @@ class NeuroNN(nn.Module):
     # -------------------------RUN OUTPUT TO GET TUNING CURVES--------------------
 
 
-    def run_all_orientation_and_contrast(self) -> torch.Tensor:  # Change this to numpy mathmul
+    def run_all_orientation_and_contrast(self) -> torch.Tensor:
         all_rates = torch.empty(0)
         avg_step_sum = torch.tensor(0)
         count = torch.tensor(0)
@@ -233,10 +285,7 @@ class NeuroNN(nn.Module):
         return output, avg_step_sum / count
 
 
-# NOTE: Optogenetics mice
-
-
-def training_loop(model, optimizer, Y, n=60):
+def training_loop(model, optimizer, Y, n=2000):
     "Training loop for torch model."
 
     loss_function = MMDLossFunction()
@@ -255,63 +304,77 @@ def training_loop(model, optimizer, Y, n=60):
         print("\n")
 
 
-df = pd.read_csv("./data/K-Data.csv")
 
 
-v1 = df.query("region == 'V1'")
-m = v1.m.unique()[2]
-v1_data = v1[v1.m == m]
-# v1_data = v1_data.query("grat_spat_freq == 0.332966").query("grat_phase == [180]")
-v1_data = v1_data[['u', 'unit_type', 'grat_orientation', 'grat_contrast', 'response', 'smoothed_response']].reset_index(drop=True)
-v1_data = v1_data.groupby(['unit_type','u', 'grat_contrast', 'grat_orientation'], as_index=False).mean()
+if __name__ == "__main__":
+
+    df = pd.read_csv("./data/K-Data.csv")
 
 
-# Get unique values for each column
-unique_u = v1_data['u'].unique()
-unique_contrast = v1_data['grat_contrast'].unique()
-unique_orientation = v1_data['grat_orientation'].unique()
+    v1 = df.query("region == 'V1'")
+    m = v1.m.unique()[2]
+    v1_data = v1[v1.m == m]
+    # v1_data = v1_data.query("grat_spat_freq == 0.332966").query("grat_phase == [180]")
+    v1_data = v1_data[['u', 'unit_type', 'grat_orientation', 'grat_contrast', 'response', 'smoothed_response']].reset_index(drop=True)
+    v1_data = v1_data.groupby(['unit_type','u', 'grat_contrast', 'grat_orientation'], as_index=False).mean()
 
 
-# Create a 3D numpy array filled with NaN values
-shape = (len(unique_u), len(unique_contrast), len(unique_orientation))
-result_array = np.full(shape, np.nan)
+    # Get unique values for each column
+    unique_u = v1_data['u'].unique()
+    unique_contrast = v1_data['grat_contrast'].unique()
+    unique_orientation = v1_data['grat_orientation'].unique()
 
 
-# Iterate through the DataFrame and fill the array
-for index, row in v1_data.iterrows():
-    u_index = np.where(unique_u == row['u'])[0][0]
-    contrast_index = np.where(unique_contrast == row['grat_contrast'])[0][0]
-    orientation_index = np.where(unique_orientation == row['grat_orientation'])[0][0]
-    
-    result_array[u_index, contrast_index, orientation_index] = row['response']
-
-# J_array = [1.99, 1.9, 1.01, 0.79]  # Need to make parameters of an exponential
-# P_array = [0.11, 0.11, 0.45, 0.45]
-# w_array = [32., 32., 32., 32.]
+    # Create a 3D numpy array filled with NaN values
+    shape = (len(unique_u), len(unique_contrast), len(unique_orientation))
+    result_array = np.full(shape, np.nan)
 
 
-J_array = [0.69, 0.64, 0., -0.29]
-P_array = [-2.21, -2.21, -0.8, -0.8]
-w_array = [3.46, 3.46, 3.46, 3.46]
+    # Iterate through the DataFrame and fill the array
+    for index, row in v1_data.iterrows():
+        u_index = np.where(unique_u == row['u'])[0][0]
+        contrast_index = np.where(unique_contrast == row['grat_contrast'])[0][0]
+        orientation_index = np.where(unique_orientation == row['grat_orientation'])[0][0]
+        
+        result_array[u_index, contrast_index, orientation_index] = row['response']
+
+    # J_array = [1.99, 1.9, 1.01, 0.79]  # Need to make parameters of an exponential
+    # P_array = [0.11, 0.11, 0.45, 0.45]
+    # w_array = [32., 32., 32., 32.]
 
 
-# J_array = [9.04e-02, 3.82e-05, 7.62e-5, 2.52]
-# P_array = [1.93e-02,  8.78,  1.79e-04,  2.85]
-# w_array = [8.78, 166, 1.23e-2, 1.81e2]
+    # J_array = [0.69, 0.64, 0., -0.29] # Max log values
+    # P_array = [-2.21, -2.21, -0.8, -0.8]
+    # w_array = [3.46, 3.46, 3.46, 3.46]
+
+    J_array = [0, -0.29, 0.69, -0.64] # Keen log values
+    P_array = [-0.8, -2.21, -2.21, -0.8]
+    w_array = [3.46, 3.46, 3.46, 3.46]
+
+    # J_array = [-5.1707, -0.0277,  0.9482,  0.1585]
+    # P_array = [-6.1361, -1.9772,  0.8548,  1.2384]
+    # w_array = [0.3990, 3.6245, 4.1893, 3.6955]
+
+    # J_array = [0.69, 0.64, 0., -0.29]
+    # P_array = [-1.21, -1.21, -0.8, -0.8]
+    # w_array = [3.46, 3.46, 3.46, 3.46]
+
+    # J_array = [9.04e-02, 3.82e-05, 7.62e-5, 2.52]
+    # P_array = [1.93e-02,  8.78,  1.79e-04,  2.85]
+    # w_array = [8.78, 166, 1.23e-2, 1.81e2]
 
 
-model = NeuroNN(J_array, P_array, w_array, 3000)
-# Move the entire model to GPU (if available)
-if torch.cuda.is_available():
-    model = model.to('cuda')
-    # Alternatively, you can use model_gpu = model.cuda()
-    print("Model moved to GPU.")
-else:
-    print("GPU not available. Keeping the model on CPU.")
 
 
-optimizer = optim.SGD(model.parameters(), lr=0.1)
+    model = NeuroNN(J_array, P_array, w_array, 2000)
+    if torch.cuda.is_available():
+        model = model.to('cuda')
+        print("Model moved to GPU.")
+    else:
+        print("GPU not available. Keeping the model on CPU.")
 
-training_loop(model, optimizer, result_array)
+    optimizer = optim.SGD(model.parameters(), lr=0.01)
 
-# https://towardsdatascience.com/how-to-use-pytorch-as-a-general-optimizer-a91cbf72a7fb
+    training_loop(model, optimizer, result_array)
+
+    # https://towardsdatascience.com/how-to-use-pytorch-as-a-general-optimizer-a91cbf72a7fb

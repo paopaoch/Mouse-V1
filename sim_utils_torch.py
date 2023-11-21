@@ -13,7 +13,7 @@ def circ_gauss(x, w):
     return torch.exp((torch.cos(x * torch.pi / 90) - 1) / (2 * torch.square(torch.pi / 180 * w)))
 
 
-def Euler2fixedpt(dxdt, x_initial, Nmax=60, Navg=30, dt=0.001, xtol=1e-5, xmin=torch.tensor(1e-0)):
+def Euler2fixedpt(dxdt, x_initial, Nmax=100, Navg=60, dt=0.001, xtol=1e-5, xmin=torch.tensor(1e-0)):
     """
     Finds the fixed point of the D-dim ODE set dx/dt = v(x) (where the function v(.) is called dxdt(.) in this code) 
     using the Euler update with sufficiently large dt (to gain in computational time).
