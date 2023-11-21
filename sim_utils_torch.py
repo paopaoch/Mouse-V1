@@ -39,14 +39,21 @@ def Euler2fixedpt(dxdt, x_initial, Nmax=100, Navg=60, dt=0.001, xtol=1e-5, xmin=
     avg_sum = 0
     xvec = x_initial
     
+    # res = []
+
     for _ in range(avgStart):  # Loop without taking average step size
         dx = dxdt(xvec) * dt
-        xvec = xvec + dx        
+        xvec = xvec + dx
+        # res.append(xvec[50].item())
 
     for _ in range(Navg):  # Loop whilst recording average step size
         dx = dxdt(xvec) * dt
         xvec = xvec + dx
-        avg_sum += torch.abs(dx /torch.maximum(xmin, torch.abs(xvec)) ).max() / xtol
+        avg_sum = avg_sum + torch.abs(dx /torch.maximum(xmin, torch.abs(xvec)) ).max() / xtol
+        # res.append(xvec[50].item())
+
+    # plt.plot(res)
+    # plt.show()
 
     return xvec, avg_sum / Navg
 

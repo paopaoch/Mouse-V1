@@ -14,7 +14,6 @@ class MMDLossFunction(nn.Module):
 
 
     def forward(self, X, Y, avg_step):
-        print(avg_step.data)
         XX = torch.mean(self.kernel(X[None, :, :, :], X[:, None, :, :]))
         XY = torch.mean(self.kernel(X[None, :, :, :], Y[:, None, :, :]))
         YY = torch.mean(self.kernel(Y[None, :, :, :], Y[:, None, :, :]))
@@ -90,6 +89,9 @@ class NeuroNN(nn.Module):
         tau_ref_I = 0.001
         self.tau_ref = torch.cat([tau_ref_E * torch.ones(neuron_num_e), tau_ref_I * torch.ones(neuron_num_i)])
 
+        self.connection_matrix = self._generate_connection_matrix()
+        self.sign_matrix = self._generate_sign_matrix()
+
         self.weights = None
         self.weights2 = None
         self.update_weight_matrix()
@@ -97,9 +99,6 @@ class NeuroNN(nn.Module):
         # # Contrast and orientation ranges
         self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
         self.contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
-
-        self.connection_matrix = self._generate_connection_matrix()
-        self.sign_matrix = self._generate_sign_matrix()
 
         # plt.imshow(self.weights.data, cmap="seismic", vmin=-np.max(np.abs(np.array(self.weights.data))), vmax=np.max(np.abs(np.array(self.weights.data))))
         # plt.colorbar()
@@ -288,20 +287,26 @@ class NeuroNN(nn.Module):
 def training_loop(model, optimizer, Y, n=2000):
     "Training loop for torch model."
 
-    loss_function = MMDLossFunction()
-    model.train()
+    with open(f"log_run_{time.time()}.log", "w") as f:
+        loss_function = MMDLossFunction()
+        model.train()
 
-    for i in range(n):
-        optimizer.zero_grad()
-        preds, avg_step = model()
-        loss = loss_function(preds, Y, avg_step)
-        loss.backward()
-        optimizer.step()
-        print(f"ITTER: {i + 1}", loss)
-        print(model.j_hyperparameter)
-        print(model.p_hyperparameter)
-        print(model.w_hyperparameter)
-        print("\n")
+        for i in range(n):
+            optimizer.zero_grad()
+            preds, avg_step = model()
+            loss = loss_function(preds, Y, avg_step)
+            loss.backward()
+            optimizer.step()
+            f.write(f"ITTER: {i + 1}  {loss}\n")
+            f.write(f"avg step: {avg_step}\n")
+            f.write(str(model.j_hyperparameter))
+            f.write("\n")
+            f.write(str(model.p_hyperparameter))
+            f.write("\n")
+            f.write(str(model.w_hyperparameter))
+            f.write("\n")
+            f.write("\n")
+            f.flush()
 
 
 
