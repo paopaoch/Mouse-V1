@@ -148,7 +148,7 @@ class NeuroNN(nn.Module):
         width_matrix = self._generate_parameter_matrix(w_hyperparameter)
         self._generate_z_matrix(width=width_matrix)
          
-        weight_matrix = self.sign_matrix * efficacy_matrix * self._sigmoid(prob_matrix*self.z_matrix - torch.rand(self.neuron_num, self.neuron_num, device="cpu"), 32)
+        weight_matrix = self.sign_matrix * efficacy_matrix * self._sigmoid(prob_matrix*self.z_matrix - torch.rand(self.neuron_num, self.neuron_num, device="cpu", requires_grad=False), 32)
         
         return weight_matrix
 
@@ -162,7 +162,7 @@ class NeuroNN(nn.Module):
         3. 2 -> ie
         4. 3 -> ii
         """
-        connection_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32, device="cpu")
+        connection_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32, device="cpu", requires_grad=False)
 
         connection_matrix[self.neuron_num_e:, self.neuron_num_e:] = 3
         connection_matrix[:self.neuron_num_e, self.neuron_num_e:] = 2
@@ -181,7 +181,7 @@ class NeuroNN(nn.Module):
         3. 2 -> ie -> -
         4. 3 -> ii -> -
         """
-        sign_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32, device="cpu")
+        sign_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32, device="cpu", requires_grad=False)
 
         sign_matrix[self.neuron_num_e:, self.neuron_num_e:] = -1
         sign_matrix[:self.neuron_num_e, self.neuron_num_e:] = -1
