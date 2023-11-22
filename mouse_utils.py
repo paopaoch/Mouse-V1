@@ -287,11 +287,11 @@ class NeuroNN(nn.Module):
         return output, avg_step_sum / count
 
 
-def training_loop(model, optimizer, Y, n=2000):
+def training_loop(model, optimizer, Y, n=2000, device="cpu"):
     "Training loop for torch model."
 
     with open(f"log_run_{time.time()}.log", "w") as f:
-        loss_function = MMDLossFunction()
+        loss_function = MMDLossFunction(device=device)
         model.train()
 
         for i in range(n):
@@ -380,8 +380,8 @@ if __name__ == "__main__":
         print("GPU not available. Keeping the model on CPU.")
 
     model = NeuroNN(J_array, P_array, w_array, 2000, device=device)
-    optimizer = optim.SGD(model.parameters(), lr=0.01, device=device)
+    optimizer = optim.SGD(model.parameters(), lr=0.01)
 
-    training_loop(model, optimizer, result_array)
+    training_loop(model, optimizer, result_array, device=device)
 
     # https://towardsdatascience.com/how-to-use-pytorch-as-a-general-optimizer-a91cbf72a7fb
