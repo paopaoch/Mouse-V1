@@ -125,7 +125,7 @@ class NeuroNN(nn.Module):
 
     def update_weight_matrix(self) -> None:
         """Update self.weights and self.weights2 which is the weights and weights squares respectively."""
-        self.weights = self.generate_weight_matrix()
+        self.weights = self.generate_weight_matrix().to(self.device)
         self.weights2 = torch.square(self.weights)
 
 
@@ -148,7 +148,7 @@ class NeuroNN(nn.Module):
         width_matrix = self._generate_parameter_matrix(w_hyperparameter)
         self._generate_z_matrix(width=width_matrix)
          
-        weight_matrix = self.sign_matrix * efficacy_matrix * self._sigmoid(prob_matrix*self.z_matrix - torch.rand(self.neuron_num, self.neuron_num, device=self.device), 32)
+        weight_matrix = self.sign_matrix * efficacy_matrix * self._sigmoid(prob_matrix*self.z_matrix - torch.rand(self.neuron_num, self.neuron_num, device="cpu"), 32)
         
         return weight_matrix
 
@@ -162,7 +162,7 @@ class NeuroNN(nn.Module):
         3. 2 -> ie
         4. 3 -> ii
         """
-        connection_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32, device=self.device)
+        connection_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32, device="cpu")
 
         connection_matrix[self.neuron_num_e:, self.neuron_num_e:] = 3
         connection_matrix[:self.neuron_num_e, self.neuron_num_e:] = 2
@@ -181,7 +181,7 @@ class NeuroNN(nn.Module):
         3. 2 -> ie -> -
         4. 3 -> ii -> -
         """
-        sign_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32, device=self.device)
+        sign_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32, device="cpu")
 
         sign_matrix[self.neuron_num_e:, self.neuron_num_e:] = -1
         sign_matrix[:self.neuron_num_e, self.neuron_num_e:] = -1
@@ -198,7 +198,8 @@ class NeuroNN(nn.Module):
         the connection type eg. e -> e.
         """
         connection_matrix = self.connection_matrix.type(torch.int64)
-        params_matrix = params[connection_matrix]
+        cpu_params = params.to("cpu")
+        params_matrix = cpu_params[connection_matrix]
         return params_matrix
     
 
@@ -210,8 +211,8 @@ class NeuroNN(nn.Module):
         output_orientations = self.pref.repeat(self.neuron_num, 1)
         input_orientations = output_orientations.T
         diff_orientations = torch.abs(input_orientations - output_orientations)
-        self.diff_orientations = diff_orientations
-        return diff_orientations
+        self.diff_orientations = diff_orientations.to("cpu")
+        return self.diff_orientations
 
 
     def _generate_z_matrix(self, width: torch.Tensor):
