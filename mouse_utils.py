@@ -259,10 +259,11 @@ class NeuroNN(nn.Module):
         def drdt_func(rate):
             return self.T_inv * (Phi(*self._get_mu_sigma(self.weights, self.weights2, rate, input_mean, input_sd, self.tau), 
                                      self.tau, 
-                                     tau_ref=self.tau_ref) - rate)
+                                     tau_ref=self.tau_ref,
+                                     device=self.device) - rate)
             
         # Solve using Euler
-        r_fp, avg_step = Euler2fixedpt(drdt_func, r_init)
+        r_fp, avg_step = Euler2fixedpt(drdt_func, r_init, device=self.device)
         return r_fp, avg_step
 
     
