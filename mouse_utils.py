@@ -9,8 +9,9 @@ from tqdm import tqdm
 
 
 class MMDLossFunction(nn.Module):
-    def __init__(self):
+    def __init__(self, device="cpu"):
         super().__init__()
+        self.device = device
 
 
     def forward(self, X, Y, avg_step):
@@ -23,13 +24,12 @@ class MMDLossFunction(nn.Module):
         return output
 
 
-    @staticmethod
-    def kernel(x, y, w=1, axes=(-2, -1)):
+    def kernel(self, x, y, w=1, axes=(-2, -1)):
         if type(x) != torch.Tensor:
-            x = torch.tensor(x)
+            x = torch.tensor(x, device=self.device)
         
         if type(y) != torch.Tensor:
-            y = torch.tensor(y)
+            y = torch.tensor(y, device=self.device)
 
         return torch.exp(-torch.sum((x - y) ** 2, dim=axes) / (2 * w**2))
 
@@ -43,16 +43,17 @@ class NeuroNN(nn.Module):
     2. Solves for fixed point at all contrast and orientation combinations
     """
 
-    def __init__(self, J_array: list, P_array: list, w_array: list, neuron_num: int, ratio=0.8, scaling_g=1, w_ff=30, sig_ext=5):
+    def __init__(self, J_array: list, P_array: list, w_array: list, neuron_num: int, ratio=0.8, scaling_g=1, w_ff=30, sig_ext=5, device="cpu"):
         super().__init__()
+        self.device = device
 
-        j_hyper = torch.tensor(J_array, requires_grad=True)
+        j_hyper = torch.tensor(J_array, requires_grad=True, device=device)
         self.j_hyperparameter = nn.Parameter(j_hyper)
 
-        p_hyper = torch.tensor(P_array, requires_grad=True)
+        p_hyper = torch.tensor(P_array, requires_grad=True, device=device)
         self.p_hyperparameter = nn.Parameter(p_hyper)
 
-        w_hyper = torch.tensor(w_array, requires_grad=True)
+        w_hyper = torch.tensor(w_array, requires_grad=True, device=device)
         self.w_hyperparameter = nn.Parameter(w_hyper)
 
         self.neuron_num = neuron_num
@@ -61,20 +62,20 @@ class NeuroNN(nn.Module):
         self.neuron_num_e = neuron_num_e
         self.neuron_num_i = neuron_num_i
 
-        pref_E = torch.linspace(0, 179.99, neuron_num_e)
-        pref_I = torch.linspace(0, 179.99, neuron_num_i)
+        pref_E = torch.linspace(0, 179.99, neuron_num_e, device=device)
+        pref_I = torch.linspace(0, 179.99, neuron_num_i, device=device)
         self.pref = torch.cat([pref_E, pref_I])
         self._generate_diff_thetas_matrix()
 
         # Global Parameters
-        self.scaling_g = scaling_g * torch.ones(neuron_num)
-        self.w_ff = w_ff * torch.ones(neuron_num)
-        self.sig_ext = sig_ext * torch.ones(neuron_num)
+        self.scaling_g = scaling_g * torch.ones(neuron_num, device=device)
+        self.w_ff = w_ff * torch.ones(neuron_num, device=device)
+        self.sig_ext = sig_ext * torch.ones(neuron_num, device=device)
         
         T_alpha = 0.5
         T_E = 0.01
         T_I = 0.01 * T_alpha
-        self.T = torch.cat([T_E * torch.ones(neuron_num_e), T_I * torch.ones(neuron_num_i)])
+        self.T = torch.cat([T_E * torch.ones(neuron_num_e, device=device), T_I * torch.ones(neuron_num_i, device=device)])
         self.T_inv = torch.reciprocal(self.T)
 
         # Membrane time constants for excitatory and inhibitory
@@ -82,12 +83,12 @@ class NeuroNN(nn.Module):
         tau_E = 0.01
         tau_I = 0.01 * tau_alpha
         # Membrane time constant vector for all cells
-        self.tau = torch.cat([tau_E * torch.ones(neuron_num_e), tau_I * torch.ones(neuron_num_i)])
+        self.tau = torch.cat([tau_E * torch.ones(neuron_num_e, device=device), tau_I * torch.ones(neuron_num_i, device=device)])
 
         # Refractory periods for exitatory and inhibitory
         tau_ref_E = 0.005
         tau_ref_I = 0.001
-        self.tau_ref = torch.cat([tau_ref_E * torch.ones(neuron_num_e), tau_ref_I * torch.ones(neuron_num_i)])
+        self.tau_ref = torch.cat([tau_ref_E * torch.ones(neuron_num_e, device=device), tau_ref_I * torch.ones(neuron_num_i, device=device)])
 
         self.connection_matrix = self._generate_connection_matrix()
         self.sign_matrix = self._generate_sign_matrix()
@@ -137,17 +138,17 @@ class NeuroNN(nn.Module):
         2. transform the parameters to a matrix of size self.neuron_num by self.neuron_num for matrix arithmetics
         3. using the parameters matrix, calculate the weight matrix then adjust the signs of the matrix to obey Dales's law.
         """
-        j_hyperparameter = torch.exp(self.j_hyperparameter * torch.tensor([1, 1, 1, 1]))
-        p_hyperparameter = torch.exp(self.p_hyperparameter * torch.tensor([1, 1, 1, 1]))
+        j_hyperparameter = torch.exp(self.j_hyperparameter * torch.tensor([1, 1, 1, 1], device=self.device))
+        p_hyperparameter = torch.exp(self.p_hyperparameter * torch.tensor([1, 1, 1, 1], device=self.device))
         p_hyperparameter = self._sigmoid(p_hyperparameter, 2)
-        w_hyperparameter = torch.exp(self.w_hyperparameter * torch.tensor([1, 1, 1, 1]))
+        w_hyperparameter = torch.exp(self.w_hyperparameter * torch.tensor([1, 1, 1, 1], device=self.device))
 
         efficacy_matrix = self._generate_parameter_matrix(j_hyperparameter)
         prob_matrix = self._generate_parameter_matrix(p_hyperparameter)
         width_matrix = self._generate_parameter_matrix(w_hyperparameter)
         self._generate_z_matrix(width=width_matrix)
          
-        weight_matrix = self.sign_matrix * efficacy_matrix * self._sigmoid(prob_matrix*self.z_matrix - torch.rand(self.neuron_num, self.neuron_num), 32)
+        weight_matrix = self.sign_matrix * efficacy_matrix * self._sigmoid(prob_matrix*self.z_matrix - torch.rand(self.neuron_num, self.neuron_num, device=self.device), 32)
         
         return weight_matrix
 
@@ -161,7 +162,7 @@ class NeuroNN(nn.Module):
         3. 2 -> ie
         4. 3 -> ii
         """
-        connection_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32)
+        connection_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32, device=self.device)
 
         connection_matrix[self.neuron_num_e:, self.neuron_num_e:] = 3
         connection_matrix[:self.neuron_num_e, self.neuron_num_e:] = 2
@@ -180,7 +181,7 @@ class NeuroNN(nn.Module):
         3. 2 -> ie -> -
         4. 3 -> ii -> -
         """
-        sign_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32)
+        sign_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32, device=self.device)
 
         sign_matrix[self.neuron_num_e:, self.neuron_num_e:] = -1
         sign_matrix[:self.neuron_num_e, self.neuron_num_e:] = -1
@@ -253,7 +254,7 @@ class NeuroNN(nn.Module):
 
 
     def _solve_fixed_point(self, input_mean, input_sd): # tau_ref varies with E and I
-        r_init = torch.zeros(self.neuron_num) # Need to change this to a matrix
+        r_init = torch.zeros(self.neuron_num, device=self.device) # Need to change this to a matrix
         # Define the function to be solved for
         def drdt_func(rate):
             return self.T_inv * (Phi(*self._get_mu_sigma(self.weights, self.weights2, rate, input_mean, input_sd, self.tau), 
@@ -269,16 +270,16 @@ class NeuroNN(nn.Module):
 
 
     def run_all_orientation_and_contrast(self) -> torch.Tensor:
-        all_rates = torch.empty(0)
-        avg_step_sum = torch.tensor(0)
-        count = torch.tensor(0)
+        all_rates = torch.empty(0, device=self.device)
+        avg_step_sum = torch.tensor(0, device=self.device)
+        count = torch.tensor(0, device=self.device)
         for contrast in self.contrasts:
-            steady_states = torch.empty(0)
+            steady_states = torch.empty(0, device=self.device)
             for orientation in self.orientations:
                 rate, avg_step = self.get_steady_state_output(contrast, orientation)
                 steady_states = torch.cat((steady_states, rate.unsqueeze(0)))
                 avg_step_sum = avg_step_sum + avg_step
-                count = count + torch.tensor(1)
+                count = count + torch.tensor(1, device=self.device)
             all_rates = torch.cat((all_rates, steady_states.unsqueeze(0)))
         output = all_rates.permute(2, 0, 1)
         return output, avg_step_sum / count
@@ -368,16 +369,14 @@ if __name__ == "__main__":
     # P_array = [1.93e-02,  8.78,  1.79e-04,  2.85]
     # w_array = [8.78, 166, 1.23e-2, 1.81e2]
 
-
-
-
-    model = NeuroNN(J_array, P_array, w_array, 2000)
     if torch.cuda.is_available():
-        model = model.to('cuda')
+        device = "cuda"
         print("Model moved to GPU.")
     else:
+        device = "cpu"
         print("GPU not available. Keeping the model on CPU.")
 
+    model = NeuroNN(J_array, P_array, w_array, 2000, device=device)
     optimizer = optim.SGD(model.parameters(), lr=0.01)
 
     training_loop(model, optimizer, result_array)

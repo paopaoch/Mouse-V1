@@ -13,7 +13,7 @@ def circ_gauss(x, w):
     return torch.exp((torch.cos(x * torch.pi / 90) - 1) / (2 * torch.square(torch.pi / 180 * w)))
 
 
-def Euler2fixedpt(dxdt, x_initial, Nmax=100, Navg=60, dt=0.001, xtol=1e-5, xmin=torch.tensor(1e-0)):
+def Euler2fixedpt(dxdt, x_initial, Nmax=100, Navg=60, dt=0.001, xtol=1e-5, xmin=1e-0, device="cpu"):
     """
     Finds the fixed point of the D-dim ODE set dx/dt = v(x) (where the function v(.) is called dxdt(.) in this code) 
     using the Euler update with sufficiently large dt (to gain in computational time).
@@ -34,6 +34,7 @@ def Euler2fixedpt(dxdt, x_initial, Nmax=100, Navg=60, dt=0.001, xtol=1e-5, xmin=
     xvec = found fixed point solution
     (avg_sum / Navg) = average dx normalised by xtol
     """
+    xmin = torch.tensor(xmin, device=device)
 
     avgStart = Nmax - Navg
     avg_sum = 0
@@ -59,7 +60,7 @@ def Euler2fixedpt(dxdt, x_initial, Nmax=100, Navg=60, dt=0.001, xtol=1e-5, xmin=
 
 
 # This is the input-output function (for mean-field spiking neurons) that you would use Max
-def Phi(mu, sigma, hardness=50, tau=0.01, Vt=20, Vr=0, tau_ref=0):
+def Phi(mu, sigma, hardness=50, tau=0.01, Vt=20, Vr=0, tau_ref=0, device="cpu"):
     """
      Calculates rate from the Ricciardi equation, with an error
      less than 10^{-5}. If the LIF neuron's voltage, V, satisfies between spikes
@@ -87,7 +88,7 @@ def Phi(mu, sigma, hardness=50, tau=0.01, Vt=20, Vr=0, tau_ref=0):
     xm = (mu - Vt) / sigma
     
 
-    rate = torch.zeros_like(xm)
+    rate = torch.zeros_like(xm, device=device)
     
     xm_pos = sigmoid(xm * hardness)
     inds = sigmoid(-xm * hardness) * sigmoid(xp * hardness)
@@ -96,29 +97,29 @@ def Phi(mu, sigma, hardness=50, tau=0.01, Vt=20, Vr=0, tau_ref=0):
     xm1 = softplus(xm, hardness)
     
     #xm_pos = xm > 0
-    rate = (rate * (1 - xm_pos)) + (xm_pos / softplus(f_ricci(xp1) - f_ricci(xm1), hardness))
+    rate = (rate * (1 - xm_pos)) + (xm_pos / softplus(f_ricci(xp1, device=device) - f_ricci(xm1, device=device), hardness))
     
 
     #inds = (xp > 0) & (xm <= 0)
-    rate = (rate * (1 - inds)) + (inds / (f_ricci(xp1) + torch.exp(xm**2) * g_ricci(softplus(-xm, hardness))))
+    rate = (rate * (1 - inds)) + (inds / (f_ricci(xp1, device=device) + torch.exp(xm**2) * g_ricci(softplus(-xm, hardness))))
     
     rate = 1 / (tau_ref + 1 / rate)
 
     return rate / tau
 
 
-def lif_regular(mu, tau, Vt, Vr):
-    rate = torch.zeros_like(mu)
+def lif_regular(mu, tau, Vt, Vr, device="cpu"):
+    rate = torch.zeros_like(mu, device=device)
     rate[mu > Vt] = 1 / torch.log((mu[mu > Vt] - Vr)/(mu[mu > Vt] - Vt))
 
     return rate / tau
 
-def f_ricci(x):
+def f_ricci(x, device="cpu"):
     z = x / (1 + x)
     a = torch.tensor([0.0, 
                   .22757881388024176, .77373949685442023, .32056016125642045, 
                   .32171431660633076, .62718906618071668, .93524391761244940, 
-                  1.0616084849547165, .64290613877355551, .14805913578876898])
+                  1.0616084849547165, .64290613877355551, .14805913578876898], device=device)
 
 #    return np.log(2*x + 1) + a @ (-z)**np.arange(10)
     return torch.log(2*x + 1) + (  a[1] *(-z)**1 + a[2] *(-z)**2 + a[3] *(-z)**3
