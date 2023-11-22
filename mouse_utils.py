@@ -64,19 +64,19 @@ class NeuroNN(nn.Module):
         self.neuron_num_e = neuron_num_e
         self.neuron_num_i = neuron_num_i
 
-        self.pref_E = torch.linspace(0, 179.99, neuron_num_e, device="cpu")
-        self.pref_I = torch.linspace(0, 179.99, neuron_num_i, device="cpu")
+        self.pref_E = torch.linspace(0, 179.99, neuron_num_e, device="cpu", requires_grad=False)
+        self.pref_I = torch.linspace(0, 179.99, neuron_num_i, device="cpu", requires_grad=False)
         self.pref = torch.cat([self.pref_E, self.pref_I]).to(device)
 
         # Global Parameters
-        self.scaling_g = scaling_g * torch.ones(neuron_num, device=device)
-        self.w_ff = w_ff * torch.ones(neuron_num, device=device)
-        self.sig_ext = sig_ext * torch.ones(neuron_num, device=device)
+        self.scaling_g = scaling_g * torch.ones(neuron_num, device=device, requires_grad=False)
+        self.w_ff = w_ff * torch.ones(neuron_num, device=device, requires_grad=False)
+        self.sig_ext = sig_ext * torch.ones(neuron_num, device=device, requires_grad=False)
         
         T_alpha = 0.5
         T_E = 0.01
         T_I = 0.01 * T_alpha
-        self.T = torch.cat([T_E * torch.ones(neuron_num_e, device=device), T_I * torch.ones(neuron_num_i, device=device)])
+        self.T = torch.cat([T_E * torch.ones(neuron_num_e, device=device, requires_grad=False), T_I * torch.ones(neuron_num_i, device=device, requires_grad=False)])
         self.T_inv = torch.reciprocal(self.T)
 
         # Membrane time constants for excitatory and inhibitory
@@ -84,12 +84,12 @@ class NeuroNN(nn.Module):
         tau_E = 0.01
         tau_I = 0.01 * tau_alpha
         # Membrane time constant vector for all cells
-        self.tau = torch.cat([tau_E * torch.ones(neuron_num_e, device=device), tau_I * torch.ones(neuron_num_i, device=device)])
+        self.tau = torch.cat([tau_E * torch.ones(neuron_num_e, device=device, requires_grad=False), tau_I * torch.ones(neuron_num_i, device=device, requires_grad=False)])
 
         # Refractory periods for exitatory and inhibitory
         tau_ref_E = 0.005
         tau_ref_I = 0.001
-        self.tau_ref = torch.cat([tau_ref_E * torch.ones(neuron_num_e, device=device), tau_ref_I * torch.ones(neuron_num_i, device=device)])
+        self.tau_ref = torch.cat([tau_ref_E * torch.ones(neuron_num_e, device=device, requires_grad=False), tau_ref_I * torch.ones(neuron_num_i, device=device, requires_grad=False)])
 
         self.weights = None
         self.weights2 = None
@@ -134,6 +134,7 @@ class NeuroNN(nn.Module):
                                                                        * self._cric_gauss(diff, torch.exp(self.w_hyperparameter[index])) 
                                                             - torch.rand(len(diff), len(diff[0]), device="cpu", requires_grad=False), 32)
 
+
     def generate_weight_matrix(self):
         prob_EE = self._get_sub_weight_matrix(self.pref_diff(self.pref_E, self.pref_E), 0)
         prob_EI = self._get_sub_weight_matrix(self.pref_diff(self.pref_E, self.pref_I), 1)
@@ -141,6 +142,7 @@ class NeuroNN(nn.Module):
         prob_II = - self._get_sub_weight_matrix(self.pref_diff(self.pref_I, self.pref_I), 3)
         weights = torch.transpose(torch.cat((torch.cat((prob_EE, prob_EI), dim=1),
                     torch.cat((prob_IE, prob_II), dim=1)), dim=0), 0, 1)
+        
         return weights
 
 
@@ -199,7 +201,7 @@ class NeuroNN(nn.Module):
     def run_all_orientation_and_contrast(self) -> torch.Tensor:
         all_rates = torch.empty(0, device=self.device)
         avg_step_sum = torch.tensor(0, device=self.device)
-        count = torch.tensor(0, device=self.device)
+        count = torch.tensor(0, device=self.device, requires_grad=False)
         for contrast in self.contrasts:
             steady_states = torch.empty(0, device=self.device)
             for orientation in self.orientations:
@@ -212,7 +214,7 @@ class NeuroNN(nn.Module):
         return output, avg_step_sum / count
 
 
-def training_loop(model, optimizer, Y, n=2000, device="cpu"):
+def training_loop(model, optimizer, Y, n=1000, device="cpu"):
     "Training loop for torch model."
 
     with open(f"log_run_{time.time()}.log", "w") as f:
