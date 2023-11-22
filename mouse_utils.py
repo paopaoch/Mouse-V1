@@ -309,6 +309,7 @@ def training_loop(model, optimizer, Y, n=2000):
             f.write("\n")
             f.write("\n")
             f.flush()
+            print(f"DONE {i}")
 
 
 
