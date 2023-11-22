@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 from torch import nn, optim
-from sim_utils_torch import Phi, Euler2fixedpt
+from sim_utils_torch import Phi, circ_gauss, Euler2fixedpt
 from tqdm import tqdm
 
 
@@ -46,8 +46,6 @@ class NeuroNN(nn.Module):
     def __init__(self, J_array: list, P_array: list, w_array: list, neuron_num: int, ratio=0.8, scaling_g=1, w_ff=30, sig_ext=5, device="cpu"):
         super().__init__()
         self.device = device
-        self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
-        self.contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
 
         j_hyper = torch.tensor(J_array, requires_grad=True, device=device)
         self.j_hyperparameter = nn.Parameter(j_hyper)
@@ -64,9 +62,10 @@ class NeuroNN(nn.Module):
         self.neuron_num_e = neuron_num_e
         self.neuron_num_i = neuron_num_i
 
-        self.pref_E = torch.linspace(0, 179.99, neuron_num_e, device=device)
-        self.pref_I = torch.linspace(0, 179.99, neuron_num_i, device=device)
-        self.pref = torch.cat([self.pref_E, self.pref_I])
+        pref_E = torch.linspace(0, 179.99, neuron_num_e, device=device)
+        pref_I = torch.linspace(0, 179.99, neuron_num_i, device=device)
+        self.pref = torch.cat([pref_E, pref_I])
+        self._generate_diff_thetas_matrix()
 
         # Global Parameters
         self.scaling_g = scaling_g * torch.ones(neuron_num, device=device)
@@ -91,9 +90,16 @@ class NeuroNN(nn.Module):
         tau_ref_I = 0.001
         self.tau_ref = torch.cat([tau_ref_E * torch.ones(neuron_num_e, device=device), tau_ref_I * torch.ones(neuron_num_i, device=device)])
 
+        self.connection_matrix = self._generate_connection_matrix()
+        self.sign_matrix = self._generate_sign_matrix()
+
         self.weights = None
         self.weights2 = None
         self.update_weight_matrix()
+
+        # # Contrast and orientation ranges
+        self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
+        self.contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
 
         # plt.imshow(self.weights.data, cmap="seismic", vmin=-np.max(np.abs(np.array(self.weights.data))), vmax=np.max(np.abs(np.array(self.weights.data))))
         # plt.colorbar()
@@ -123,35 +129,104 @@ class NeuroNN(nn.Module):
         self.weights2 = torch.square(self.weights)
 
 
+    def generate_weight_matrix(self) -> torch.Tensor:
+        """
+        Method to generate a random weight matrix connection from the parameters J, P, w.
+        
+        Steps:
+        1. constraints the parameters to be positive and the probability values to be between 0 and 1.
+        2. transform the parameters to a matrix of size self.neuron_num by self.neuron_num for matrix arithmetics
+        3. using the parameters matrix, calculate the weight matrix then adjust the signs of the matrix to obey Dales's law.
+        """
+        j_hyperparameter = torch.exp(self.j_hyperparameter * torch.tensor([1, 1, 1, 1], device=self.device))
+        p_hyperparameter = torch.exp(self.p_hyperparameter * torch.tensor([1, 1, 1, 1], device=self.device))
+        p_hyperparameter = self._sigmoid(p_hyperparameter, 2)
+        w_hyperparameter = torch.exp(self.w_hyperparameter * torch.tensor([1, 1, 1, 1], device=self.device))
+
+        efficacy_matrix = self._generate_parameter_matrix(j_hyperparameter)
+        prob_matrix = self._generate_parameter_matrix(p_hyperparameter)
+        width_matrix = self._generate_parameter_matrix(w_hyperparameter)
+        self._generate_z_matrix(width=width_matrix)
+         
+        weight_matrix = self.sign_matrix * efficacy_matrix * self._sigmoid(prob_matrix*self.z_matrix - torch.rand(self.neuron_num, self.neuron_num, device="cpu", requires_grad=False), 32)
+        
+        return weight_matrix
+
+
+    def _generate_connection_matrix(self):
+        """
+        Returns a matrix size self.neuron_num by self.neuron_num which tells the type of the connection
+        
+        1. 0 -> ee
+        2. 1 -> ei
+        3. 2 -> ie
+        4. 3 -> ii
+        """
+        connection_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32, device="cpu", requires_grad=False)
+
+        connection_matrix[self.neuron_num_e:, self.neuron_num_e:] = 3
+        connection_matrix[:self.neuron_num_e, self.neuron_num_e:] = 2
+        connection_matrix[self.neuron_num_e:, :self.neuron_num_e] = 1
+        connection_matrix[:self.neuron_num_e, :self.neuron_num_e] = 0
+
+        return connection_matrix
+    
+
+    def _generate_sign_matrix(self):
+        """
+        Returns a matrix size self.neuron_num by self.neuron_num which tells weight sign
+        
+        1. 0 -> ee -> +
+        2. 1 -> ei -> +
+        3. 2 -> ie -> -
+        4. 3 -> ii -> -
+        """
+        sign_matrix = torch.zeros((self.neuron_num, self.neuron_num), dtype=torch.int32, device="cpu", requires_grad=False)
+
+        sign_matrix[self.neuron_num_e:, self.neuron_num_e:] = -1
+        sign_matrix[:self.neuron_num_e, self.neuron_num_e:] = -1
+        sign_matrix[self.neuron_num_e:, :self.neuron_num_e] = 1
+        sign_matrix[:self.neuron_num_e, :self.neuron_num_e] = 1
+
+        return sign_matrix
+    
+
+    def _generate_parameter_matrix(self, params: torch.Tensor):
+        """
+        Generate matrix of size self.neuron_num by self.neuron_num where 
+        each index corresponds to the parameter value which depends on
+        the connection type eg. e -> e.
+        """
+        connection_matrix = self.connection_matrix.type(torch.int64)
+        cpu_params = params.to("cpu")
+        params_matrix = cpu_params[connection_matrix]
+        return params_matrix
+    
+
+    def _generate_diff_thetas_matrix(self):
+        """
+        Generate matrix of size self.neuron_num by self.neuron_num which 
+        corresponds to the difference in preffered orientations of the neurons.
+        """
+        output_orientations = self.pref.repeat(self.neuron_num, 1)
+        input_orientations = output_orientations.T
+        diff_orientations = torch.abs(input_orientations - output_orientations)
+        self.diff_orientations = diff_orientations.to("cpu")
+        return self.diff_orientations
+
+
+    def _generate_z_matrix(self, width: torch.Tensor):
+        """
+        Generate matrix of size self.neuron_num by self.neuron_num which 
+        corresponds to the probability of connection depending on the circular gaussian and
+        the difference in preferred orientation.
+        """
+        self.z_matrix = torch.exp((torch.cos(2 * torch.pi / 180 * self.diff_orientations) - 1) / (4 * (torch.pi / 180 * width)**2))
+        return self.z_matrix
+
+
     @staticmethod
-    def pref_diff(pref_a: torch.Tensor, pref_b: torch.Tensor) -> torch.Tensor:
-        """Create matrix of differences between preferred orientations"""
-        return pref_b[None, :] - pref_a[:, None]
-
-
-    def _get_sub_weight_matrix(self, diff: torch.Tensor, index: int):
-        return torch.exp(self.j_hyperparameter[index]) * self._sigmoid(self._sigmoid(torch.exp(self.p_hyperparameter[index]), 2)
-                                                                       * self._cric_gauss(diff, torch.exp(self.w_hyperparameter[index])) 
-                                                            - torch.rand(len(diff), len(diff[0]), device="cpu", requires_grad=False), 32)
-
-    def generate_weight_matrix(self):
-        prob_EE = self._get_sub_weight_matrix(self.pref_diff(self.pref_E, self.pref_E), 0)
-        prob_EI = self._get_sub_weight_matrix(self.pref_diff(self.pref_E, self.pref_I), 1)
-        prob_IE = - self._get_sub_weight_matrix(self.pref_diff(self.pref_I, self.pref_E), 2)
-        prob_II = - self._get_sub_weight_matrix(self.pref_diff(self.pref_I, self.pref_I), 3)
-        weights = torch.transpose(torch.cat((torch.cat((prob_EE, prob_EI), dim=1),
-                    torch.cat((prob_IE, prob_II), dim=1)), dim=0), 0, 1)
-        return weights
-
-
-    @staticmethod
-    def _cric_gauss(x: torch.Tensor, w):
-        # Circular Gaussian from 0 to 180 deg
-        return torch.exp((torch.cos(x * torch.pi / 90) - 1) / (4 * torch.square(torch.pi / 180 * w)))
-
-
-    @staticmethod
-    def _sigmoid(array: torch.Tensor, steepness=1):
+    def _sigmoid(array, steepness=1):
         """returns the sigmoidal value of the input tensor. The default steepness is 1."""
         return 1 / (1 + torch.exp(-steepness * array))
 
@@ -174,7 +249,7 @@ class NeuroNN(nn.Module):
 
     def _stim_to_inputs(self, contrast, grating_orientations, preferred_orientations):
         '''Set the inputs based on the contrast and orientation of the stimulus'''
-        input_mean = contrast * 20 * self.scaling_g * self._cric_gauss(grating_orientations - preferred_orientations, self.w_ff)
+        input_mean = contrast * 20 * self.scaling_g * circ_gauss(grating_orientations - preferred_orientations, self.w_ff)
         input_sd = self.sig_ext
         return input_mean, input_sd
 
@@ -304,7 +379,7 @@ if __name__ == "__main__":
         device = "cpu"
         print("GPU not available. Keeping the model on CPU.")
 
-    model = NeuroNN(J_array, P_array, w_array, 10000, device=device)
+    model = NeuroNN(J_array, P_array, w_array, 2000, device=device)
     optimizer = optim.SGD(model.parameters(), lr=0.01)
 
     training_loop(model, optimizer, result_array, device=device)
