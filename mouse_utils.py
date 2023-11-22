@@ -304,7 +304,7 @@ if __name__ == "__main__":
         device = "cpu"
         print("GPU not available. Keeping the model on CPU.")
 
-    model = NeuroNN(J_array, P_array, w_array, 10000, device=device)
+    model = NeuroNN(J_array, P_array, w_array, 2000, device=device)
     optimizer = optim.SGD(model.parameters(), lr=0.01)
 
     training_loop(model, optimizer, result_array, device=device)
