@@ -49,13 +49,13 @@ class NeuroNN(nn.Module):
         self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
         self.contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
 
-        j_hyper = torch.tensor(J_array, requires_grad=True, device=device)
+        j_hyper = torch.tensor(J_array, requires_grad=True, device="cpu")
         self.j_hyperparameter = nn.Parameter(j_hyper)
 
-        p_hyper = torch.tensor(P_array, requires_grad=True, device=device)
+        p_hyper = torch.tensor(P_array, requires_grad=True, device="cpu")
         self.p_hyperparameter = nn.Parameter(p_hyper)
 
-        w_hyper = torch.tensor(w_array, requires_grad=True, device=device)
+        w_hyper = torch.tensor(w_array, requires_grad=True, device="cpu")
         self.w_hyperparameter = nn.Parameter(w_hyper)
 
         self.neuron_num = neuron_num
@@ -64,9 +64,9 @@ class NeuroNN(nn.Module):
         self.neuron_num_e = neuron_num_e
         self.neuron_num_i = neuron_num_i
 
-        self.pref_E = torch.linspace(0, 179.99, neuron_num_e, device=device)
-        self.pref_I = torch.linspace(0, 179.99, neuron_num_i, device=device)
-        self.pref = torch.cat([self.pref_E, self.pref_I])
+        self.pref_E = torch.linspace(0, 179.99, neuron_num_e, device="cpu")
+        self.pref_I = torch.linspace(0, 179.99, neuron_num_i, device="cpu")
+        self.pref = torch.cat([self.pref_E, self.pref_I]).to(device)
 
         # Global Parameters
         self.scaling_g = scaling_g * torch.ones(neuron_num, device=device)
