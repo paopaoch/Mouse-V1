@@ -7,17 +7,31 @@ from torch import nn, optim
 from sim_utils_torch import Phi, Euler2fixedpt
 from tqdm import tqdm
 
+# Set the default data type to float32 globally
+torch.set_default_dtype(torch.float32)
 
 class MMDLossFunction(nn.Module):
     def __init__(self, device="cpu"):
         super().__init__()
         self.device = device
+        self.X = None
+        self.Y = None
 
 
     def forward(self, X, Y, avg_step):
-        XX = torch.mean(self.kernel(X[None, :, :, :], X[:, None, :, :]))
-        XY = torch.mean(self.kernel(X[None, :, :, :], Y[:, None, :, :]))
-        YY = torch.mean(self.kernel(Y[None, :, :, :], Y[:, None, :, :]))
+        if type(X) != torch.Tensor:
+            self.X = torch.tensor(X, device=self.device)
+        else:
+            self.X = X
+        
+        if type(Y) != torch.Tensor:
+            self.Y = torch.tensor(Y, device=self.device, requires_grad=False)
+        else:
+            self.Y = Y
+
+        XX = torch.mean(self.kernel(self.X[None, :, :, :], self.X[:, None, :, :]))
+        XY = torch.mean(self.kernel(self.X[None, :, :, :], self.Y[:, None, :, :]))
+        YY = torch.mean(self.kernel(self.Y[None, :, :, :], self.Y[:, None, :, :]))
 
         output = XX - 2 * XY + YY + avg_step * 0.002
         output.requires_grad_(True)
@@ -25,12 +39,6 @@ class MMDLossFunction(nn.Module):
 
 
     def kernel(self, x, y, w=1, axes=(-2, -1)):
-        if type(x) != torch.Tensor:
-            x = torch.tensor(x, device=self.device)
-        
-        if type(y) != torch.Tensor:
-            y = torch.tensor(y, device=self.device)
-
         return torch.exp(-torch.sum((x - y) ** 2, dim=axes) / (2 * w**2))
 
 
@@ -163,14 +171,15 @@ class NeuroNN(nn.Module):
 
     def get_steady_state_output(self, contrast, grating_orientations):
         input_mean, input_sd = self._stim_to_inputs(contrast, grating_orientations, self.pref)
-        r_fp, avg_step = self._solve_fixed_point(input_mean, input_sd)
+        self.input_mean, self.input_sd = input_mean, input_sd
+        r_fp, avg_step = self._solve_fixed_point()
         return r_fp, avg_step
 
 
-    def _get_mu_sigma(self, weights_matrix, weights_2_matrix, rate, input_mean, input_sd, tau):
+    def _get_mu_sigma(self, rate, input_mean, input_sd, tau):
         # Find net input mean and variance given inputs
-        mu = tau * (weights_matrix @ rate) + input_mean
-        sigma = torch.sqrt(tau * (weights_2_matrix @ rate) + input_sd**2)
+        mu = tau * (self.weights @ rate) + input_mean
+        sigma = torch.sqrt(tau * (self.weights2 @ rate) + input_sd**2)
         return mu, sigma
     
 
@@ -181,17 +190,19 @@ class NeuroNN(nn.Module):
         return input_mean, input_sd
 
 
-    def _solve_fixed_point(self, input_mean, input_sd): # tau_ref varies with E and I
+    def drdt_func(self, rate):
+        return self.T_inv * (Phi(*self._get_mu_sigma(rate, self.input_mean, self.input_sd, self.tau), 
+                                self.tau, 
+                                tau_ref=self.tau_ref,
+                                device=self.device) - rate)
+
+
+    def _solve_fixed_point(self): # tau_ref varies with E and I
         r_init = torch.zeros(self.neuron_num, device=self.device) # Need to change this to a matrix
         # Define the function to be solved for
-        def drdt_func(rate):
-            return self.T_inv * (Phi(*self._get_mu_sigma(self.weights, self.weights2, rate, input_mean, input_sd, self.tau), 
-                                     self.tau, 
-                                     tau_ref=self.tau_ref,
-                                     device=self.device) - rate)
             
         # Solve using Euler
-        r_fp, avg_step = Euler2fixedpt(drdt_func, r_init, device=self.device)
+        r_fp, avg_step = Euler2fixedpt(self.drdt_func, r_init, device=self.device)
         return r_fp, avg_step
 
     
@@ -211,6 +222,7 @@ class NeuroNN(nn.Module):
                 count = count + torch.tensor(1, device=self.device)
             all_rates = torch.cat((all_rates, steady_states.unsqueeze(0)))
         output = all_rates.permute(2, 0, 1)
+        print("finished all orientations and contrasts")
         return output, avg_step_sum / count
 
 
@@ -225,6 +237,7 @@ def training_loop(model, optimizer, Y, n=1000, device="cpu"):
             optimizer.zero_grad()
             preds, avg_step = model()
             loss = loss_function(preds, Y, avg_step)
+            print("Computed loss", loss)
             loss.backward()
             optimizer.step()
             f.write(f"ITTER: {i + 1}  {loss}\n")
