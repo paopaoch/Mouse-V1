@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 from torch import nn, optim
-from sim_utils_torch import Phi, Euler2fixedpt
 from tqdm import tqdm
 
 # Set the default data type to float32 globally
@@ -93,6 +92,9 @@ class NeuroNN(nn.Module):
         tau_I = 0.01 * tau_alpha
         # Membrane time constant vector for all cells
         self.tau = torch.cat([tau_E * torch.ones(neuron_num_e, device=device, requires_grad=False), tau_I * torch.ones(neuron_num_i, device=device, requires_grad=False)])
+        self.hardness = 0.01
+        self.Vt = 20
+        self.Vr = 0
 
         # Refractory periods for exitatory and inhibitory
         tau_ref_E = 0.005
@@ -138,7 +140,7 @@ class NeuroNN(nn.Module):
 
 
     def _get_sub_weight_matrix(self, diff: torch.Tensor, index: int):
-        return torch.exp(self.j_hyperparameter[index]) * self._sigmoid(self._sigmoid(torch.exp(self.p_hyperparameter[index]), 2)
+        return torch.exp(self.j_hyperparameter[index]) * self._sigmoid(self._sigmoid(self.p_hyperparameter[index], 2)
                                                                        * self._cric_gauss(diff, torch.exp(self.w_hyperparameter[index])) 
                                                             - torch.rand(len(diff), len(diff[0]), device="cpu", requires_grad=False), 32)
 
@@ -170,39 +172,34 @@ class NeuroNN(nn.Module):
 
 
     def get_steady_state_output(self, contrast, grating_orientations):
-        input_mean, input_sd = self._stim_to_inputs(contrast, grating_orientations, self.pref)
-        self.input_mean, self.input_sd = input_mean, input_sd
+        self._stim_to_inputs(contrast, grating_orientations, self.pref)
         r_fp, avg_step = self._solve_fixed_point()
         return r_fp, avg_step
 
 
-    def _get_mu_sigma(self, rate, input_mean, input_sd, tau):
+    def _update_mu_sigma(self, rate, input_mean, input_sd, tau):
         # Find net input mean and variance given inputs
-        mu = tau * (self.weights @ rate) + input_mean
-        sigma = torch.sqrt(tau * (self.weights2 @ rate) + input_sd**2)
-        return mu, sigma
+        self.mu = tau * (self.weights @ rate) + input_mean
+        self.sigma = torch.sqrt(tau * (self.weights2 @ rate) + input_sd**2)
+        return self.mu, self.sigma
     
 
     def _stim_to_inputs(self, contrast, grating_orientations, preferred_orientations):
         '''Set the inputs based on the contrast and orientation of the stimulus'''
-        input_mean = contrast * 20 * self.scaling_g * self._cric_gauss(grating_orientations - preferred_orientations, self.w_ff)
-        input_sd = self.sig_ext
-        return input_mean, input_sd
+        self.input_mean = contrast * 20 * self.scaling_g * self._cric_gauss(grating_orientations - preferred_orientations, self.w_ff)
+        self.input_sd = self.sig_ext
+        return self.input_mean, self.input_sd
 
 
     def drdt_func(self, rate):
-        return self.T_inv * (Phi(*self._get_mu_sigma(rate, self.input_mean, self.input_sd, self.tau), 
-                                self.tau, 
-                                tau_ref=self.tau_ref,
-                                device=self.device) - rate)
+        self._update_mu_sigma(rate, self.input_mean, self.input_sd, self.tau)
+        return self.T_inv * (self.phi() - rate)
 
 
     def _solve_fixed_point(self): # tau_ref varies with E and I
         r_init = torch.zeros(self.neuron_num, device=self.device) # Need to change this to a matrix
-        # Define the function to be solved for
-            
         # Solve using Euler
-        r_fp, avg_step = Euler2fixedpt(self.drdt_func, r_init, device=self.device)
+        r_fp, avg_step = self.euler2fixedpt(r_init)
         return r_fp, avg_step
 
     
@@ -224,6 +221,104 @@ class NeuroNN(nn.Module):
         output = all_rates.permute(2, 0, 1)
         print("finished all orientations and contrasts")
         return output, avg_step_sum / count
+    
+
+    # -------------------------MOVE SIM UTILS INTO THE SAME CLASS------------------
+
+    @staticmethod
+    def sigmoid(x):  # similar to _sigmoid so perhaps combine in the future
+        return 1 / (1 + torch.exp(-x))
+
+    
+    @staticmethod
+    def softplus(x, b):
+        return torch.log(1 + torch.exp(b * x)) / b
+    
+
+    def euler2fixedpt(self, x_initial, Nmax=100, Navg=80, dt=0.001, xtol=1e-5, xmin=1e-0):
+        xmin = torch.tensor(xmin, device=self.device, requires_grad=False)
+
+        avgStart = Nmax - Navg
+        avg_sum = 0
+        xvec = x_initial
+        
+        # res = []
+
+        for _ in range(avgStart):  # Loop without taking average step size
+            dx = self.drdt_func(xvec) * dt
+            xvec = xvec + dx
+            # res.append(xvec[50].item())
+
+        for _ in range(Navg):  # Loop whilst recording average step size
+            dx = self.drdt_func(xvec) * dt
+            xvec = xvec + dx
+            avg_sum = avg_sum + torch.abs(dx /torch.maximum(xmin, torch.abs(xvec)) ).max() / xtol
+            # res.append(xvec[50].item())
+
+        # plt.plot(res)
+        # plt.show()
+
+        return xvec, avg_sum / Navg
+
+
+    # This is the input-output function (for mean-field spiking neurons) that you would use Max
+    def phi(self): # all these values could be stored as attributes of the class
+
+        # Might need error handling for mu and sigma being None
+        xp = (self.mu - self.Vr) / self.sigma
+        xm = (self.mu - self.Vt) / self.sigma
+        
+
+        rate = torch.zeros_like(xm, device=self.device)
+        
+        xm_pos = self.sigmoid(xm * self.hardness)
+
+        inds = self.sigmoid(-xm * self.hardness) * self.sigmoid(xp * self.hardness)
+        
+        xp1 = self.softplus(xp, self.hardness)
+        xm1 = self.softplus(xm, self.hardness)
+        
+        #xm_pos = xm > 0
+        rate = (rate * (1 - xm_pos)) + (xm_pos / self.softplus(self.f_ricci(xp1, device=self.device) - self.f_ricci(xm1, device=self.device), self.hardness))
+
+
+        #inds = (xp > 0) & (xm <= 0)
+        rate = (rate * (1 - inds)) + (inds / (self.f_ricci(xp1, device=self.device) + torch.exp(xm**2) * self.g_ricci(self.softplus(-xm, self.hardness))))
+        
+        rate = 1 / (self.tau_ref + 1 / rate)
+
+        return rate / self.tau
+
+
+    @staticmethod
+    def f_ricci(x, device="cpu"):
+        z = x / (1 + x)
+        a = torch.tensor([0.0, 
+                    .22757881388024176, .77373949685442023, .32056016125642045, 
+                    .32171431660633076, .62718906618071668, .93524391761244940, 
+                    1.0616084849547165, .64290613877355551, .14805913578876898], device=device)
+
+    #    return np.log(2*x + 1) + a @ (-z)**np.arange(10)
+        return torch.log(2*x + 1) + (  a[1] *(-z)**1 + a[2] *(-z)**2 + a[3] *(-z)**3
+                                + a[4] *(-z)**4 + a[5] *(-z)**5 + a[6] *(-z)**6
+                                + a[7] *(-z)**7 + a[8] *(-z)**8 + a[9] *(-z)**9 )
+
+    @staticmethod
+    def g_ricci(x):
+
+        z = x / (2 + x)
+        enum = (  3.5441754117462949 * z    - 7.0529131065835378 * z**2 
+                - 56.532378057580381 * z**3 + 279.56761105465944 * z**4 
+                - 520.37554849441472 * z**5 + 456.58245777026514 * z**6  
+                - 155.73340457809226 * z**7 )
+        
+        denom = (1 - 4.1357968834226053 * z - 7.2984226138266743 * z**2 
+                + 98.656602235468327 * z**3 - 334.20436223415163 * z**4 
+                + 601.08633903294185 * z**5 - 599.58577549598340 * z**6 
+                + 277.18420330693891 * z**7 - 16.445022798669722 * z**8)
+        
+        return enum / denom
+
 
 
 def training_loop(model, optimizer, Y, n=1000, device="cpu"):
