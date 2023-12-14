@@ -355,9 +355,9 @@ def training_loop_no_backwards(model, Y, n=1000, device="cpu"):
 
         for i in range(n):
             preds, avg_step = model()
-            loss = loss_function(preds, Y, avg_step)
-            print("Computed loss", loss)
-            f.write(f"ITTER: {i + 1}  {loss}\n")
+            # loss = loss_function(preds, Y, avg_step)
+            print("Computed loss")
+            f.write(f"ITTER: {i + 1}  {0}\n")
             f.write(f"avg step: {avg_step}\n")
             f.write(str(model.j_hyperparameter))
             f.write("\n")
