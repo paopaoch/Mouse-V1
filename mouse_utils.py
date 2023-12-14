@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import torch
 from torch import nn, optim
 from tqdm import tqdm
+import sys
 
 # Set the default data type to float32 globally
 torch.set_default_dtype(torch.float32)
@@ -13,27 +14,16 @@ class MMDLossFunction(nn.Module):
     def __init__(self, device="cpu"):
         super().__init__()
         self.device = device
-        self.X = None
-        self.Y = None
-
+        self.one = torch.tensor(1)
 
     def forward(self, X, Y, avg_step):
-        if type(X) != torch.Tensor:
-            self.X = torch.tensor(X, device=self.device)
-        else:
-            self.X = X
-        
-        if type(Y) != torch.Tensor:
-            self.Y = torch.tensor(Y, device=self.device, requires_grad=False)
-        else:
-            self.Y = Y
+        print("Calculating MMD loss")
+        XX = torch.mean(self.kernel(X[None, :, :, :], X[:, None, :, :]))
+        XY = torch.mean(self.kernel(X[None, :, :, :], Y[:, None, :, :]))
+        YY = torch.mean(self.kernel(Y[None, :, :, :], Y[:, None, :, :]))
 
-        XX = torch.mean(self.kernel(self.X[None, :, :, :], self.X[:, None, :, :]))
-        XY = torch.mean(self.kernel(self.X[None, :, :, :], self.Y[:, None, :, :]))
-        YY = torch.mean(self.kernel(self.Y[None, :, :, :], self.Y[:, None, :, :]))
-
-        output = XX - 2 * XY + YY + avg_step * 0.002
-        output.requires_grad_(True)
+        output = XX - 2 * XY + YY + (torch.maximum(self.one, avg_step) - 1) * 0.002
+        # output.requires_grad_(True)
         return output
 
 
@@ -56,14 +46,17 @@ class NeuroNN(nn.Module):
         self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
         self.contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
 
-        j_hyper = torch.tensor(J_array, requires_grad=True, device="cpu")
-        self.j_hyperparameter = nn.Parameter(j_hyper)
+        j_hyper = torch.tensor(J_array, requires_grad=False, device="cpu")
+        # self.j_hyperparameter = nn.Parameter(j_hyper)
+        self.j_hyperparameter = j_hyper
 
-        p_hyper = torch.tensor(P_array, requires_grad=True, device="cpu")
-        self.p_hyperparameter = nn.Parameter(p_hyper)
+        p_hyper = torch.tensor(P_array, requires_grad=False, device="cpu")
+        # self.p_hyperparameter = nn.Parameter(p_hyper)
+        self.p_hyperparameter = p_hyper
 
-        w_hyper = torch.tensor(w_array, requires_grad=True, device="cpu")
-        self.w_hyperparameter = nn.Parameter(w_hyper)
+        w_hyper = torch.tensor(w_array, requires_grad=False, device="cpu")
+        # self.w_hyperparameter = nn.Parameter(w_hyper)
+        self.w_hyperparameter = w_hyper
 
         self.neuron_num = neuron_num
         neuron_num_e = int(neuron_num * ratio)
@@ -92,7 +85,7 @@ class NeuroNN(nn.Module):
         tau_I = 0.01 * tau_alpha
         # Membrane time constant vector for all cells
         self.tau = torch.cat([tau_E * torch.ones(neuron_num_e, device=device, requires_grad=False), tau_I * torch.ones(neuron_num_i, device=device, requires_grad=False)])
-        self.hardness = 0.01
+        self.hardness = 0.01  # So confused
         self.Vt = 20
         self.Vr = 0
 
@@ -104,6 +97,13 @@ class NeuroNN(nn.Module):
         self.weights = None
         self.weights2 = None
         self.update_weight_matrix()
+
+        # Constant for Ricciadi
+        self.a = torch.tensor([0.0, 
+                    .22757881388024176, .77373949685442023, .32056016125642045, 
+                    .32171431660633076, .62718906618071668, .93524391761244940, 
+                    1.0616084849547165, .64290613877355551, .14805913578876898], device=device
+                    , requires_grad=False)
 
         # plt.imshow(self.weights.data, cmap="seismic", vmin=-np.max(np.abs(np.array(self.weights.data))), vmax=np.max(np.abs(np.array(self.weights.data))))
         # plt.colorbar()
@@ -120,6 +120,7 @@ class NeuroNN(nn.Module):
         First updates the weights then solves the fix point for all orientation and contrasts.
         """
         self.update_weight_matrix()
+        print("Generated a W matrix")
         tuning_curves, avg_step = self.run_all_orientation_and_contrast()
         return tuning_curves, avg_step
 
@@ -177,10 +178,10 @@ class NeuroNN(nn.Module):
         return r_fp, avg_step
 
 
-    def _update_mu_sigma(self, rate, input_mean, input_sd, tau):
+    def _update_mu_sigma(self, rate):
         # Find net input mean and variance given inputs
-        self.mu = tau * (self.weights @ rate) + input_mean
-        self.sigma = torch.sqrt(tau * (self.weights2 @ rate) + input_sd**2)
+        self.mu = self.tau * (self.weights @ rate) + self.input_mean
+        self.sigma = torch.sqrt(self.tau * (self.weights2 @ rate) + torch.square(self.input_sd))
         return self.mu, self.sigma
     
 
@@ -192,7 +193,7 @@ class NeuroNN(nn.Module):
 
 
     def drdt_func(self, rate):
-        self._update_mu_sigma(rate, self.input_mean, self.input_sd, self.tau)
+        self._update_mu_sigma(rate)
         return self.T_inv * (self.phi() - rate)
 
 
@@ -206,20 +207,20 @@ class NeuroNN(nn.Module):
     # -------------------------RUN OUTPUT TO GET TUNING CURVES--------------------
 
 
-    def run_all_orientation_and_contrast(self) -> torch.Tensor:
-        all_rates = torch.empty(0, device=self.device)
+    def run_all_orientation_and_contrast(self):
+        all_rates = []
         avg_step_sum = torch.tensor(0, device=self.device)
-        count = torch.tensor(0, device=self.device, requires_grad=False)
+        count = 0
         for contrast in self.contrasts:
-            steady_states = torch.empty(0, device=self.device)
+            steady_states = []
             for orientation in self.orientations:
                 rate, avg_step = self.get_steady_state_output(contrast, orientation)
-                steady_states = torch.cat((steady_states, rate.unsqueeze(0)))
+                steady_states.append(rate)
                 avg_step_sum = avg_step_sum + avg_step
-                count = count + torch.tensor(1, device=self.device)
-            all_rates = torch.cat((all_rates, steady_states.unsqueeze(0)))
-        output = all_rates.permute(2, 0, 1)
-        print("finished all orientations and contrasts")
+                count += 1
+            all_rates.append(torch.stack(steady_states))
+        output  = torch.stack(all_rates).permute(2, 0, 1)
+        print("finished all orientations and contrasts", output.shape)
         return output, avg_step_sum / count
     
 
@@ -245,14 +246,18 @@ class NeuroNN(nn.Module):
         # res = []
 
         for _ in range(avgStart):  # Loop without taking average step size
-            dx = self.drdt_func(xvec) * dt
+            # dx = self.drdt_func(xvec) * dt
+            self._update_mu_sigma(xvec)
+            dx = self.T_inv * (self.phi() - xvec) * dt
+            # xvec = xvec + self.T_inv * (self.phi() - xvec)
             xvec = xvec + dx
             # res.append(xvec[50].item())
 
         for _ in range(Navg):  # Loop whilst recording average step size
-            dx = self.drdt_func(xvec) * dt
+            self._update_mu_sigma(xvec)
+            dx = self.T_inv * (self.phi() - xvec) * dt
             xvec = xvec + dx
-            avg_sum = avg_sum + torch.abs(dx /torch.maximum(xmin, torch.abs(xvec)) ).max() / xtol
+            avg_sum = avg_sum + torch.abs(dx / torch.maximum(xmin, torch.abs(xvec)) ).max() / xtol
             # res.append(xvec[50].item())
 
         # plt.plot(res)
@@ -262,46 +267,38 @@ class NeuroNN(nn.Module):
 
 
     # This is the input-output function (for mean-field spiking neurons) that you would use Max
-    def phi(self): # all these values could be stored as attributes of the class
+    def phi(self):
 
         # Might need error handling for mu and sigma being None
         xp = (self.mu - self.Vr) / self.sigma
         xm = (self.mu - self.Vt) / self.sigma
         
 
-        rate = torch.zeros_like(xm, device=self.device)
-        
+        # rate = torch.zeros_like(xm, device=self.device) # dunno why we need this?
         xm_pos = self.sigmoid(xm * self.hardness)
-
         inds = self.sigmoid(-xm * self.hardness) * self.sigmoid(xp * self.hardness)
         
         xp1 = self.softplus(xp, self.hardness)
         xm1 = self.softplus(xm, self.hardness)
         
         #xm_pos = xm > 0
-        rate = (rate * (1 - xm_pos)) + (xm_pos / self.softplus(self.f_ricci(xp1, device=self.device) - self.f_ricci(xm1, device=self.device), self.hardness))
+        # rate = (rate * (1 - xm_pos)) + (xm_pos / self.softplus(self.f_ricci(xp1) - self.f_ricci(xm1), self.hardness))
+        rate = (xm_pos / self.softplus(self.f_ricci(xp1) - self.f_ricci(xm1), self.hardness))
 
 
         #inds = (xp > 0) & (xm <= 0)
-        rate = (rate * (1 - inds)) + (inds / (self.f_ricci(xp1, device=self.device) + torch.exp(xm**2) * self.g_ricci(self.softplus(-xm, self.hardness))))
+        rate = (rate * (1 - inds)) + (inds / (self.f_ricci(xp1) + torch.exp(xm**2) * self.g_ricci(self.softplus(-xm, self.hardness))))
         
         rate = 1 / (self.tau_ref + 1 / rate)
 
         return rate / self.tau
 
 
-    @staticmethod
-    def f_ricci(x, device="cpu"):
+    def f_ricci(self, x):
         z = x / (1 + x)
-        a = torch.tensor([0.0, 
-                    .22757881388024176, .77373949685442023, .32056016125642045, 
-                    .32171431660633076, .62718906618071668, .93524391761244940, 
-                    1.0616084849547165, .64290613877355551, .14805913578876898], device=device)
-
-    #    return np.log(2*x + 1) + a @ (-z)**np.arange(10)
-        return torch.log(2*x + 1) + (  a[1] *(-z)**1 + a[2] *(-z)**2 + a[3] *(-z)**3
-                                + a[4] *(-z)**4 + a[5] *(-z)**5 + a[6] *(-z)**6
-                                + a[7] *(-z)**7 + a[8] *(-z)**8 + a[9] *(-z)**9 )
+        return torch.log(2*x + 1) + (self.a[1] *(-z)**1 + self.a[2] *(-z)**2 + self.a[3] *(-z)**3
+                                + self.a[4] *(-z)**4 + self.a[5] *(-z)**5 + self.a[6] *(-z)**6
+                                + self.a[7] *(-z)**7 + self.a[8] *(-z)**8 + self.a[9] *(-z)**9)
 
     @staticmethod
     def g_ricci(x):
@@ -334,7 +331,32 @@ def training_loop(model, optimizer, Y, n=1000, device="cpu"):
             loss = loss_function(preds, Y, avg_step)
             print("Computed loss", loss)
             loss.backward()
+            print("Computed grads")
             optimizer.step()
+            f.write(f"ITTER: {i + 1}  {loss}\n")
+            f.write(f"avg step: {avg_step}\n")
+            f.write(str(model.j_hyperparameter))
+            f.write("\n")
+            f.write(str(model.p_hyperparameter))
+            f.write("\n")
+            f.write(str(model.w_hyperparameter))
+            f.write("\n")
+            f.write("\n")
+            f.flush()
+            print(f"DONE {i}")
+
+
+def training_loop_no_backwards(model, Y, n=1000, device="cpu"):
+    "Training loop for torch model."
+
+    with open(f"log_run_{time.time()}.log", "w") as f:
+        loss_function = MMDLossFunction(device=device)
+        model.train()
+
+        for i in range(n):
+            preds, avg_step = model()
+            loss = loss_function(preds, Y, avg_step)
+            print("Computed loss", loss)
             f.write(f"ITTER: {i + 1}  {loss}\n")
             f.write(f"avg step: {avg_step}\n")
             f.write(str(model.j_hyperparameter))
@@ -414,9 +436,10 @@ if __name__ == "__main__":
         device = "cpu"
         print("GPU not available. Keeping the model on CPU.")
 
-    model = NeuroNN(J_array, P_array, w_array, 2000, device=device)
+    model = NeuroNN(J_array, P_array, w_array, 10000, device=device)
     optimizer = optim.SGD(model.parameters(), lr=0.01)
 
-    training_loop(model, optimizer, result_array, device=device)
+    # training_loop(model, optimizer, result_array, device=device)
+    training_loop_no_backwards(model, result_array, device=device)
 
     # https://towardsdatascience.com/how-to-use-pytorch-as-a-general-optimizer-a91cbf72a7fb
