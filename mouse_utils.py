@@ -21,6 +21,7 @@ class MMDLossFunction(nn.Module):
         XX = torch.mean(self.kernel(X[None, :, :, :], X[:, None, :, :]))
         XY = torch.mean(self.kernel(X[None, :, :, :], Y[:, None, :, :]))
         YY = torch.mean(self.kernel(Y[None, :, :, :], Y[:, None, :, :]))
+        print(XX, YY, XY)
 
         output = XX - 2 * XY + YY + (torch.maximum(self.one, avg_step) - 1) * 0.002
         # output.requires_grad_(True)
@@ -355,7 +356,7 @@ def training_loop_no_backwards(model, Y, n=1000, device="cpu"):
 
         for i in range(n):
             preds, avg_step = model()
-            # loss = loss_function(preds, Y, avg_step)
+            loss = loss_function(preds, Y, avg_step)
             print("Computed loss")
             f.write(f"ITTER: {i + 1}  {preds.shape}\n")
             f.write(f"avg step: {avg_step}\n")
