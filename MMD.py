@@ -44,7 +44,7 @@ else:
 
 tensor1 = torch.rand(81, 8, 12, device=device)
 
-tensor2 = torch.rand(10000, 8, 12, device=device)
+tensor2 = torch.rand(2000, 8, 12, device=device)
 
 
 print(individual_terms(tensor1, tensor1, device=device))
