@@ -10,8 +10,6 @@ def individual_terms(x: torch.Tensor, y: torch.Tensor, device="cpu") -> torch.Te
     if torch.equal(x, y):
         N = x.shape[0]
         accum_output1 = torch.zeros(*x.shape[1:], device=device)
-        print(accum_output1.device)
-        print(x[0].device)
         for i in range(int(N / 2), N):
             for j in range(int(N / 2)):
                     accum_output1 = accum_output1 + kernel(x[i], x[j])
@@ -52,5 +50,5 @@ tensor2 = torch.rand(10000, 8, 12, device=device)
 print(individual_terms(tensor1, tensor1, device=device))
 
 start = time()
-print(individual_terms(tensor2, tensor2))
+print(individual_terms(tensor2, tensor2, device=device))
 print("end: ", time() - start)
