@@ -11,6 +11,7 @@ def individual_terms(x: torch.Tensor, y: torch.Tensor, device="cpu") -> torch.Te
         N = x.shape[0]
         accum_output1 = torch.zeros(*x.shape[1:], device=device)
         print(accum_output1.device)
+        print(x[0].device)
         for i in range(int(N / 2), N):
             for j in range(int(N / 2)):
                     accum_output1 = accum_output1 + kernel(x[i], x[j])
