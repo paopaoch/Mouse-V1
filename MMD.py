@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
     tensor4 = torch.rand(81, 8, 12, device=device)
 
-    tensor5 = torch.rand(4000, 8, 12, device=device)
+    tensor5 = torch.rand(2000, 8, 12, device=device)
 
     print("\n###### Running MMD functions ######\n")
     time_it(individual_terms_vanilla, "Individual MMD term vanilla: ", tensor4, tensor5)
