@@ -380,7 +380,7 @@ def training_loop_no_backwards(model, Y, n=1000, device="cpu"):
             print(f"DONE {i}")
 
 
-def get_data():
+def get_data(device="cpu"):
     df = pd.read_csv("./data/K-Data.csv")
     v1 = df.query("region == 'V1'")
     m = v1.m.unique()[2]
@@ -412,7 +412,7 @@ def get_data():
     result_array = result_array.transpose((0, 2, 1))
     result_array = result_array * 1000
 
-    result_array = torch.tensor(result_array)
+    result_array = torch.tensor(result_array, device=device)
     return result_array
 
 
@@ -429,7 +429,7 @@ if __name__ == "__main__":
         device = "cpu"
         print("GPU not available. Model will be created on CPU.")
 
-    result_array = get_data()
+    result_array = get_data(device=device)
 
     # J_array = [0.69, 0.64, 0., -0.29] # Max log values
     # P_array = [-2.21, -2.21, -0.8, -0.8]
