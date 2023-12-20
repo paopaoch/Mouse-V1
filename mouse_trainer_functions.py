@@ -232,11 +232,11 @@ def training_loop_simulated_annealing(model: NeuroNN, Y, n=1000, device="cpu", d
                 P_array = model.p_hyperparameter.clone().detach()
                 w_array = model.w_hyperparameter.clone().detach()
                 current_loss = loss.clone().detach()
-
-                lowest_loss = current_loss.clone().detach()
-                lowest_J = J_array.clone().detach()
-                lowest_P = P_array.clone().detach()
-                lowest_w = w_array.clone().detach()
+                if loss < lowest_loss:
+                    lowest_loss = current_loss.clone().detach()
+                    lowest_J = J_array.clone().detach()
+                    lowest_P = P_array.clone().detach()
+                    lowest_w = w_array.clone().detach()
             else:
                 prob_of_accept = torch.exp(-(loss - current_loss) / temp)
                 random_draw = random.uniform(0,1)
