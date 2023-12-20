@@ -1,27 +1,22 @@
-import pandas as pd
-import time
-import numpy as np
-import matplotlib.pyplot as plt
 import torch
-from torch import nn, optim
-from tqdm import tqdm
-import sys
+from torch import nn
 
 # Set the default data type to float32 globally
 torch.set_default_dtype(torch.float32)
 
 class MMDLossFunction(nn.Module):
-    def __init__(self, device="cpu"):
+    def __init__(self, avg_step_weighting=0.002, device="cpu"):
         super().__init__()
         self.device = device
         self.one = torch.tensor(1)
+        self.avg_step_weighting = avg_step_weighting
 
     
     def forward(self, x: torch.Tensor, y: torch.Tensor, avg_step: torch.Tensor):
         XX  = self.individual_terms_single_loop(x, x)
         XY  = self.individual_terms_single_loop(x, y)
         YY  = self.individual_terms_single_loop(y, y)
-        return XX + YY - 2 * XY  + (torch.maximum(self.one, avg_step) - 1) * 0.002
+        return XX + YY - 2 * XY  + (torch.maximum(self.one, avg_step) - 1) * self.avg_step_weighting, XX + YY - 2 * XY
     
 
     def individual_terms_single_loop(self, x: torch.Tensor, y: torch.Tensor):
@@ -106,6 +101,13 @@ class NeuroNN(nn.Module):
         self.weights2 = None
         self.update_weight_matrix()
 
+        # Constants for euler
+        self.Nmax=100
+        self.Navg=80
+        self.dt=0.001
+        self.xtol=1e-5
+        self.xmin=1e-0
+
         # Constant for Ricciadi
         self.a = torch.tensor([0.0, 
                     .22757881388024176, .77373949685442023, .32056016125642045, 
@@ -151,7 +153,7 @@ class NeuroNN(nn.Module):
     def _get_sub_weight_matrix(self, diff: torch.Tensor, index: int):
         return torch.exp(self.j_hyperparameter[index]) * self._sigmoid(self._sigmoid(self.p_hyperparameter[index], 2)
                                                                        * self._cric_gauss(diff, torch.exp(self.w_hyperparameter[index])) 
-                                                            - torch.rand(len(diff), len(diff[0]), device=device, requires_grad=False), 32)
+                                                            - torch.rand(len(diff), len(diff[0]), device=self.device, requires_grad=False), 32)
 
 
     def generate_weight_matrix(self):
@@ -244,10 +246,10 @@ class NeuroNN(nn.Module):
         return torch.log(1 + torch.exp(b * x)) / b
     
 
-    def euler2fixedpt(self, x_initial, Nmax=100, Navg=80, dt=0.001, xtol=1e-5, xmin=1e-0):
-        xmin = torch.tensor(xmin, device=self.device, requires_grad=False)
+    def euler2fixedpt(self, x_initial):
+        xmin = torch.tensor(self.xmin, device=self.device, requires_grad=False)
 
-        avgStart = Nmax - Navg
+        avgStart = self.Nmax - self.Navg
         avg_sum = 0
         xvec = x_initial
         
@@ -256,22 +258,22 @@ class NeuroNN(nn.Module):
         for _ in range(avgStart):  # Loop without taking average step size
             # dx = self.drdt_func(xvec) * dt
             self._update_mu_sigma(xvec)
-            dx = self.T_inv * (self.phi() - xvec) * dt
+            dx = self.T_inv * (self.phi() - xvec) * self.dt
             # xvec = xvec + self.T_inv * (self.phi() - xvec)
             xvec = xvec + dx
             # res.append(xvec[50].item())
 
-        for _ in range(Navg):  # Loop whilst recording average step size
+        for _ in range(self.Navg):  # Loop whilst recording average step size
             self._update_mu_sigma(xvec)
-            dx = self.T_inv * (self.phi() - xvec) * dt
+            dx = self.T_inv * (self.phi() - xvec) * self.dt
             xvec = xvec + dx
-            avg_sum = avg_sum + torch.abs(dx / torch.maximum(xmin, torch.abs(xvec)) ).max() / xtol
+            avg_sum = avg_sum + torch.abs(dx / torch.maximum(xmin, torch.abs(xvec)) ).max() / self.xtol
             # res.append(xvec[50].item())
 
         # plt.plot(res)
         # plt.show()
 
-        return xvec, avg_sum / Navg
+        return xvec, avg_sum / self.Navg
 
 
     # This is the input-output function (for mean-field spiking neurons) that you would use Max
@@ -323,128 +325,3 @@ class NeuroNN(nn.Module):
                 + 277.18420330693891 * z**7 - 16.445022798669722 * z**8)
         
         return enum / denom
-
-
-
-def training_loop(model, optimizer, Y, n=1000, device="cpu"):
-    "Training loop for torch model."
-
-    with open(f"log_run_{time.time()}.log", "w") as f:
-        loss_function = MMDLossFunction(device=device)
-        model.train()
-
-        for i in range(n):
-            optimizer.zero_grad()
-            preds, avg_step = model()
-            print("Computing loss...")
-            loss = loss_function(preds, Y, avg_step)
-            print("Computed loss: ", loss)
-            print("Backwards...")
-            loss.backward()
-            optimizer.step()
-            f.write(f"ITTER: {i + 1}  {loss}\n")
-            f.write(f"avg step: {avg_step}\n")
-            f.write(str(model.j_hyperparameter))
-            f.write("\n")
-            f.write(str(model.p_hyperparameter))
-            f.write("\n")
-            f.write(str(model.w_hyperparameter))
-            f.write("\n")
-            f.write("\n")
-            f.flush()
-            print(f"DONE {i}")
-
-
-def training_loop_no_backwards(model, Y, n=1000, device="cpu"):
-    "Training loop for torch model."
-
-    with open(f"log_run_{time.time()}.log", "w") as f:
-        loss_function = MMDLossFunction(device=device)
-        model.train()
-
-        for i in range(n):
-            preds, avg_step = model()
-            print("Computing loss...")
-            loss = loss_function(preds, Y, avg_step)
-            print("loss: ", loss)
-            f.write(f"ITTER: {i + 1}  {preds.shape}\n")
-            f.write(f"avg step: {avg_step}\n")
-            f.write(str(model.j_hyperparameter))
-            f.write("\n")
-            f.write(str(model.p_hyperparameter))
-            f.write("\n")
-            f.write(str(model.w_hyperparameter))
-            f.write("\n")
-            f.write("\n")
-            f.flush()
-            print(f"DONE {i}")
-
-
-def get_data(device="cpu"):
-    df = pd.read_csv("./data/K-Data.csv")
-    v1 = df.query("region == 'V1'")
-    m = v1.m.unique()[2]
-    v1 = v1[v1.m == m] # take for all mice later
-    v1 = v1.copy()  # to prevent warning
-    v1["mouse_unit"] = v1["m"] + "_" + v1["u"].astype(str)
-    v1 = v1.groupby(["mouse_unit", "grat_orientation", "grat_contrast", "grat_spat_freq", "grat_phase"]).mean(numeric_only=True).reset_index()
-    v1 = v1[["mouse_unit", "grat_orientation", "grat_contrast", "grat_spat_freq", "grat_phase", "response"]]
-
-    unique_units = v1['mouse_unit'].unique()
-    unique_orientation = v1['grat_orientation'].unique()
-    unique_contrast = v1['grat_contrast'].unique()
-    unique_spat_freq = v1['grat_spat_freq'].unique()
-    unique_phase = v1['grat_phase'].unique()
-
-    shape = (len(unique_units), len(unique_orientation), len(unique_contrast), len(unique_spat_freq), len(unique_phase))
-    result_array = np.full(shape, np.nan)
-
-    # Iterate through the DataFrame and fill the array
-    for index, row in tqdm(v1.iterrows()):
-        u_index = np.where(unique_units == row['mouse_unit'])[0][0]
-        orientation_index = np.where(unique_orientation == row['grat_orientation'])[0][0]
-        contrast_index = np.where(unique_contrast == row['grat_contrast'])[0][0]
-        spat_freq_index = np.where(unique_spat_freq == row['grat_spat_freq'])[0][0]
-        phase_index = np.where(unique_phase == row['grat_phase'])[0][0]
-        result_array[u_index, orientation_index, contrast_index, spat_freq_index, phase_index] = row['response']
-
-    result_array = np.mean(np.mean(result_array, axis=4), axis=3)
-    result_array = result_array.transpose((0, 2, 1))
-    result_array = result_array * 1000
-
-    result_array = torch.tensor(result_array, device=device)
-    return result_array
-
-
-
-
-if __name__ == "__main__":
-    
-    GRAD = False
-    print("Grad: ", GRAD)
-    if torch.cuda.is_available():
-        device = "cuda"
-        print("Model will be created on GPU")
-    else:
-        device = "cpu"
-        print("GPU not available. Model will be created on CPU.")
-
-    result_array = get_data(device=device)
-
-    # J_array = [0.69, 0.64, 0., -0.29] # Max log values
-    # P_array = [-2.21, -2.21, -0.8, -0.8]
-    # w_array = [3.46, 3.46, 3.46, 3.46]
-
-    J_array = [0, -0.29, 0.69, -0.64] # Keen log values
-    P_array = [-0.8, -2.21, -2.21, -0.8]
-    w_array = [3.46, 3.46, 3.46, 3.46]
-
-    if GRAD:
-        model = NeuroNN(J_array, P_array, w_array, 4000, device=device)
-        optimizer = optim.SGD(model.parameters(), lr=0.01)
-        training_loop(model, optimizer, result_array, device=device)
-    else:
-        model = NeuroNN(J_array, P_array, w_array, 10000, device=device, grad=False)
-        training_loop_no_backwards(model, result_array, device=device)
-
-    # https://towardsdatascience.com/how-to-use-pytorch-as-a-general-optimizer-a91cbf72a7fb
