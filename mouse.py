@@ -1,6 +1,8 @@
 import torch
 from torch import nn
 
+# https://towardsdatascience.com/how-to-use-pytorch-as-a-general-optimizer-a91cbf72a7fb
+
 # Set the default data type to float32 globally
 torch.set_default_dtype(torch.float32)
 
@@ -45,6 +47,7 @@ class NeuroNN(nn.Module):
     def __init__(self, J_array: list, P_array: list, w_array: list, neuron_num: int, ratio=0.8, scaling_g=1, w_ff=30, sig_ext=5, device="cpu", grad=True):
         super().__init__()
         self.device = device
+        self.grad = grad
         self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
         self.contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
 
@@ -123,6 +126,22 @@ class NeuroNN(nn.Module):
         # plt.show()
         
         # plt.savefig("./plots/weights_example_2000")
+    
+
+    def set_parameters(self, J_array, P_array, w_array):
+        j_hyper = torch.tensor(J_array, device=self.device)
+        p_hyper = torch.tensor(P_array, device=self.device)
+        w_hyper = torch.tensor(w_array, device=self.device)
+        if self.grad:
+            self.j_hyperparameter = nn.Parameter(j_hyper)
+            self.p_hyperparameter = nn.Parameter(p_hyper)
+            self.w_hyperparameter = nn.Parameter(w_hyper)
+        else:
+            self.j_hyperparameter = j_hyper
+            self.p_hyperparameter = p_hyper
+            self.w_hyperparameter = w_hyper
+
+
 
     def forward(self):
         """

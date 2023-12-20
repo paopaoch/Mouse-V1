@@ -7,6 +7,7 @@ from tqdm import tqdm
 from mouse import MMDLossFunction, NeuroNN
 from datetime import datetime
 import sys
+import random
 
 # Set the default data type to float32 globally
 torch.set_default_dtype(torch.float32)
@@ -143,6 +144,141 @@ def training_loop_no_backwards(model, Y, n=1000, device="cpu", desc="", avg_step
             print(f"DONE {i}")
 
 
+def training_loop_simulated_annealing(model: NeuroNN, Y, n=1000, device="cpu", desc="", avg_step_weighting=0.002, temp=10000):
+    "Training loop for torch model."
+    temp_step = temp / n
+
+    with open(f"log_run_{time.time()}.log", "w") as f:
+        # write the metadata to log file
+        f.write("#### Mouse V1 Project log file ####\n\n")
+        f.write(f"Code ran on the {datetime.now()}\n\n")
+        f.write(f"Device: {device}\n")
+        f.write(f"OS: {sys.platform}\n")
+        f.write("Trainer type: Simulated Annealing\n\n")
+        f.write(f"{desc}\n\n")
+        f.write("Metadata:\n")
+        f.write(f"Number of neurons: {model.neuron_num}\n")
+        f.write(f"Number of Euler steps: {model.Nmax}\n")
+        f.write(f"Record average step after {model.Navg} steps\n")
+        f.write(f"Average step weighting: {avg_step_weighting}\n")
+        f.write(f"Speified number of simulated steps: {n}\n")
+        f.write(f"Speified starting temp: {temp}\n\n")
+        f.write(f"---------------------------------------------------\n\n")
+        f.write(f"Initial parameters\n")
+        f.write(f"J\n")
+        f.write(str(model.j_hyperparameter))
+        f.write("\n")
+        f.write(f"P\n")
+        f.write(str(model.p_hyperparameter))
+        f.write("\n")
+        f.write(f"w\n")
+        f.write(str(model.w_hyperparameter))
+        f.write("\n\n")
+        f.write(f"---------------------------------------------------\n\n")
+        f.flush()
+
+        loss_function = MMDLossFunction(device=device, avg_step_weighting=avg_step_weighting)
+
+        # Compute first loss
+        print("Computing first loss...")
+        start = time.time()
+        preds, avg_step = model()
+        end_time_simulation = time.time()
+        current_loss, MMD_loss = loss_function(preds, Y, avg_step)
+        end_time_loss = time.time()
+        J_array = model.j_hyperparameter.clone().detach()
+        P_array = model.p_hyperparameter.clone().detach()
+        w_array = model.w_hyperparameter.clone().detach()
+        f.write(f"Initial run\n")
+        f.write(f"Simulation time: {end_time_simulation - start} seconds\n")
+        f.write(f"Loss calculation time: {end_time_loss - end_time_simulation} seconds\n")
+        f.write(f"Total time taken: {time.time() - start} seconds\n")
+        f.write(f"Loss: {current_loss}\n")
+        f.write(f"avg step: {avg_step}\n")
+        f.write(f"MMD loss: {MMD_loss}\n")
+        f.write(f"\n---------------------------------------------------\n\n")
+        
+        lowest_loss = current_loss.clone().detach()
+        lowest_J = J_array.clone().detach()
+        lowest_P = P_array.clone().detach()
+        lowest_w = w_array.clone().detach()
+
+        for i in range(n):
+            accepted = False
+            start = time.time()
+
+            # Run Gibbs sampling to get new parameters -- TODO: add limits
+            random_param_type = random.randint(0, 2)
+            random_connection_type = random.randint(0, 3)
+            adjust_value = random.gauss(0, 0.5)
+
+            if random_param_type == 0:  # adjust J
+                J_array[random_connection_type] += adjust_value
+            elif random_param_type == 1:  # adjust P
+                P_array[random_connection_type] += adjust_value
+            elif random_param_type == 2:  # adjust w
+                w_array[random_connection_type] += adjust_value
+
+            model.set_parameters(J_array, P_array, w_array)
+            preds, avg_step = model()
+            print("Computing loss...")
+            end_time_simulation = time.time()
+            loss, MMD_loss = loss_function(preds, Y, avg_step)
+
+            # Run simulated annealing
+            if loss < current_loss:
+                accepted = True
+                J_array = model.j_hyperparameter.clone().detach()
+                P_array = model.p_hyperparameter.clone().detach()
+                w_array = model.w_hyperparameter.clone().detach()
+                current_loss = loss.clone().detach()
+
+                lowest_loss = current_loss.clone().detach()
+                lowest_J = J_array.clone().detach()
+                lowest_P = P_array.clone().detach()
+                lowest_w = w_array.clone().detach()
+            else:
+                prob_of_accept = torch.exp(-(loss - current_loss) / temp)
+                random_draw = random.uniform(0,1)
+                if random_draw < prob_of_accept:
+                    accepted = True
+                    J_array = model.j_hyperparameter.detach().clone()
+                    P_array = model.p_hyperparameter.detach().clone()
+                    w_array = model.w_hyperparameter.detach().clone()
+                    current_loss = loss
+
+            temp -= temp_step
+
+            end_time_loss = time.time()
+            print("loss: ", loss)
+            f.write(f"ITTER: {i + 1}\n")
+            f.write(f"Simulation time: {end_time_simulation - start} seconds\n")
+            f.write(f"Loss calculation time: {end_time_loss - end_time_simulation} seconds\n")
+            f.write(f"Total time taken: {time.time() - start} seconds\n")
+            f.write(f"Loss: {loss}\n")
+            f.write(f"avg step: {avg_step}\n")
+            f.write(f"MMD loss: {MMD_loss}\n")
+            f.write(f"Lowest loss: {lowest_loss}\n")
+            f.write(f"Accepted: {accepted}\n")
+            f.write(f"J\n")
+            f.write(str(J_array))
+            f.write("\n")
+            f.write(f"P\n")
+            f.write(str(P_array))
+            f.write("\n")
+            f.write(f"w\n")
+            f.write(str(w_array))
+            f.write("\n\n\n")
+            f.flush()
+            print(f"DONE {i}")
+
+
+        f.write(f"\n---------------------------------------------------\n\n")
+        f.write(f"J: {lowest_J}")
+        f.write(f"P: {lowest_P}")
+        f.write(f"w: {lowest_w}")
+        f.write(f"Lowest loss: {lowest_loss}")
+
 
 def get_data(device="cpu"):
     df = pd.read_csv("./data/K-Data.csv")
@@ -181,10 +317,10 @@ def get_data(device="cpu"):
 
 
 if __name__ == "__main__":
-    
-    GRAD = False
 
-    print("Grad: ", GRAD)
+    SIMULATION_TYPE = "gibbs_annealing"  # gradient_descent, simulation_only
+
+    print("Simulation Type: ", SIMULATION_TYPE)
     if torch.cuda.is_available():
         device = "cuda"
         print("Model will be created on GPU")
@@ -197,20 +333,22 @@ if __name__ == "__main__":
     # J_array = [0.69, 0.64, 0., -0.29] # Max log values
     # P_array = [-2.21, -2.21, -0.8, -0.8]
     # w_array = [3.46, 3.46, 3.46, 3.46]
-
+    # desc = "Starting values with Max log values"
 
     J_array = [0, -0.29, 0.69, -0.64] # Keen log values
     P_array = [-0.8, -2.21, -2.21, -0.8]
     w_array = [3.46, 3.46, 3.46, 3.46]
     desc = "Starting values with Keen log values"
 
-
-    if GRAD:
+    if SIMULATION_TYPE == "gradient_descent":
         model = NeuroNN(J_array, P_array, w_array, 1000, device=device)
         optimizer = optim.SGD(model.parameters(), lr=0.01)
         training_loop(model, optimizer, result_array, device=device, desc=desc)
-    else:
-        model = NeuroNN(J_array, P_array, w_array, 1000, device=device, grad=False)
+    elif SIMULATION_TYPE == "simulation_only":
+        model = NeuroNN(J_array, P_array, w_array, 10000, device=device, grad=False)
         training_loop_no_backwards(model, result_array, device=device, desc=desc)
-
-    # https://towardsdatascience.com/how-to-use-pytorch-as-a-general-optimizer-a91cbf72a7fb
+    elif SIMULATION_TYPE == "gibbs_annealing":
+        model = NeuroNN(J_array, P_array, w_array, 1000, device=device, grad=False)
+        training_loop_simulated_annealing(model, result_array, device=device, desc=desc, n=1000)
+    else:
+        print("SIMULATION_TYPE not found")
