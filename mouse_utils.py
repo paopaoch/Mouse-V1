@@ -387,7 +387,7 @@ def get_data():
     v1 = v1[v1.m == m] # take for all mice later
     v1 = v1.copy()  # to prevent warning
     v1["mouse_unit"] = v1["m"] + "_" + v1["u"].astype(str)
-    v1 = v1.groupby(["mouse_unit", "grat_orientation", "grat_contrast", "grat_spat_freq", "grat_phase"]).mean().reset_index()
+    v1 = v1.groupby(["mouse_unit", "grat_orientation", "grat_contrast", "grat_spat_freq", "grat_phase"]).mean(numeric_only=True).reset_index()
     v1 = v1[["mouse_unit", "grat_orientation", "grat_contrast", "grat_spat_freq", "grat_phase", "response"]]
 
     unique_units = v1['mouse_unit'].unique()
