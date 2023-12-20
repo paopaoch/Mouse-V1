@@ -1,10 +1,17 @@
 import torch
-from tqdm import tqdm
-from time import time, sleep
+from time import time
 
 
 def kernel(x: torch.Tensor, y: torch.Tensor, w=1):
     return torch.exp(-torch.sum((x - y) ** 2, dim=(-2, -1)) / (2 * w**2))
+
+
+def broadcasted_MMD2(X, Y, device):
+    XX = torch.mean(kernel(X[None, :, :, :], X[:, None, :, :]))
+    XY = torch.mean(kernel(X[None, :, :, :], Y[:, None, :, :]))
+    YY = torch.mean(kernel(Y[None, :, :, :], Y[:, None, :, :]))
+
+    return XX - 2 * XY + YY
 
 
 def individual_terms_vanilla(x: torch.Tensor, y: torch.Tensor, device="cpu") -> torch.Tensor:
@@ -37,7 +44,7 @@ def individual_terms_vanilla(x: torch.Tensor, y: torch.Tensor, device="cpu") -> 
                     accum_output = accum_output + kernel(x[i], y[j])
 
         return accum_output / (N * M)
-    
+
 
 def individual_terms_single_loop(x: torch.Tensor, y: torch.Tensor, device="cpu"):
         N = x.shape[0]
@@ -58,43 +65,41 @@ def MMD2(x: torch.Tensor, y: torch.Tensor, device="cpu"):
 
 if torch.cuda.is_available():
     device = "cuda"
-    print("Model moved to GPU.")
+    print("GPU available! Using GPU")
 else:
     device = "cpu"
-    print("GPU not available. Keeping the model on CPU.")
+    print("GPU not available. Using CPU.")
 
-tensor1 = (torch.rand(10000, 8, 12, device=device) * 2 + 100) * 10
+def time_it(func, desc, x, y):
+    print(desc)
+    print("shape of X: ",  x.shape)
+    print("shape of Y: ",  y.shape)
+    start = time()
+    print("MMD value: ", func(x, y, device=device))
+    print("Time taken: ", time() - start, 'seconds\n')
 
-tensor2 = torch.rand(10000, 8, 12, device=device)
+if __name__ == "__main__":
+    tensor1 = (torch.rand(10000, 8, 12, device=device) * 4 + 1000) * 5
 
-tensor3 = (torch.rand(10000, 8, 12, device=device) * 2 + 100) * 10
+    tensor2 = torch.rand(10000, 8, 12, device=device)
 
+    tensor3 = (torch.rand(10000, 8, 12, device=device) * 4 + 1000) * 5
 
-print(individual_terms_single_loop(tensor1, tensor1, device=device))
+    tensor4 = torch.rand(81, 8, 12, device=device)
 
-start = time()
-print(individual_terms_single_loop(tensor2, tensor2, device=device))
-print("end: ", time() - start)
+    tensor5 = torch.rand(4000, 8, 12, device=device)
 
-start = time()
-print(individual_terms_single_loop(tensor1, tensor2, device=device))
-print("end: ", time() - start)
+    print("\n###### Running MMD functions ######\n")
+    time_it(individual_terms_vanilla, "Individual MMD term vanilla: ", tensor4, tensor5)
+    time_it(individual_terms_single_loop, "Individual MMD term single loop: ", tensor4, tensor5)
+    time_it(MMD2, "MMD between two different distributions: ", tensor1, tensor2)
+    time_it(MMD2, "MMD between two different distributions: ", tensor2, tensor3)
+    time_it(MMD2, "MMD between two same distributions with different samples: ", tensor1, tensor3)
+    time_it(MMD2, "MMD between two exact same distributions : ", tensor1, tensor1)
+    time_it(MMD2, "compare MMD2 and broadcasting, MMD2: ", tensor4, tensor5)
+    
+    # this might not run on some machine due to high memory, reduce the size of the tensor then re run
+    time_it(broadcasted_MMD2, "compare MMD2 and broadcasting, broadcasting: ", tensor4, tensor5)
 
-start = time()
-print(individual_terms_single_loop(tensor2, tensor1, device=device))
-print("end: ", time() - start)
-
-
-start = time()
-print(MMD2(tensor1, tensor2, device=device))
-print("end: ", time() - start)
-
-
-start = time()
-print(MMD2(tensor2, tensor3, device=device))
-print("end: ", time() - start)
-
-
-start = time()
-print(MMD2(tensor1, tensor3, device=device))
-print("end: ", time() - start)
+    time_it(MMD2, "MMD of actual V1 project shape: ", tensor3, tensor4)
+    time_it(MMD2, "MMD of actual V1 project shape swaped: ", tensor4, tensor3)
