@@ -53,9 +53,9 @@ class NeuroNN(nn.Module):
         self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
         self.contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
 
-        j_hyper = torch.tensor(J_array, device="cpu")  # offload GPU by having W matrix generation on CPU
-        p_hyper = torch.tensor(P_array, device="cpu")
-        w_hyper = torch.tensor(w_array, device="cpu")
+        j_hyper = torch.tensor(J_array, device=device)
+        p_hyper = torch.tensor(P_array, device=device)
+        w_hyper = torch.tensor(w_array, device=device)
         if grad:
             self.j_hyperparameter = nn.Parameter(j_hyper)
             self.p_hyperparameter = nn.Parameter(p_hyper)
@@ -72,8 +72,8 @@ class NeuroNN(nn.Module):
         self.neuron_num_e = neuron_num_e
         self.neuron_num_i = neuron_num_i
 
-        self.pref_E = torch.linspace(0, 179.99, neuron_num_e, device="cpu", requires_grad=False)
-        self.pref_I = torch.linspace(0, 179.99, neuron_num_i, device="cpu", requires_grad=False)
+        self.pref_E = torch.linspace(0, 179.99, neuron_num_e, device=device, requires_grad=False)
+        self.pref_I = torch.linspace(0, 179.99, neuron_num_i, device=device, requires_grad=False)
         self.pref = torch.cat([self.pref_E, self.pref_I]).to(device)
 
         # Global Parameters
@@ -138,7 +138,7 @@ class NeuroNN(nn.Module):
 
     def update_weight_matrix(self) -> None:
         """Update self.weights and self.weights2 which is the weights and weights squares respectively."""
-        self.weights = self.generate_weight_matrix().to(self.device)
+        self.weights = self.generate_weight_matrix()
         self.weights2 = torch.square(self.weights)
 
 
@@ -151,7 +151,7 @@ class NeuroNN(nn.Module):
     def _get_sub_weight_matrix(self, diff: torch.Tensor, index: int):
         return torch.exp(self.j_hyperparameter[index]) * self._sigmoid(self._sigmoid(self.p_hyperparameter[index], 2)
                                                                        * self._cric_gauss(diff, torch.exp(self.w_hyperparameter[index])) 
-                                                            - torch.rand(len(diff), len(diff[0]), device="cpu", requires_grad=False), 32)
+                                                            - torch.rand(len(diff), len(diff[0]), device=device, requires_grad=False), 32)
 
 
     def generate_weight_matrix(self):
