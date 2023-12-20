@@ -16,19 +16,25 @@ class MMDLossFunction(nn.Module):
         self.device = device
         self.one = torch.tensor(1)
 
-    def forward(self, X, Y, avg_step):
-        print("Calculating MMD loss")
-        XX = torch.mean(self.kernel(X[None, :, :, :], X[:, None, :, :]))
-        XY = torch.mean(self.kernel(X[None, :, :, :], Y[:, None, :, :]))
-        YY = torch.mean(self.kernel(Y[None, :, :, :], Y[:, None, :, :]))
-        print(XX, YY, XY)
+    
+    def forward(self, x: torch.Tensor, y: torch.Tensor, avg_step: torch.Tensor):
+        XX  = self.individual_terms_single_loop(x, x)
+        XY  = self.individual_terms_single_loop(x, y)
+        YY  = self.individual_terms_single_loop(y, y)
+        return XX + YY - 2 * XY  + (torch.maximum(self.one, avg_step) - 1) * 0.002
+    
 
-        output = XX - 2 * XY + YY + (torch.maximum(self.one, avg_step) - 1) * 0.002
-        # output.requires_grad_(True)
-        return output
-
-
-    def kernel(self, x, y, w=1, axes=(-2, -1)):
+    def individual_terms_single_loop(self, x: torch.Tensor, y: torch.Tensor):
+        N = x.shape[0]
+        M = y.shape[0]
+        accum_output = torch.tensor(0, device=self.device)
+        for i in range(N):
+            x_repeated = x[i, :, :].unsqueeze(0).expand(M, -1, -1)
+            accum_output = accum_output + torch.mean(self.kernel(y, x_repeated))
+        return accum_output / N
+    
+    @staticmethod
+    def kernel(x, y, w=1, axes=(-2, -1)):
         return torch.exp(-torch.sum((x - y) ** 2, dim=axes) / (2 * w**2))
 
 
@@ -41,23 +47,24 @@ class NeuroNN(nn.Module):
     2. Solves for fixed point at all contrast and orientation combinations
     """
 
-    def __init__(self, J_array: list, P_array: list, w_array: list, neuron_num: int, ratio=0.8, scaling_g=1, w_ff=30, sig_ext=5, device="cpu"):
+    def __init__(self, J_array: list, P_array: list, w_array: list, neuron_num: int, ratio=0.8, scaling_g=1, w_ff=30, sig_ext=5, device="cpu", grad=True):
         super().__init__()
         self.device = device
         self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
         self.contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
 
-        j_hyper = torch.tensor(J_array, requires_grad=False, device="cpu")
-        # self.j_hyperparameter = nn.Parameter(j_hyper)
-        self.j_hyperparameter = j_hyper
+        j_hyper = torch.tensor(J_array, device="cpu")  # offload GPU by having W matrix generation on CPU
+        p_hyper = torch.tensor(P_array, device="cpu")
+        w_hyper = torch.tensor(w_array, device="cpu")
+        if grad:
+            self.j_hyperparameter = nn.Parameter(j_hyper)
+            self.p_hyperparameter = nn.Parameter(p_hyper)
+            self.w_hyperparameter = nn.Parameter(w_hyper)
+        else:  # set grad to False in-case we dont want to do backwards
+            self.j_hyperparameter = j_hyper
+            self.p_hyperparameter = p_hyper
+            self.w_hyperparameter = w_hyper
 
-        p_hyper = torch.tensor(P_array, requires_grad=False, device="cpu")
-        # self.p_hyperparameter = nn.Parameter(p_hyper)
-        self.p_hyperparameter = p_hyper
-
-        w_hyper = torch.tensor(w_array, requires_grad=False, device="cpu")
-        # self.w_hyperparameter = nn.Parameter(w_hyper)
-        self.w_hyperparameter = w_hyper
 
         self.neuron_num = neuron_num
         neuron_num_e = int(neuron_num * ratio)
@@ -329,10 +336,11 @@ def training_loop(model, optimizer, Y, n=1000, device="cpu"):
         for i in range(n):
             optimizer.zero_grad()
             preds, avg_step = model()
+            print("Computing loss...")
             loss = loss_function(preds, Y, avg_step)
-            print("Computed loss", loss)
+            print("Computed loss: ", loss)
+            print("Backwards...")
             loss.backward()
-            print("Computed grads")
             optimizer.step()
             f.write(f"ITTER: {i + 1}  {loss}\n")
             f.write(f"avg step: {avg_step}\n")
@@ -356,8 +364,9 @@ def training_loop_no_backwards(model, Y, n=1000, device="cpu"):
 
         for i in range(n):
             preds, avg_step = model()
+            print("Computing loss...")
             loss = loss_function(preds, Y, avg_step)
-            print("Computed loss")
+            print("loss: ", loss)
             f.write(f"ITTER: {i + 1}  {preds.shape}\n")
             f.write(f"avg step: {avg_step}\n")
             f.write(str(model.j_hyperparameter))
@@ -371,44 +380,56 @@ def training_loop_no_backwards(model, Y, n=1000, device="cpu"):
             print(f"DONE {i}")
 
 
+def get_data():
+    df = pd.read_csv("./data/K-Data.csv")
+    v1 = df.query("region == 'V1'")
+    m = v1.m.unique()[2]
+    v1 = v1[v1.m == m] # take for all mice later
+    v1 = v1.copy()  # to prevent warning
+    v1["mouse_unit"] = v1["m"] + "_" + v1["u"].astype(str)
+    v1 = v1.groupby(["mouse_unit", "grat_orientation", "grat_contrast", "grat_spat_freq", "grat_phase"]).mean().reset_index()
+    v1 = v1[["mouse_unit", "grat_orientation", "grat_contrast", "grat_spat_freq", "grat_phase", "response"]]
+
+    unique_units = v1['mouse_unit'].unique()
+    unique_orientation = v1['grat_orientation'].unique()
+    unique_contrast = v1['grat_contrast'].unique()
+    unique_spat_freq = v1['grat_spat_freq'].unique()
+    unique_phase = v1['grat_phase'].unique()
+
+    shape = (len(unique_units), len(unique_orientation), len(unique_contrast), len(unique_spat_freq), len(unique_phase))
+    result_array = np.full(shape, np.nan)
+
+    # Iterate through the DataFrame and fill the array
+    for index, row in tqdm(v1.iterrows()):
+        u_index = np.where(unique_units == row['mouse_unit'])[0][0]
+        orientation_index = np.where(unique_orientation == row['grat_orientation'])[0][0]
+        contrast_index = np.where(unique_contrast == row['grat_contrast'])[0][0]
+        spat_freq_index = np.where(unique_spat_freq == row['grat_spat_freq'])[0][0]
+        phase_index = np.where(unique_phase == row['grat_phase'])[0][0]
+        result_array[u_index, orientation_index, contrast_index, spat_freq_index, phase_index] = row['response']
+
+    result_array = np.mean(np.mean(result_array, axis=4), axis=3)
+    result_array = result_array.transpose((0, 2, 1))
+    result_array = result_array * 1000
+
+    result_array = torch.tensor(result_array)
+    return result_array
+
+
 
 
 if __name__ == "__main__":
+    
+    GRAD = False
+    print("Grad: ", GRAD)
+    if torch.cuda.is_available():
+        device = "cuda"
+        print("Model will be created on GPU")
+    else:
+        device = "cpu"
+        print("GPU not available. Model will be created on CPU.")
 
-    df = pd.read_csv("./data/K-Data.csv")
-
-
-    v1 = df.query("region == 'V1'")
-    m = v1.m.unique()[2]
-    v1_data = v1[v1.m == m]
-    # v1_data = v1_data.query("grat_spat_freq == 0.332966").query("grat_phase == [180]")
-    v1_data = v1_data[['u', 'unit_type', 'grat_orientation', 'grat_contrast', 'response', 'smoothed_response']].reset_index(drop=True)
-    v1_data = v1_data.groupby(['unit_type','u', 'grat_contrast', 'grat_orientation'], as_index=False).mean()
-
-
-    # Get unique values for each column
-    unique_u = v1_data['u'].unique()
-    unique_contrast = v1_data['grat_contrast'].unique()
-    unique_orientation = v1_data['grat_orientation'].unique()
-
-
-    # Create a 3D numpy array filled with NaN values
-    shape = (len(unique_u), len(unique_contrast), len(unique_orientation))
-    result_array = np.full(shape, np.nan)
-
-
-    # Iterate through the DataFrame and fill the array
-    for index, row in v1_data.iterrows():
-        u_index = np.where(unique_u == row['u'])[0][0]
-        contrast_index = np.where(unique_contrast == row['grat_contrast'])[0][0]
-        orientation_index = np.where(unique_orientation == row['grat_orientation'])[0][0]
-        
-        result_array[u_index, contrast_index, orientation_index] = row['response']
-
-    # J_array = [1.99, 1.9, 1.01, 0.79]  # Need to make parameters of an exponential
-    # P_array = [0.11, 0.11, 0.45, 0.45]
-    # w_array = [32., 32., 32., 32.]
-
+    result_array = get_data()
 
     # J_array = [0.69, 0.64, 0., -0.29] # Max log values
     # P_array = [-2.21, -2.21, -0.8, -0.8]
@@ -418,29 +439,12 @@ if __name__ == "__main__":
     P_array = [-0.8, -2.21, -2.21, -0.8]
     w_array = [3.46, 3.46, 3.46, 3.46]
 
-    # J_array = [-5.1707, -0.0277,  0.9482,  0.1585]
-    # P_array = [-6.1361, -1.9772,  0.8548,  1.2384]
-    # w_array = [0.3990, 3.6245, 4.1893, 3.6955]
-
-    # J_array = [0.69, 0.64, 0., -0.29]
-    # P_array = [-1.21, -1.21, -0.8, -0.8]
-    # w_array = [3.46, 3.46, 3.46, 3.46]
-
-    # J_array = [9.04e-02, 3.82e-05, 7.62e-5, 2.52]
-    # P_array = [1.93e-02,  8.78,  1.79e-04,  2.85]
-    # w_array = [8.78, 166, 1.23e-2, 1.81e2]
-
-    if torch.cuda.is_available():
-        device = "cuda"
-        print("Model moved to GPU.")
+    if GRAD:
+        model = NeuroNN(J_array, P_array, w_array, 4000, device=device)
+        optimizer = optim.SGD(model.parameters(), lr=0.01)
+        training_loop(model, optimizer, result_array, device=device)
     else:
-        device = "cpu"
-        print("GPU not available. Keeping the model on CPU.")
-
-    model = NeuroNN(J_array, P_array, w_array, 10000, device=device)
-    # optimizer = optim.SGD(model.parameters(), lr=0.01)
-
-    # training_loop(model, optimizer, result_array, device=device)
-    training_loop_no_backwards(model, result_array, device=device)
+        model = NeuroNN(J_array, P_array, w_array, 10000, device=device, grad=False)
+        training_loop_no_backwards(model, result_array, device=device)
 
     # https://towardsdatascience.com/how-to-use-pytorch-as-a-general-optimizer-a91cbf72a7fb
