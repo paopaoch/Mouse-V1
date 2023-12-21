@@ -349,6 +349,6 @@ if __name__ == "__main__":
         training_loop_no_backwards(model, result_array, device=device, desc=desc)
     elif SIMULATION_TYPE == "gibbs_annealing":
         model = NeuroNN(J_array, P_array, w_array, 10000, device=device, grad=False)
-        training_loop_simulated_annealing(model, result_array, device=device, desc=desc, n=500, temp=1000)
+        training_loop_simulated_annealing(model, result_array, device=device, desc=desc, n=1000, temp=1000)
     else:
         print("SIMULATION_TYPE not found")
