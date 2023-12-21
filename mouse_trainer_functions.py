@@ -318,7 +318,7 @@ def get_data(device="cpu"):
 
 if __name__ == "__main__":
 
-    SIMULATION_TYPE = "gradient_descent"  # gradient_descent, simulation_only
+    SIMULATION_TYPE = "gibbs_annealing"  # gradient_descent, simulation_only, gibbs_annealing
 
     print("Simulation Type: ", SIMULATION_TYPE)
     if torch.cuda.is_available():
@@ -348,7 +348,7 @@ if __name__ == "__main__":
         model = NeuroNN(J_array, P_array, w_array, 10000, device=device, grad=False)
         training_loop_no_backwards(model, result_array, device=device, desc=desc)
     elif SIMULATION_TYPE == "gibbs_annealing":
-        model = NeuroNN(J_array, P_array, w_array, 1000, device=device, grad=False)
-        training_loop_simulated_annealing(model, result_array, device=device, desc=desc, n=1000, temp=1000)
+        model = NeuroNN(J_array, P_array, w_array, 10000, device=device, grad=False)
+        training_loop_simulated_annealing(model, result_array, device=device, desc=desc, n=500, temp=1000)
     else:
         print("SIMULATION_TYPE not found")
