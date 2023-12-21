@@ -273,11 +273,11 @@ def training_loop_simulated_annealing(model: NeuroNN, Y, n=1000, device="cpu", d
             print(f"DONE {i}")
 
 
-        f.write(f"\n---------------------------------------------------\n\n")
-        f.write(f"J: {lowest_J}")
-        f.write(f"P: {lowest_P}")
-        f.write(f"w: {lowest_w}")
-        f.write(f"Lowest loss: {lowest_loss}")
+        f.write(f"---------------------------------------------------\n\n")
+        f.write(f"J: {lowest_J}\n")
+        f.write(f"P: {lowest_P}\n")
+        f.write(f"w: {lowest_w}\n")
+        f.write(f"Lowest loss: {lowest_loss}\n")
 
 
 def get_data(device="cpu"):
@@ -318,7 +318,7 @@ def get_data(device="cpu"):
 
 if __name__ == "__main__":
 
-    SIMULATION_TYPE = "gibbs_annealing"  # gradient_descent, simulation_only
+    SIMULATION_TYPE = "gradient_descent"  # gradient_descent, simulation_only
 
     print("Simulation Type: ", SIMULATION_TYPE)
     if torch.cuda.is_available():
@@ -349,6 +349,6 @@ if __name__ == "__main__":
         training_loop_no_backwards(model, result_array, device=device, desc=desc)
     elif SIMULATION_TYPE == "gibbs_annealing":
         model = NeuroNN(J_array, P_array, w_array, 1000, device=device, grad=False)
-        training_loop_simulated_annealing(model, result_array, device=device, desc=desc, n=1000)
+        training_loop_simulated_annealing(model, result_array, device=device, desc=desc, n=1000, temp=1000)
     else:
         print("SIMULATION_TYPE not found")
