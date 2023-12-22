@@ -148,6 +148,11 @@ def training_loop_simulated_annealing(model: NeuroNN, Y, n=1000, device="cpu", d
     "Training loop for torch model."
     temp_step = temp / n
 
+    # Limiting the range of the parameters, this is temporary,
+    # we should remove the exp and sigmoid in the simulation loop and replace with this limit
+    lower_limits = [-10, -10, 6]
+    upper_limits = [1, 1, 2]
+
     with open(f"log_run_{time.time()}.log", "w") as f:
         # write the metadata to log file
         f.write("#### Mouse V1 Project log file ####\n\n")
@@ -210,14 +215,28 @@ def training_loop_simulated_annealing(model: NeuroNN, Y, n=1000, device="cpu", d
             # Run Gibbs sampling to get new parameters -- TODO: add limits
             random_param_type = random.randint(0, 2)
             random_connection_type = random.randint(0, 3)
-            adjust_value = random.gauss(0, 0.5)
 
             if random_param_type == 0:  # adjust J
-                J_array[random_connection_type] += adjust_value
+                while True:
+                    adjust_value = random.gauss(0, 0.5)
+                    new_val = J_array[random_connection_type] + adjust_value
+                    if new_val < upper_limits[0] and new_val > upper_limits[0]:
+                        J_array[random_connection_type] += adjust_value
+                        break
             elif random_param_type == 1:  # adjust P
-                P_array[random_connection_type] += adjust_value
+                while True:
+                    adjust_value = random.gauss(0, 0.5)
+                    new_val = P_array[random_connection_type] + adjust_value
+                    if new_val < upper_limits[1] and new_val > upper_limits[1]:
+                        P_array[random_connection_type] += adjust_value
+                        break
             elif random_param_type == 2:  # adjust w
-                w_array[random_connection_type] += adjust_value
+                while True:
+                    adjust_value = random.gauss(0, 0.5)
+                    new_val = w_array[random_connection_type] + adjust_value
+                    if new_val < upper_limits[2] and new_val > upper_limits[2]:
+                        w_array[random_connection_type] += adjust_value
+                        break
 
             model.set_parameters(J_array, P_array, w_array)
             preds, avg_step = model()
