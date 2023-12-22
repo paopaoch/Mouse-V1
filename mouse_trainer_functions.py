@@ -216,7 +216,7 @@ def training_loop_simulated_annealing(model: NeuroNN, Y, n=1000, device="cpu", d
             random_param_type = random.randint(0, 2)
             random_connection_type = random.randint(0, 3)
 
-            if random_param_type == 0:  # adjust J
+            if random_param_type == 0:  # adjust J # TODO: Needs a lot of refactoring
                 while True:
                     adjust_value = random.gauss(0, 0.5)
                     new_val = J_array[random_connection_type] + adjust_value
