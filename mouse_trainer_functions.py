@@ -357,7 +357,8 @@ if __name__ == "__main__":
     J_array = [0, -0.29, 0.69, -0.64] # Keen log values
     P_array = [-0.8, -2.21, -2.21, -0.8]
     w_array = [3.46, 3.46, 3.46, 3.46]
-    desc = "Starting values with Keen log values"
+    # desc = "Starting values with Keen log values"
+    desc = "Starting values with Keen log values with upper and lower bound on the parameters"
 
     if SIMULATION_TYPE == "gradient_descent":
         model = NeuroNN(J_array, P_array, w_array, 1000, device=device)
