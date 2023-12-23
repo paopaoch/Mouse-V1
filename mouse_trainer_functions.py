@@ -152,6 +152,7 @@ def training_loop_simulated_annealing(model: NeuroNN, Y, n=1000, device="cpu", d
     # we should remove the exp and sigmoid in the simulation loop and replace with this limit
     lower_limits = [-10, -10, 2]
     upper_limits = [2, 2, 6]
+    anneal_sample_var = [0.08, 0.08, 0.03]
 
     with open(f"log_run_{time.time()}.log", "w") as f:
         # write the metadata to log file
@@ -218,21 +219,21 @@ def training_loop_simulated_annealing(model: NeuroNN, Y, n=1000, device="cpu", d
 
             if random_param_type == 0:  # adjust J # TODO: Needs a lot of refactoring
                 while True:
-                    adjust_value = random.gauss(0, 0.1)
+                    adjust_value = random.gauss(0, anneal_sample_var[0])
                     new_val = J_array[random_connection_type] + adjust_value
                     if new_val < upper_limits[0] and new_val > lower_limits[0]:
                         J_array[random_connection_type] += adjust_value
                         break
             elif random_param_type == 1:  # adjust P
                 while True:
-                    adjust_value = random.gauss(0, 0.1)
+                    adjust_value = random.gauss(0, anneal_sample_var[1])
                     new_val = P_array[random_connection_type] + adjust_value
                     if new_val < upper_limits[1] and new_val > lower_limits[1]:
                         P_array[random_connection_type] += adjust_value
                         break
             elif random_param_type == 2:  # adjust w
                 while True:
-                    adjust_value = random.gauss(0, 0.1)
+                    adjust_value = random.gauss(0, anneal_sample_var[2])
                     new_val = w_array[random_connection_type] + adjust_value
                     if new_val < upper_limits[2] and new_val > lower_limits[2]:
                         w_array[random_connection_type] += adjust_value
@@ -369,6 +370,6 @@ if __name__ == "__main__":
         training_loop_no_backwards(model, result_array, device=device, desc=desc)
     elif SIMULATION_TYPE == "gibbs_annealing":
         model = NeuroNN(J_array, P_array, w_array, 10000, device=device, grad=False)
-        training_loop_simulated_annealing(model, result_array, device=device, desc=desc, n=1000, temp=2)
+        training_loop_simulated_annealing(model, result_array, device=device, desc=desc, n=2000, temp=2)
     else:
         print("SIMULATION_TYPE not found")

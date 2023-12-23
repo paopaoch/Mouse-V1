@@ -237,6 +237,11 @@ class NeuroNN(nn.Module):
 
 
     def run_all_orientation_and_contrast(self):
+        """should condense this down to one single loop like the loss function, 
+        runtime will be less but memory might be bad because of (10000, 10000, 12).
+        Maybe we can keep the 2 loops but use (10000, 10000, 4) instead. In other words,
+        use a third of the orientations at a time then build the matrix up that way.
+        """
         all_rates = []
         avg_step_sum = torch.tensor(0, device=self.device)
         count = 0
