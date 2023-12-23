@@ -358,7 +358,7 @@ if __name__ == "__main__":
     P_array = [-0.8, -2.21, -2.21, -0.8]
     w_array = [3.46, 3.46, 3.46, 3.46]
     # desc = "Starting values with Keen log values"
-    desc = "Starting values with Keen log values with upper and lower bound on the parameters"
+    desc = "Starting values with Keen log values with a very low temperature and high euler."
 
     if SIMULATION_TYPE == "gradient_descent":
         model = NeuroNN(J_array, P_array, w_array, 1000, device=device)
@@ -369,6 +369,6 @@ if __name__ == "__main__":
         training_loop_no_backwards(model, result_array, device=device, desc=desc)
     elif SIMULATION_TYPE == "gibbs_annealing":
         model = NeuroNN(J_array, P_array, w_array, 10000, device=device, grad=False)
-        training_loop_simulated_annealing(model, result_array, device=device, desc=desc, n=1000, temp=10)
+        training_loop_simulated_annealing(model, result_array, device=device, desc=desc, n=1000, temp=2)
     else:
         print("SIMULATION_TYPE not found")

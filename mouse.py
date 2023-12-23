@@ -105,8 +105,8 @@ class NeuroNN(nn.Module):
         self.update_weight_matrix()
 
         # Constants for euler
-        self.Nmax=100
-        self.Navg=80
+        self.Nmax=200
+        self.Navg=180
         self.dt=0.001
         self.xtol=1e-5
         self.xmin=1e-0
