@@ -365,7 +365,7 @@ if __name__ == "__main__":
     P_array = [-0.8, -2.21, -2.21, -0.8]
     w_array = [3.46, 3.46, 3.46, 3.46]
     # desc = "Starting values with Keen log values"
-    desc = "Starting values with Keen log values with a very low temperature and high euler."
+    desc = "Starting values with Keen log values with a very low temperature and high euler. Fixed bugs"
 
     if SIMULATION_TYPE == "gradient_descent":
         model = NeuroNN(J_array, P_array, w_array, 1000, device=device)
