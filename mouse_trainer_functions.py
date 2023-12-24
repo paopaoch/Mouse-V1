@@ -213,36 +213,39 @@ def training_loop_simulated_annealing(model: NeuroNN, Y, n=1000, device="cpu", d
         lowest_w = w_array.clone().detach()
 
         for i in range(n):
+            new_J = J_array.clone().detach()
+            new_P = P_array.clone().detach()
+            new_w = w_array.clone().detach()
             accepted = False
             start = time.time()
 
-            # Run Gibbs sampling to get new parameters -- TODO: add limits
+            # Run Gibbs sampling to get new parameters
             random_param_type = random.randint(0, 2)
             random_connection_type = random.randint(0, 3)
 
             if random_param_type == 0:  # adjust J # TODO: Needs a lot of refactoring
                 while True:
                     adjust_value = random.gauss(0, anneal_sample_var[0])
-                    new_val = J_array[random_connection_type] + adjust_value
+                    new_val = new_J[random_connection_type] + adjust_value
                     if new_val < upper_limits[0] and new_val > lower_limits[0]:
-                        J_array[random_connection_type] += adjust_value
+                        new_J[random_connection_type] += adjust_value
                         break
             elif random_param_type == 1:  # adjust P
                 while True:
                     adjust_value = random.gauss(0, anneal_sample_var[1])
-                    new_val = P_array[random_connection_type] + adjust_value
+                    new_val = new_P[random_connection_type] + adjust_value
                     if new_val < upper_limits[1] and new_val > lower_limits[1]:
-                        P_array[random_connection_type] += adjust_value
+                        new_P[random_connection_type] += adjust_value
                         break
             elif random_param_type == 2:  # adjust w
                 while True:
                     adjust_value = random.gauss(0, anneal_sample_var[2])
-                    new_val = w_array[random_connection_type] + adjust_value
+                    new_val = new_w[random_connection_type] + adjust_value
                     if new_val < upper_limits[2] and new_val > lower_limits[2]:
-                        w_array[random_connection_type] += adjust_value
+                        new_w[random_connection_type] += adjust_value
                         break
 
-            model.set_parameters(J_array, P_array, w_array)
+            model.set_parameters(new_J, new_P, new_w)
             preds, avg_step = model()
             print("Computing loss...")
             end_time_simulation = time.time()
