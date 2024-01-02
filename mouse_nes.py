@@ -63,6 +63,7 @@ def nes_multigaussian_optim(mean, cov, max_iter, samples_per_iter, Y, eta_delta=
 
     for _ in tqdm(range(max_iter)):
         samples = multivariate_normal.sample((samples_per_iter,))
+        samples.to(device=device)
         losses = []
         J, P, w = mean_to_params(mean)
         preds, avg_step = model()
