@@ -29,14 +29,14 @@ def get_utilities(samples, device="cpu"):  # samples are sorted in ascending ord
         value = max(torch.tensor(0, dtype=torch.float32, device=device), log_lamb - torch.log(torch.tensor(i, dtype=torch.float32, device=device)))
         numerators.append(value)
         denominator += value
-    return torch.stack(numerators) / denominator - (1 / lamb)
+    return torch.stack(numerators, device=device) / denominator - (1 / lamb)
 
 
 def sort_two_arrays(array1, array2, device="cpu"):  # sort according to array1
     combined_arrays = zip(array1, array2)
     sorted_combined = sorted(combined_arrays, key=lambda x: x[0])
     sorted_array1, sorted_array2 = zip(*sorted_combined)
-    return torch.tensor(sorted_array1, device=device), torch.stack(sorted_array2)
+    return torch.tensor(sorted_array1, device=device), torch.stack(sorted_array2, device=device)
 
 
 def nes_multigaussian_optim(mean, cov, max_iter, samples_per_iter, Y, eta_delta=0.01, eta_sigma=0.01, eta_B=0.01, device="cpu"):
