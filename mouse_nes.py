@@ -5,7 +5,7 @@ from tqdm import tqdm
 from mouse import MMDLossFunction, NeuroNN
 from mouse_trainer_functions import get_data
 
-# TODO: Make this a class
+# TODO: Make log file
 
 def make_torch_params(mean_list, var_list, device="cpu"):
     """Return a tensor with mean and a diagonal covariance matrix, TODO: add shape checking, positive definite check"""
@@ -39,11 +39,11 @@ def sort_two_arrays(array1, array2, device="cpu"):  # sort according to array1
     return torch.tensor(sorted_array1, device=device), torch.stack(sorted_array2)
 
 
-def nes_multigaussian_optim(mean, cov, max_iter, samples_per_iter, Y, eta_delta=0.01, eta_sigma=0.01, eta_B=0.01, device="cpu"):
+def nes_multigaussian_optim(mean, cov, max_iter, samples_per_iter, Y, eta_delta=0.001, eta_sigma=0.001, eta_B=0.001, device="cpu"):
     
     # Init model and loss function
     J, P, w = mean_to_params(mean)
-    model = NeuroNN(J, P, w, 3000, device=device, grad=False)
+    model = NeuroNN(J, P, w, 10000, device=device, grad=False)
     loss_function = MMDLossFunction(device=device)
 
 
@@ -69,6 +69,7 @@ def nes_multigaussian_optim(mean, cov, max_iter, samples_per_iter, Y, eta_delta=
         preds, avg_step = model()
         mean_loss, mean_MMD_loss = loss_function(preds, Y, avg_step)
         print("current_loss: ", mean_loss, mean_MMD_loss)
+        print("mean: ", mean)
         for k in range(samples_per_iter):
             zk = mean + sigma * (B.t() @ samples[k])
 
@@ -124,4 +125,4 @@ if __name__ == "__main__":
 
     Y = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 100, 36, Y, device=device))  # TODO: need to implement xNES 
+    print(nes_multigaussian_optim(mean, cov, 15, 36, Y, device=device))  # TODO: need to implement xNES important sampling
