@@ -42,7 +42,7 @@ def sort_two_arrays(array1, array2, device="cpu"):  # sort according to array1
 def nes_multigaussian_optim(mean, cov, max_iter, samples_per_iter, Y, eta_delta=0.01, eta_sigma=0.01, eta_B=0.01, device="cpu"):
     
     # Init model and loss function
-    J, P, w = mean_to_params(mean, device=device)
+    J, P, w = mean_to_params(mean)
     model = NeuroNN(J, P, w, 1000, device=device, grad=False)
     loss_function = MMDLossFunction(device=device)
 
