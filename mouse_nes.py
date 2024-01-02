@@ -119,7 +119,7 @@ if __name__ == "__main__":
                 5, 5, 5, 5, 
                 1, 1, 1, 1]
     
-    mean, cov = make_torch_params(mean_list, var_list)
+    mean, cov = make_torch_params(mean_list, var_list, device=device)
 
     Y = get_data(device=device)
 
