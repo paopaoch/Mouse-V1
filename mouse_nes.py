@@ -124,4 +124,4 @@ if __name__ == "__main__":
 
     Y = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 1000, 36, Y, device=device))
+    print(nes_multigaussian_optim(mean, cov, 1000, 5, Y, device=device))
