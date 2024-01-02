@@ -57,8 +57,8 @@ def nes_multigaussian_optim(mean, cov, max_iter, samples_per_iter, Y, eta_delta=
     B = A / sigma
 
     # initialise a multigaussian dist for sample
-    mean_zeros = torch.zeros(d)
-    cov_iden = torch.eye(d)
+    mean_zeros = torch.zeros(d, device=device)
+    cov_iden = torch.eye(d, device=device)
     multivariate_normal = torch.distributions.MultivariateNormal(mean_zeros, cov_iden)
 
     for _ in tqdm(range(max_iter)):
