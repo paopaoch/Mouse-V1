@@ -85,7 +85,7 @@ def nes_multigaussian_optim(mean, cov, max_iter, samples_per_iter, Y, eta_delta=
         grad_delta = (samples_sorted.permute(1, 0) * utilities).permute(1, 0).sum(dim=(0))
         grad_M = torch.zeros(size=(len(samples_sorted[0]), len(samples_sorted[0])), device=device)  # does not make sense to condense this
         for k, sample in enumerate(samples_sorted):
-            grad_M += ((sample * sample.t()) - torch.eye(len(sample))) * utilities[k]
+            grad_M += ((sample * sample.t()) - torch.eye(len(sample), device=device)) * utilities[k]
 
         grad_sigma = torch.trace(grad_M) / d
         grad_B = torch.trace(grad_M) - grad_sigma * torch.eye(len(grad_M), device=device)
