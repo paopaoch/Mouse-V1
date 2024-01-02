@@ -149,7 +149,7 @@ class NeuroNN(nn.Module):
         First updates the weights then solves the fix point for all orientation and contrasts.
         """
         self.update_weight_matrix()
-        print("Generated a W matrix")
+        # print("Generated a W matrix")
         tuning_curves, avg_step = self.run_all_orientation_and_contrast()
         return tuning_curves, avg_step
 
