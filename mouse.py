@@ -105,8 +105,8 @@ class NeuroNN(nn.Module):
         self.update_weight_matrix()
 
         # Constants for euler
-        self.Nmax=200
-        self.Navg=180
+        self.Nmax=100
+        self.Navg=80
         self.dt=0.001
         self.xtol=1e-5
         self.xmin=1e-0
@@ -169,10 +169,31 @@ class NeuroNN(nn.Module):
         return pref_b[None, :] - pref_a[:, None]
 
 
+    # def _get_sub_weight_matrix(self, diff: torch.Tensor, index: int):
+    #     return torch.exp(self.j_hyperparameter[index]) * self._sigmoid(self._sigmoid(self.p_hyperparameter[index], 2)
+    #                                                                    * self._cric_gauss(diff, torch.exp(self.w_hyperparameter[index])) 
+    #                                                         - torch.rand(len(diff), len(diff[0]), device=self.device, requires_grad=False), 32)
+
+
+    @staticmethod
+    def J_sigmoid(x):
+        return 4 / (1 + torch.exp(- x / 4))
+    
+    
+    @staticmethod
+    def P_sigmoid(x):
+        return 1 / (1 + torch.exp(- x / 3))
+    
+
+    @staticmethod
+    def w_sigmoid(x):
+        return 180 / (1 + torch.exp(- x / 30))
+
+
     def _get_sub_weight_matrix(self, diff: torch.Tensor, index: int):
-        return torch.exp(self.j_hyperparameter[index]) * self._sigmoid(self._sigmoid(self.p_hyperparameter[index], 2)
-                                                                       * self._cric_gauss(diff, torch.exp(self.w_hyperparameter[index])) 
-                                                            - torch.rand(len(diff), len(diff[0]), device=self.device, requires_grad=False), 32)
+        return self.J_sigmoid(self.j_hyperparameter[index]) * self._sigmoid(self.P_sigmoid(self.p_hyperparameter[index])
+                                                                            * self._cric_gauss(diff, self.w_sigmoid(self.w_hyperparameter[index]))
+                                                                            - torch.rand(len(diff), len(diff[0]), device=self.device, requires_grad=False), 32)
 
 
     def generate_weight_matrix(self):
