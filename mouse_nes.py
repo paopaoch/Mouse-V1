@@ -141,8 +141,11 @@ def nes_multigaussian_optim(mean, cov, max_iter, samples_per_iter, Y, neuron_num
         A_optimised = B * sigma
         cov_optimised = A_optimised.t() @ A_optimised
         
+        f.write("Final mean \n")
+        f.write(mean)
+        f.write("\n\n")
         f.write("Final covariance matrix:\n")
-        f.write(cov_optimised)
+        f.write(str(cov_optimised))
         f.write("\n\n")
         f.flush()
 
