@@ -152,7 +152,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             f.write(f"Mean: {mean}\n")
             f.write(f"Mean loss: {mean_loss}\n")
 
-            while len(sample) < samples_per_iter:  # Idealy, this could be done in parallel
+            while len(samples) < samples_per_iter:  # Idealy, this could be done in parallel
                 sample = multivariate_normal.sample((1,)).flatten()
                 sample.to(device=device)
                 prob = torch.exp(multivariate_normal.log_prob(sample))
