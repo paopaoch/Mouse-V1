@@ -207,7 +207,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
         f.write(f"---------------------------------------------------\n\n\n")
         f.write("Final mean \n")
-        f.write(mean)
+        f.write(str(mean))
         f.write("\n\n")
         f.write("Final covariance matrix:\n")
         f.write(str(cov_optimised))
@@ -239,4 +239,4 @@ if __name__ == "__main__":
 
     Y = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 2, 12, Y, device=device, neuron_num=1000))
+    print(nes_multigaussian_optim(mean, cov, 20, 12, Y, device=device, neuron_num=1000))
