@@ -1,5 +1,4 @@
 import torch
-import random
 import time
 from datetime import datetime
 import sys
@@ -180,8 +179,11 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             loss_sorted, samples_sorted = sort_two_arrays(losses, samples, device=device)
             
             avg_loss = torch.mean(loss_sorted)
+            min_loss = torch.min(loss_sorted)
+            print("Min loss", min_loss)
             print("Avg loss", avg_loss)
             f.write(f"Avg loss {avg_loss}\n")
+            f.write(f"Min loss {min_loss}\n")
             f.write("\n\n\n")
 
             # Compute gradients
@@ -219,6 +221,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 if __name__ == "__main__":
 
+    desc = "First official run of xNES, the experimental runs dont seem to converge, but perhaps thats because we are not using enough samples at each iteration. If we could run the model in parallel, we could reduce runtime and increase the number of samples."
 
     if torch.cuda.is_available():
         device = "cuda"
@@ -239,4 +242,4 @@ if __name__ == "__main__":
 
     Y = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 100, 12, Y, device=device, neuron_num=1000))
+    print(nes_multigaussian_optim(mean, cov, 21, 36, Y, device=device, neuron_num=10000, desc=desc))
