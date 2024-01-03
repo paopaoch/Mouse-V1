@@ -8,6 +8,28 @@ from mouse import MMDLossFunction, NeuroNN
 from mouse_trainer_functions import get_data
 
 
+class MouseDataPoint:
+    def __init__(self, loss: torch.Tensor, zk: torch.Tensor, prob: torch.Tensor):
+        self.loss = loss
+        self.zk = zk
+        self.prob = prob
+    
+    def get_loss(self):
+        return self.loss.clone().detach()
+    
+
+    def get_zk(self):
+        return self.zk.clone().detach()
+    
+
+    def get_prob(self):
+        return self.prob.clone().detach()
+    
+
+    def update_prob(self, new_prob: torch.Tensor):
+        self.prob = new_prob.clone().detach()
+
+
 def make_torch_params(mean_list, var_list, device="cpu"):
     """Return a tensor with mean and a diagonal covariance matrix, TODO: add shape checking, positive definite check"""
     # Mean
@@ -21,8 +43,8 @@ def mean_to_params(mean):
     return mean[0:4], mean[4:8], mean[8:12]
 
 
-def get_utilities(samples, device="cpu"):  # samples are sorted in ascending order as we want lower loss
-    lamb = torch.tensor(len(samples), device=device)
+def get_utilities(length: int, device="cpu"):  # samples are sorted in ascending order as we want lower loss
+    lamb = torch.tensor(length, device=device)
     log_lamb = torch.log(lamb/2 + 1)
     denominator = torch.tensor(0, dtype=torch.float32, device=device)
     numerators = []
@@ -33,14 +55,16 @@ def get_utilities(samples, device="cpu"):  # samples are sorted in ascending ord
     return torch.stack(numerators) / denominator - (1 / lamb)
 
 
-def sort_two_arrays(array1, array2, device="cpu"):  # sort according to array1
-    combined_arrays = zip(array1, array2)
+def sort_two_arrays(losses: list, samples: list, device="cpu"):  # sort according to array1
+    combined_arrays = zip(losses, samples)
     sorted_combined = sorted(combined_arrays, key=lambda x: x[0])
-    sorted_array1, sorted_array2 = zip(*sorted_combined)
-    return torch.tensor(sorted_array1, device=device), torch.stack(sorted_array2)
+    sorted_losses, sorted_samples = zip(*sorted_combined)
+    return torch.tensor(sorted_losses, device=device), torch.stack(sorted_samples)  # WARNING: Very prone to error, double check this
 
 
-def nes_multigaussian_optim(mean, cov, max_iter, samples_per_iter, Y, neuron_num=10000, eta_delta=0.01, eta_sigma=0.001, eta_B=0.001, device="cpu", avg_step_weighting=0.002, desc=""):
+def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int, samples_per_iter: int, Y, 
+                            neuron_num=10000, eta_delta=0.01, eta_sigma=0.001, eta_B=0.001, 
+                            device="cpu", avg_step_weighting=0.002, desc="", alpha=0.1):
     # Init model and loss function
     J, P, w = mean_to_params(mean)
     model = NeuroNN(J, P, w, neuron_num, device=device, grad=False)
@@ -92,30 +116,64 @@ def nes_multigaussian_optim(mean, cov, max_iter, samples_per_iter, Y, neuron_num
         mean_zeros = torch.zeros(d, device=device)
         cov_iden = torch.eye(d, device=device)
         multivariate_normal = torch.distributions.MultivariateNormal(mean_zeros, cov_iden)
+        utilities = get_utilities(samples_per_iter, device=device)  # Utilities do not depend on the samples but depend on the number of samples, so fixed throughout
+        prev_samples: list[MouseDataPoint] = []
+        prev_mean = mean.clone().detach()
+        prev_sigma = sigma.clone().detach()
+        prev_B = B.clone().detach()
 
         for i in tqdm(range(max_iter)):
             f.write(f"ITERATION: {i}\n")
-            samples = multivariate_normal.sample((samples_per_iter,))
-            samples.to(device=device)
-            losses = []
             J, P, w = mean_to_params(mean)
             preds, avg_step = model()
             mean_loss, mean_MMD_loss = loss_function(preds, Y, avg_step)
-            print("current_loss: ", mean_loss, mean_MMD_loss)
+            print("current_mean_loss: ", mean_loss, mean_MMD_loss)
             print("mean: ", mean)
             f.write(f"Mean: {mean}\n")
             f.write(f"Mean loss: {mean_loss}\n")
-            for k in range(samples_per_iter):
-                zk = mean + sigma * (B.t() @ samples[k])
 
-                J, P, w = mean_to_params(zk)
-                model.set_parameters(J, P, w)
-                preds, avg_step = model()
-                current_loss, MMD_loss = loss_function(preds, Y, avg_step)
-                losses.append(current_loss.clone().detach())
+            samples = []
+            losses = []
+            current_samples = []
+
+            # Important mixing
+            for prev_sample in prev_samples:
+                sk = torch.inverse(B.t()) @ ((prev_sample.get_zk() - mean) / sigma)
+                prob = torch.exp(multivariate_normal.log_prob(sk))
+                p = torch.minimum(torch.tensor(1, device=device), (1 - alpha) * (prob / prev_sample.get_prob()))
+                accept_p = torch.rand(1)[0]
+                if accept_p < p:
+                    samples.append(sk)
+                    losses.append(prev_sample.get_loss())
+                    prev_sample.update_prob(p)
+                    current_samples.append(prev_sample)
+
+            while len(sample) < samples_per_iter:  # Idealy, this could be done in parallel
+                sample = multivariate_normal.sample((1,)).flatten()
+                sample.to(device=device)
+                prob = torch.exp(multivariate_normal.log_prob(sample))
+
+                zk = mean + sigma * (B.t() @ sample)
+                
+                previous_sk = torch.inverse(prev_B.t()) @ ((zk - prev_mean) / prev_sigma)
+                previous_prob = torch.exp(multivariate_normal.log_prob(previous_sk))
+                p = torch.maximum(alpha, 1 - prob / previous_prob)
+                accept_p = torch.rand(1)[0]
+                if accept_p < p:
+                    J, P, w = mean_to_params(zk)
+                    model.set_parameters(J, P, w)
+                    preds, avg_step = model()
+                    current_loss, _ = loss_function(preds, Y, avg_step)
+
+                    samples.append(sample)
+                    losses.append(current_loss.clone().detach())
+
+                    data_point = MouseDataPoint(current_loss.clone().detach(), 
+                                                zk.clone().detach(), 
+                                                prob.clone().detach())
+                    current_samples.append(data_point)
 
             loss_sorted, samples_sorted = sort_two_arrays(losses, samples, device=device)
-            utilities = get_utilities(loss_sorted, device=device)
             
             avg_loss = torch.mean(loss_sorted)
             print("Avg loss", avg_loss)
@@ -137,10 +195,13 @@ def nes_multigaussian_optim(mean, cov, max_iter, samples_per_iter, Y, neuron_num
             B = B * torch.exp((eta_B / 2) * grad_B)
             f.flush()
 
+            prev_samples = current_samples.copy()
+
         # Get back parameters
         A_optimised = B * sigma
         cov_optimised = A_optimised.t() @ A_optimised
-        
+
+        f.write(f"---------------------------------------------------\n\n\n")
         f.write("Final mean \n")
         f.write(mean)
         f.write("\n\n")
@@ -174,4 +235,4 @@ if __name__ == "__main__":
 
     Y = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 1, 12, Y, device=device))  # TODO: need to implement xNES important sampling
+    print(nes_multigaussian_optim(mean, cov, 1, 12, Y, device=device, neuron_num=1000))
