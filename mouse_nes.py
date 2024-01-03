@@ -124,13 +124,6 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
         for i in tqdm(range(max_iter)):
             f.write(f"ITERATION: {i}\n")
-            J, P, w = mean_to_params(mean)
-            preds, avg_step = model()
-            mean_loss, mean_MMD_loss = loss_function(preds, Y, avg_step)
-            print("current_mean_loss: ", mean_loss, mean_MMD_loss)
-            print("mean: ", mean)
-            f.write(f"Mean: {mean}\n")
-            f.write(f"Mean loss: {mean_loss}\n")
 
             samples = []
             losses = []
@@ -147,6 +140,17 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                     losses.append(prev_sample.get_loss())
                     prev_sample.update_prob(p)
                     current_samples.append(prev_sample)
+
+            print(f"Number of samples reused: {len(samples)}")
+            f.write(f"Number of samples reused: {len(samples)}\n")
+
+            J, P, w = mean_to_params(mean)
+            preds, avg_step = model()
+            mean_loss, mean_MMD_loss = loss_function(preds, Y, avg_step)
+            print("current_mean_loss: ", mean_loss, mean_MMD_loss)
+            print("mean: ", mean)
+            f.write(f"Mean: {mean}\n")
+            f.write(f"Mean loss: {mean_loss}\n")
 
             while len(sample) < samples_per_iter:  # Idealy, this could be done in parallel
                 sample = multivariate_normal.sample((1,)).flatten()
