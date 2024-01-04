@@ -62,7 +62,7 @@ def sort_two_arrays(losses: list, samples: list, device="cpu"):  # sort accordin
 
 
 def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int, samples_per_iter: int, Y, 
-                            neuron_num=10000, eta_delta=0.01, eta_sigma=0.001, eta_B=0.001, 
+                            neuron_num=10000, eta_delta=1, eta_sigma=0.08, eta_B=0.08, 
                             device="cpu", avg_step_weighting=0.002, desc="", alpha=torch.tensor(0.1)):
     # Init model and loss function
     J, P, w = mean_to_params(mean)
@@ -196,7 +196,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             grad_B = torch.trace(grad_M) - grad_sigma * torch.eye(len(grad_M), device=device)
 
             # Update parameters
-            mean = mean + eta_delta * grad_delta
+            mean = mean + eta_delta * sigma * B @ grad_delta
             sigma = sigma * torch.exp((eta_sigma / 2) * grad_sigma)
             B = B * torch.exp((eta_B / 2) * grad_B)
             f.flush()
@@ -221,7 +221,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 if __name__ == "__main__":
 
-    desc = "First official run of xNES, the experimental runs dont seem to converge, but perhaps thats because we are not using enough samples at each iteration. If we could run the model in parallel, we could reduce runtime and increase the number of samples."
+    desc = "Second run. Fixed some bugs, the covariance matrix values were too big and is why it did not converge."
 
     if torch.cuda.is_available():
         device = "cuda"
@@ -234,12 +234,12 @@ if __name__ == "__main__":
                  -1.22, -6.592, -6.592, -1.22,
                  -12.25, -12.25, -12.25, -12.25]
     
-    var_list = [5, 5, 5, 5, 
-                5, 5, 5, 5, 
-                5, 5, 5, 5]
+    var_list = [0.5, 0.5, 0.5, 0.5, 
+                0.5, 0.5, 0.5, 0.5, 
+                0.5, 0.5, 0.5, 0.5]
     
     mean, cov = make_torch_params(mean_list, var_list, device=device)
 
     Y = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 21, 36, Y, device=device, neuron_num=10000, desc=desc))
+    print(nes_multigaussian_optim(mean, cov, 80, 12, Y, device=device, neuron_num=10000, desc=desc))
