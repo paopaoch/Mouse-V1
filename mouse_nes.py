@@ -207,8 +207,15 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         A_optimised = B * sigma
         cov_optimised = A_optimised.t() @ A_optimised
 
+        J, P, w = mean_to_params(mean)
+        preds, avg_step = model()
+        mean_loss, mean_MMD_loss = loss_function(preds, Y, avg_step)
+
         f.write(f"---------------------------------------------------\n\n\n")
-        f.write("Final mean \n")
+        f.write("Final loss and MMD loss:\n")
+        f.write(str(mean_loss))
+        f.write(str(mean_MMD_loss))
+        f.write("Final mean:\n")
         f.write(str(mean))
         f.write("\n\n")
         f.write("Final covariance matrix:\n")
