@@ -62,7 +62,7 @@ def sort_two_arrays(losses: list, samples: list, device="cpu"):  # sort accordin
 
 
 def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int, samples_per_iter: int, Y, 
-                            neuron_num=10000, eta_delta=0.1, eta_sigma=0.08, eta_B=0.08, 
+                            neuron_num=10000, eta_delta=1, eta_sigma=0.08, eta_B=0.08, 
                             device="cpu", avg_step_weighting=0.002, desc="", alpha=torch.tensor(0.1)):
     # Init model and loss function
     J, P, w = mean_to_params(mean)
@@ -214,7 +214,9 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         f.write(f"---------------------------------------------------\n\n\n")
         f.write("Final loss and MMD loss:\n")
         f.write(str(mean_loss))
+        f.write("\n")
         f.write(str(mean_MMD_loss))
+        f.write("\n")
         f.write("Final mean:\n")
         f.write(str(mean))
         f.write("\n\n")
@@ -239,7 +241,7 @@ if __name__ == "__main__":
 
     mean_list = [-4.39, -5.865, 0, -7.78,
                  -1.22, -6.592, -6.592, -1.22,
-                 -12.25, -12.25, -12.25, -12.25]
+                 -45.94, -45.94, -45.94, -45.94]
     
     var_list = [0.5, 0.5, 0.5, 0.5, 
                 0.5, 0.5, 0.5, 0.5, 
@@ -249,4 +251,4 @@ if __name__ == "__main__":
 
     Y = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 80, 12, Y, device=device, neuron_num=10000, desc=desc))
+    print(nes_multigaussian_optim(mean, cov, 100, 12, Y, device=device, neuron_num=10000, desc=desc))

@@ -1,5 +1,7 @@
 import torch
 from torch import nn
+import matplotlib.pyplot as plt
+import numpy as np
 
 # https://towardsdatascience.com/how-to-use-pytorch-as-a-general-optimizer-a91cbf72a7fb
 
@@ -120,12 +122,12 @@ class NeuroNN(nn.Module):
 
         # plt.imshow(self.weights.data, cmap="seismic", vmin=-np.max(np.abs(np.array(self.weights.data))), vmax=np.max(np.abs(np.array(self.weights.data))))
         # plt.colorbar()
-        # plt.title("Connection weight matrix for 2000 neurons")
+        # plt.title(f"Connection weight matrix for {self.neuron_num} neurons")
         # plt.xlabel("Neuron index")
         # plt.ylabel("Neuron index")
-        # plt.show()
+        # # plt.show()
         
-        # plt.savefig("./plots/weights_example_2000")
+        # plt.savefig(f"./plots/weights_example_{self.neuron_num}")
     
 
     def set_parameters(self, J_array, P_array, w_array):
