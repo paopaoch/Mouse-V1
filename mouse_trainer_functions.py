@@ -385,7 +385,7 @@ if __name__ == "__main__":
 
     if SIMULATION_TYPE == "gradient_descent":
         model = NeuroNN(J_array, P_array, w_array, 2000, device=device)
-        optimizer = optim.SGD(model.parameters(), lr=0.01)
+        optimizer = optim.SGD(model.parameters(), lr=0.1)
         training_loop(model, optimizer, result_array, device=device, desc=desc, n=80)
     elif SIMULATION_TYPE == "simulation_only":
         model = NeuroNN(J_array, P_array, w_array, 200, device=device, grad=False)
