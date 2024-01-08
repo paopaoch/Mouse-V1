@@ -344,7 +344,7 @@ def get_data(device="cpu"):
 
 if __name__ == "__main__":
 
-    SIMULATION_TYPE = "simulation_only"  # gradient_descent, simulation_only, gibbs_annealing
+    SIMULATION_TYPE = "gradient_descent"  # gradient_descent, simulation_only, gibbs_annealing
 
     print("Simulation Type: ", SIMULATION_TYPE)
     if torch.cuda.is_available():
@@ -367,26 +367,26 @@ if __name__ == "__main__":
     # # desc = "Starting values with Keen log values"
 
 
-    # J_array = [-4.39, -5.865, 0, -7.78]  # Keen sigmoid values
-    # P_array = [-1.22, -6.592, -6.592, -1.22]
-    # w_array = [-12.25, -12.25, -12.25, -12.25]
+    J_array = [-4.39, -5.865, 0, -7.78]  # Keen sigmoid values
+    P_array = [-1.22, -6.592, -6.592, -1.22]
+    w_array = [-45.94, -45.94, -45.94, -45.94]
 
 
     # J_array = [  0.6131,  -6.8548,   2.2939,  -5.6821]  # NES values
     # P_array = [-0.6996,  -7.7089,  -1.3388, -4.4278] 
     # w_array = [-12.3577, -15.2088,  -9.6759, -14.3590]
 
-    J_array = [  -5.6131,  -5.8548,   -5.2939,  -5.6821]  # For plotting
-    P_array = [-3.6996,  -3.7089,  -3.3388, -3.4278] 
-    w_array = [-42.3577, -42.2088,  -42.6759, -42.3590]
+    # J_array = [  -5.6131,  -5.8548,   -5.2939,  -5.6821]  # For plotting
+    # P_array = [-3.6996,  -3.7089,  -3.3388, -3.4278] 
+    # w_array = [-45.94, -42.2088,  -42.6759, -42.3590]
 
 
-    desc = "Starting values with Keen sigmoid values with a very low temperature and high euler. Fixed bugs"
+    desc = "Starting values with Keen sigmoid values. Will use this to compare xNES and gradient descent"
 
     if SIMULATION_TYPE == "gradient_descent":
-        model = NeuroNN(J_array, P_array, w_array, 200, device=device)
+        model = NeuroNN(J_array, P_array, w_array, 2000, device=device)
         optimizer = optim.SGD(model.parameters(), lr=0.01)
-        training_loop(model, optimizer, result_array, device=device, desc=desc)
+        training_loop(model, optimizer, result_array, device=device, desc=desc, n=80)
     elif SIMULATION_TYPE == "simulation_only":
         model = NeuroNN(J_array, P_array, w_array, 200, device=device, grad=False)
         training_loop_no_backwards(model, result_array, device=device, desc=desc)
