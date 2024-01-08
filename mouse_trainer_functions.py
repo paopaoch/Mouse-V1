@@ -348,7 +348,7 @@ if __name__ == "__main__":
 
     print("Simulation Type: ", SIMULATION_TYPE)
     if torch.cuda.is_available():
-        device = "cuda"
+        device = "cuda:1"
         print("Model will be created on GPU")
     else:
         device = "cpu"
