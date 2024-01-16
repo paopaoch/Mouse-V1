@@ -245,7 +245,7 @@ if __name__ == "__main__":
     
     var_list = [0.5, 0.5, 0.5, 0.5, 
                 0.5, 0.5, 0.5, 0.5, 
-                1, 1, 1, 1]
+                1.2, 1.2, 1.2, 1.2]
     
     mean, cov = make_torch_params(mean_list, var_list, device=device)
 
