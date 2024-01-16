@@ -230,7 +230,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 if __name__ == "__main__":
 
-    desc = "Second run. Fixed some bugs, the covariance matrix values were too big and is why it did not converge."
+    desc = "Run based on kraynyukova values"
 
     if torch.cuda.is_available():
         device = "cuda"
@@ -239,16 +239,16 @@ if __name__ == "__main__":
         device = "cpu"
         print("GPU not available. Model will be created on CPU.")
 
-    mean_list = [-4.39, -5.865, 0, -7.78,
-                 -1.22, -6.592, -6.592, -1.22,
-                 -45.94, -45.94, -45.94, -45.94]
+    mean_list = [-5.865,-7.78, 0, -4.39,
+                 0, 0, 0, 0,
+                 -45.94, -60, -35.69, -45.94]  # loosely based on kraynyukova values
     
     var_list = [0.5, 0.5, 0.5, 0.5, 
                 0.5, 0.5, 0.5, 0.5, 
-                0.5, 0.5, 0.5, 0.5]
+                1, 1, 1, 1]
     
     mean, cov = make_torch_params(mean_list, var_list, device=device)
 
     Y = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 80, 12, Y, device=device, neuron_num=2000, desc=desc))
+    print(nes_multigaussian_optim(mean, cov, 80, 12, Y, device=device, neuron_num=10000, desc=desc))

@@ -46,7 +46,7 @@ class NeuroNN(nn.Module):
     2. Solves for fixed point at all contrast and orientation combinations
     """
 
-    def __init__(self, J_array: list, P_array: list, w_array: list, neuron_num: int, ratio=0.8, scaling_g=1, w_ff=30, sig_ext=5, device="cpu", grad=True):
+    def __init__(self, J_array: list, P_array: list, w_array: list, neuron_num: int, ratio=0.8, scaling_g=1, w_ff=30, sig_ext=5, device="cpu", grad=True, plot=False):
         super().__init__()
         self.device = device
         self.grad = grad
@@ -107,8 +107,8 @@ class NeuroNN(nn.Module):
         self.update_weight_matrix()
 
         # Constants for euler
-        self.Nmax=100
-        self.Navg=80
+        self.Nmax=300
+        self.Navg=280
         self.dt=0.001
         self.xtol=1e-5
         self.xmin=1e-0
@@ -119,15 +119,16 @@ class NeuroNN(nn.Module):
                     .32171431660633076, .62718906618071668, .93524391761244940, 
                     1.0616084849547165, .64290613877355551, .14805913578876898], device=device
                     , requires_grad=False)
-
-        # plt.imshow(self.weights.data, cmap="seismic", vmin=-np.max(np.abs(np.array(self.weights.data))), vmax=np.max(np.abs(np.array(self.weights.data))))
-        # plt.colorbar()
-        # plt.title(f"Connection weight matrix for {self.neuron_num} neurons")
-        # plt.xlabel("Neuron index")
-        # plt.ylabel("Neuron index")
-        # # plt.show()
         
-        # plt.savefig(f"./plots/weights_example_{self.neuron_num}")
+        if plot:
+            plt.imshow(self.weights.data, cmap="seismic", vmin=-np.max(np.abs(np.array(self.weights.data))), vmax=np.max(np.abs(np.array(self.weights.data))))
+            plt.colorbar()
+            plt.title(f"Connection weight matrix for {self.neuron_num} neurons")
+            plt.xlabel("Neuron index")
+            plt.ylabel("Neuron index")
+            # plt.show()
+            
+            plt.savefig(f"./plots/weights_example_{self.neuron_num}")
     
 
     def set_parameters(self, J_array, P_array, w_array):
