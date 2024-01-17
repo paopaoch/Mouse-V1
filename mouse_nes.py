@@ -252,4 +252,4 @@ if __name__ == "__main__":
 
     Y = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 80, 12, Y, device=device, neuron_num=40000, desc=desc))
+    print(nes_multigaussian_optim(mean, cov, 80, 12, Y, device=device, neuron_num=20000, desc=desc))
