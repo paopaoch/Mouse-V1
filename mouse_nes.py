@@ -234,7 +234,7 @@ if __name__ == "__main__":
     desc = "Run based on kraynyukova values"
 
     if torch.cuda.is_available():
-        device = "cuda:1"
+        device = "cuda:0"
         print("Model will be created on GPU")
     else:
         device = "cpu"
@@ -252,4 +252,4 @@ if __name__ == "__main__":
 
     Y = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 80, 12, Y, device=device, neuron_num=20000, desc=desc))
+    print(nes_multigaussian_optim(mean, cov, 80, 12, Y, device=device, neuron_num=40000, desc=desc))
