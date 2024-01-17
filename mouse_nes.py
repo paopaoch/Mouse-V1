@@ -234,7 +234,7 @@ if __name__ == "__main__":
     desc = "Run based on kraynyukova values"
 
     if torch.cuda.is_available():
-        device = "cuda"
+        device = "cuda:1"
         print("Model will be created on GPU")
     else:
         device = "cpu"
