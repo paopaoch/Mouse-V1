@@ -1,9 +1,21 @@
+"""
+MOUSE
+
+This file contains the NeuroNN class which allows you to generate a weight matrix for the mouse V1 project and
+run the network using the ricciardi transfer function and the Euler method.
+
+It also contains the MMD loss function.
+
+As we want to pose contraints on the weight matrix generation, we rewrote this class to not disturb other files with calls
+the class located in this file. This makes the following legacy code.
+"""
+
+
 import torch
 from torch import nn
 import matplotlib.pyplot as plt
 import numpy as np
 
-# https://towardsdatascience.com/how-to-use-pytorch-as-a-general-optimizer-a91cbf72a7fb
 
 # Set the default data type to float32 globally
 torch.set_default_dtype(torch.float32)
@@ -36,60 +48,6 @@ class MMDLossFunction(nn.Module):
     def kernel(x, y, w=1, axes=(-2, -1)):
         return torch.exp(-torch.sum((x - y) ** 2, dim=axes) / (2 * w**2))
     
-
-class MMDLossFunctionEAndI(nn.Module):
-    def __init__(self, avg_step_weighting=0.002, high_contrast_index=7, device="cpu"):
-        super().__init__()
-        self.device = device
-        self.one = torch.tensor(1)
-        self.avg_step_weighting = avg_step_weighting
-        self.high_contrast_index = high_contrast_index
-
-
-    def forward(self, x_E: torch.Tensor, y_E: torch.Tensor, x_I: torch.Tensor, y_I: torch.Tensor, avg_step: torch.Tensor):
-        E = self.MMD(self.centralise_all_curves(x_E), self.centralise_all_curves(y_E))
-        I = self.MMD(self.centralise_all_curves(x_I), self.centralise_all_curves(y_I))  # TODO: Dont need to center the y_I and y_E all the time
-        return E + I + (torch.maximum(self.one, avg_step) - 1) * self.avg_step_weighting, E + I
-
-    
-    def MMD(self, x: torch.Tensor, y: torch.Tensor):
-        XX  = self.individual_terms_single_loop(x, x)
-        XY  = self.individual_terms_single_loop(x, y)
-        YY  = self.individual_terms_single_loop(y, y)
-        return XX + YY - 2 * XY
-    
-
-    def individual_terms_single_loop(self, x: torch.Tensor, y: torch.Tensor):
-        N = x.shape[0]
-        M = y.shape[0]
-        accum_output = torch.tensor(0, device=self.device)
-        for i in range(N):
-            x_repeated = x[i, :, :].unsqueeze(0).expand(M, -1, -1)
-            accum_output = accum_output + torch.mean(self.kernel(y, x_repeated))
-        return accum_output / N
-    
-    @staticmethod
-    def kernel(x, y, w=1, axes=(-2, -1)):
-        return torch.exp(-torch.sum((x - y) ** 2, dim=axes) / (2 * w**2))
-
-
-    def get_max_index(self, tuning_curve):
-        max_index = torch.argmax(tuning_curve[self.high_contrast_index])  # TODO: might need to convert to INT
-        return max_index
-
-
-    def centralise_curve(self, tuning_curve):
-        max_index = self.get_max_index(tuning_curve)
-        shift_index = 6 - max_index
-        new_tuning_curve = torch.roll(tuning_curve, shift_index, dims=1)  # TODO: Check the syntax
-        return new_tuning_curve
-
-    def centralise_all_curves(self, responses):
-        tuning_curves = []
-        for tuning_curve in responses:
-            tuning_curves.append(self.centralise_curve(tuning_curve))
-        return torch.stack(tuning_curves)  # TODO: Check syntax
-
 
 class NeuroNN(nn.Module):
     """
@@ -233,7 +191,7 @@ class NeuroNN(nn.Module):
 
 
     @staticmethod
-    def J_sigmoid(x):
+    def J_sigmoid(x):  # TODO: merge the 3 functions together
         return 4 / (1 + torch.exp(- x / 4))
     
     
