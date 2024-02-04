@@ -27,7 +27,7 @@ from tqdm import tqdm
 
 torch.set_default_dtype(torch.float32)
 
-def get_data() -> list[torch.Tensor]:
+def get_data(device="cpu"):
     df = pd.read_csv("./data/K-Data.csv")
     v1 = df.query("region == 'V1'")
     m = v1.m.unique()[2]
@@ -66,7 +66,7 @@ def get_data() -> list[torch.Tensor]:
         result_array = result_array.transpose((0, 2, 1))
         result_array = result_array * 1000
 
-        output.append(torch.tensor(result_array, device="cpu"))
+        output.append(torch.tensor(result_array, device=device))
 
     return output
 
