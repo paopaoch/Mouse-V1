@@ -184,12 +184,6 @@ class NeuroNN(nn.Module):
         return pref_b[None, :] - pref_a[:, None]
 
 
-    # def _get_sub_weight_matrix(self, diff: torch.Tensor, index: int):
-    #     return torch.exp(self.j_hyperparameter[index]) * self._sigmoid(self._sigmoid(self.p_hyperparameter[index], 2)
-    #                                                                    * self._cric_gauss(diff, torch.exp(self.w_hyperparameter[index])) 
-    #                                                         - torch.rand(len(diff), len(diff[0]), device=self.device, requires_grad=False), 32)
-
-
     @staticmethod
     def J_sigmoid(x):  # TODO: merge the 3 functions together
         return 4 / (1 + torch.exp(- x / 4))

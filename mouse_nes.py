@@ -3,8 +3,9 @@ import time
 from datetime import datetime
 import sys
 from tqdm import tqdm
-from mouse import MMDLossFunction, NeuroNN
-from mouse_trainer_functions import get_data
+# from mouse import MMDLossFunction, NeuroNN
+# from mouse_trainer_functions import get_data
+from rat import MouseLossFunction, WeightsGenerator, NetworkExecuter, get_data
 
 
 class MouseDataPoint:
@@ -61,13 +62,18 @@ def sort_two_arrays(losses: list, samples: list, device="cpu"):  # sort accordin
     return torch.tensor(sorted_losses, device=device), torch.stack(sorted_samples)  # WARNING: Very prone to error, double check this
 
 
-def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int, samples_per_iter: int, Y, 
+def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int, samples_per_iter: int, y_E, y_I,
                             neuron_num=10000, eta_delta=1, eta_sigma=0.08, eta_B=0.08, 
                             device="cpu", avg_step_weighting=0.002, desc="", alpha=torch.tensor(0.1)):
     # Init model and loss function
     J, P, w = mean_to_params(mean)
-    model = NeuroNN(J, P, w, neuron_num, device=device, grad=False)
-    loss_function = MMDLossFunction(device=device, avg_step_weighting=avg_step_weighting)
+    loss_function = MouseLossFunction()
+    network_executer = NetworkExecuter(10000)
+    weights_generator = WeightsGenerator(J, P, w, neuron_num)
+    weights, weights_valid = weights_generator.generate_weight_matrix()
+    if not weights_valid:
+        print("ERROR WEIGHT IS NOT VALID")
+        return
 
     with open(f"log_nes_run_{time.time()}.log", "w") as f:
         # write the metadata to log file
@@ -78,9 +84,9 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         f.write("Trainer type: xNES\n\n")
         f.write(f"{desc}\n\n")
         f.write("Metadata:\n")
-        f.write(f"Number of neurons: {model.neuron_num}\n")
-        f.write(f"Number of Euler steps: {model.Nmax}\n")
-        f.write(f"Record average step after {model.Navg} steps\n")
+        f.write(f"Number of neurons: {weights_generator.neuron_num}\n")
+        f.write(f"Number of Euler steps: {network_executer.Nmax}\n")
+        f.write(f"Record average step after {network_executer.Navg} steps\n")
         f.write(f"Average step weighting: {avg_step_weighting}\n")
         f.write(f"Number of xNES optimisation step: {max_iter}\n")
         f.write(f"Number of of samples per optimisation step: {samples_per_iter}\n")
@@ -88,13 +94,13 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         f.write(f"---------------------------------------------------\n\n")
         f.write(f"Initial parameters\n")
         f.write(f"J\n")
-        f.write(str(model.j_hyperparameter))
+        f.write(str(weights_generator.j_hyperparameter))
         f.write("\n")
         f.write(f"P\n")
-        f.write(str(model.p_hyperparameter))
+        f.write(str(weights_generator.p_hyperparameter))
         f.write("\n")
         f.write(f"w\n")
-        f.write(str(model.w_hyperparameter))
+        f.write(str(weights_generator.w_hyperparameter))
         f.write("\n\n")
         f.write("Covariance Matrix\n")
         f.write(str(cov))
@@ -144,8 +150,13 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             f.write(f"Number of samples reused: {len(samples)}\n")
 
             J, P, w = mean_to_params(mean)
-            preds, avg_step = model()
-            mean_loss, mean_MMD_loss = loss_function(preds, Y, avg_step)
+            weights_generator.set_parameters(J, P, w)
+            weights, weights_valid = weights_generator.generate_weight_matrix()
+            preds, avg_step = network_executer.run_all_orientation_and_contrast(weights)
+            preds_E = preds[:weights_generator.neuron_num_e]
+            preds_I = preds[weights_generator.neuron_num_i:]
+            mean_loss, mean_MMD_loss = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step)  # TODO: Centralise Y
+            
             print("current_mean_loss: ", mean_loss, mean_MMD_loss)
             print("mean: ", mean)
             f.write(f"Mean: {mean}\n")
@@ -164,10 +175,16 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                 p = torch.maximum(alpha, 1 - prob / previous_prob)
                 accept_p = torch.rand(1)[0]
                 if accept_p < p:
-                    J, P, w = mean_to_params(zk)
-                    model.set_parameters(J, P, w)
-                    preds, avg_step = model()
-                    current_loss, _ = loss_function(preds, Y, avg_step)
+                    J, P, w = mean_to_params(mean)
+                    weights_generator.set_parameters(J, P, w)
+                    weights, weights_valid = weights_generator.generate_weight_matrix()
+                    if weights_valid:
+                        preds, avg_step = network_executer.run_all_orientation_and_contrast(weights)
+                        preds_E = preds[:weights_generator.neuron_num_e]
+                        preds_I = preds[weights_generator.neuron_num_i:]
+                        current_loss, _ = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step)
+                    else:
+                        current_loss = torch.tensor(10000)  # This is pretty much infinity. Need to find a better scaling for rejected weights
 
                     samples.append(sample)
                     losses.append(current_loss.clone().detach())
@@ -181,10 +198,12 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             
             avg_loss = torch.mean(loss_sorted)
             min_loss = torch.min(loss_sorted)
+            max_loss = torch.max(loss_sorted)
             print("Min loss", min_loss)
             print("Avg loss", avg_loss)
             f.write(f"Avg loss {avg_loss}\n")
             f.write(f"Min loss {min_loss}\n")
+            f.write(f"Max loss {max_loss}\n")
             f.write("\n\n\n")
 
             # Compute gradients
@@ -209,8 +228,12 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         cov_optimised = A_optimised.t() @ A_optimised
 
         J, P, w = mean_to_params(mean)
-        preds, avg_step = model()
-        mean_loss, mean_MMD_loss = loss_function(preds, Y, avg_step)
+        weights_generator.set_parameters(J, P, w)
+        weights, weights_valid = weights_generator.generate_weight_matrix()
+        preds, avg_step = network_executer.run_all_orientation_and_contrast(weights)
+        preds_E = preds[:weights_generator.neuron_num_e]
+        preds_I = preds[weights_generator.neuron_num_i:]
+        mean_loss, mean_MMD_loss = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step)  # TODO: Centralise Y
 
         f.write(f"---------------------------------------------------\n\n\n")
         f.write("Final loss and MMD loss:\n")
@@ -250,6 +273,6 @@ if __name__ == "__main__":
     
     mean, cov = make_torch_params(mean_list, var_list, device=device)
 
-    Y = get_data(device=device)
+    y_E, y_I = get_data(device=device)
 
     print(nes_multigaussian_optim(mean, cov, 80, 12, Y, device=device, neuron_num=20000, desc=desc))
