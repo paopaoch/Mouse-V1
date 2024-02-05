@@ -270,7 +270,7 @@ if __name__ == "__main__":
     
     mean_list = [-4.39, -4.39, -4.39, -4.39,
             0, 0, 0, 0,
-            -45.94, -45.94, -45.94, -45.94]  # for testing convergence
+            -60, -60, -60, -60]  # for testing convergence
      
     # var_list = [0.5, 0.5, 0.5, 0.5, 
     #             0.5, 0.5, 0.5, 0.5, 
