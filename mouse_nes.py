@@ -67,9 +67,9 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                             device="cpu", avg_step_weighting=0.002, desc="", alpha=torch.tensor(0.1)):
     # Init model and loss function
     J, P, w = mean_to_params(mean)
-    loss_function = MouseLossFunction()
-    network_executer = NetworkExecuter(neuron_num)
-    weights_generator = WeightsGenerator(J, P, w, neuron_num)
+    loss_function = MouseLossFunction(device=device)
+    network_executer = NetworkExecuter(neuron_num, device=device)
+    weights_generator = WeightsGenerator(J, P, w, neuron_num, device=device)
     weights, weights_valid = weights_generator.generate_weight_matrix()
     if not weights_valid:
         print("ERROR WEIGHT IS NOT VALID")
