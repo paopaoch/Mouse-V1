@@ -126,7 +126,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         prev_B = B.clone().detach()
 
         for i in tqdm(range(max_iter)):
-            f.write(f"ITERATION: {i}\n")
+            f.write(f"ITERATION: {i} 😂\n")
 
             samples = []
             losses = []
@@ -153,7 +153,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             weights, weights_valid = weights_generator.generate_weight_matrix()
             preds, avg_step = network_executer.run_all_orientation_and_contrast(weights)
             preds_E = preds[:weights_generator.neuron_num_e]
-            preds_I = preds[weights_generator.neuron_num_i:]
+            preds_I = preds[weights_generator.neuron_num_e:]
             mean_loss, mean_MMD_loss = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step, x_centralised=True, y_centralised=True)  # TODO: Centralise Y
             
             print("current_mean_loss: ", mean_loss, mean_MMD_loss)
