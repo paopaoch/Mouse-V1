@@ -90,6 +90,9 @@ class MouseLossFunction:
         E = self.MMD(x_E, y_E)
         I = self.MMD(x_I, y_I)
 
+        print(E)
+        print(I)
+
         return E + I + (torch.maximum(self.one, avg_step) - 1) * self.avg_step_weighting, E + I
 
     
