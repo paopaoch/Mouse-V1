@@ -296,7 +296,7 @@ class NetworkExecuter(Rodents):
         all_rates = []
         avg_step_sum = torch.tensor(0, device=self.device)
         count = 0
-        for contrast in tqdm(self.contrasts):
+        for contrast in self.contrasts:
             steady_states = []
             for orientation in self.orientations:
                 rate, avg_step = self._get_steady_state_output(contrast, orientation)
