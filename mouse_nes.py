@@ -3,8 +3,6 @@ import time
 from datetime import datetime
 import sys
 from tqdm import tqdm
-# from mouse import MMDLossFunction, NeuroNN
-# from mouse_trainer_functions import get_data
 from rat import MouseLossFunction, WeightsGenerator, NetworkExecuter, get_data
 
 
@@ -133,6 +131,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             samples = []
             losses = []
             current_samples = []
+            rejected = 0
 
             # Important mixing
             for prev_sample in prev_samples:
@@ -185,6 +184,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                         current_loss, _ = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step)
                     else:
                         current_loss = torch.tensor(10000)  # This is pretty much infinity. Need to find a better scaling for rejected weights
+                        rejected += 1
 
                     samples.append(sample)
                     losses.append(current_loss.clone().detach())
@@ -204,6 +204,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             f.write(f"Avg loss {avg_loss}\n")
             f.write(f"Min loss {min_loss}\n")
             f.write(f"Max loss {max_loss}\n")
+            f.write(f"Rejected {rejected}\n")
             f.write("\n\n\n")
 
             # Compute gradients
@@ -254,7 +255,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 if __name__ == "__main__":
 
-    desc = "First test run with constraints and bug fixes and also rat.py"
+    desc = "First run did not converge. Try a wider variance."
 
     if torch.cuda.is_available():
         device = "cuda:0"
@@ -267,9 +268,13 @@ if __name__ == "__main__":
                  0, 0, 0, 0,
                  -45.94, -60, -35.69, -45.94]  # loosely based on kraynyukova values
     
-    var_list = [0.5, 0.5, 0.5, 0.5, 
-                0.5, 0.5, 0.5, 0.5, 
-                1.2, 1.2, 1.2, 1.2]
+    # var_list = [0.5, 0.5, 0.5, 0.5, 
+    #             0.5, 0.5, 0.5, 0.5, 
+    #             1.2, 1.2, 1.2, 1.2]
+    
+    var_list = [1.5, 1.5, 1.5, 1.5, 
+                1.5, 1.5, 1.5, 1.5, 
+                2.2, 2.2, 2.2, 2.2]
     
     mean, cov = make_torch_params(mean_list, var_list, device=device)
 
