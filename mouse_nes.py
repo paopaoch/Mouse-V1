@@ -154,7 +154,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             preds, avg_step = network_executer.run_all_orientation_and_contrast(weights)
             preds_E = preds[:weights_generator.neuron_num_e]
             preds_I = preds[weights_generator.neuron_num_i:]
-            mean_loss, mean_MMD_loss = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step)  # TODO: Centralise Y
+            mean_loss, mean_MMD_loss = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step, x_centralised=True, y_centralised=True)  # TODO: Centralise Y
             
             print("current_mean_loss: ", mean_loss, mean_MMD_loss)
             print("mean: ", mean)
@@ -181,7 +181,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                         preds, avg_step = network_executer.run_all_orientation_and_contrast(weights)
                         preds_E = preds[:weights_generator.neuron_num_e]
                         preds_I = preds[weights_generator.neuron_num_i:]
-                        current_loss, _ = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step)
+                        current_loss, _ = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step, x_centralised=True, y_centralised=True)
                     else:
                         current_loss = torch.tensor(10000)  # This is pretty much infinity. Need to find a better scaling for rejected weights
                         rejected += 1
@@ -234,7 +234,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         preds, avg_step = network_executer.run_all_orientation_and_contrast(weights)
         preds_E = preds[:weights_generator.neuron_num_e]
         preds_I = preds[weights_generator.neuron_num_i:]
-        mean_loss, mean_MMD_loss = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step)  # TODO: Centralise Y
+        mean_loss, mean_MMD_loss = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step, x_centralised=True, y_centralised=True)  # TODO: Centralise Y
 
         f.write(f"---------------------------------------------------\n\n\n")
         f.write("Final loss and MMD loss:\n")
@@ -264,13 +264,13 @@ if __name__ == "__main__":
         device = "cpu"
         print("GPU not available. Model will be created on CPU.")
 
-    # mean_list = [-5.865,-7.78, 0, -4.39,
-    #              0, 0, 0, 0,
-    #              -45.94, -60, -35.69, -45.94]  # loosely based on kraynyukova values
+    mean_list = [-5.865,-7.78, 0, -4.39,
+                 0, 0, 0, 0,
+                 -45.94, -60, -35.69, -45.94]  # loosely based on kraynyukova values
     
-    mean_list = [-4.39, -4.39, -4.39, -4.39,
-            0, 0, 0, 0,
-            -45.94, -45.94, -45.94, -45.94]  # for testing convergence
+    # mean_list = [-4.39, -4.39, -4.39, -4.39,
+    #         0, 0, 0, 0,
+    #         -45.94, -45.94, -45.94, -45.94]  # for testing convergence
      
     # var_list = [0.5, 0.5, 0.5, 0.5, 
     #             0.5, 0.5, 0.5, 0.5, 
