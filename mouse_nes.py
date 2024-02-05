@@ -180,7 +180,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                     if weights_valid:
                         preds, avg_step = network_executer.run_all_orientation_and_contrast(weights)
                         preds_E = preds[:weights_generator.neuron_num_e]
-                        preds_I = preds[weights_generator.neuron_num_i:]
+                        preds_I = preds[weights_generator.neuron_num_e:]
                         current_loss, _ = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step, x_centralised=True, y_centralised=True)
                     else:
                         current_loss = torch.tensor(10000, dtype=torch.float32)  # This is pretty much infinity. Need to find a better scaling for rejected weights
@@ -233,7 +233,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         weights, weights_valid = weights_generator.generate_weight_matrix()
         preds, avg_step = network_executer.run_all_orientation_and_contrast(weights)
         preds_E = preds[:weights_generator.neuron_num_e]
-        preds_I = preds[weights_generator.neuron_num_i:]
+        preds_I = preds[weights_generator.neuron_num_e:]
         mean_loss, mean_MMD_loss = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step, x_centralised=True, y_centralised=True)  # TODO: Centralise Y
 
         f.write(f"---------------------------------------------------\n\n\n")
