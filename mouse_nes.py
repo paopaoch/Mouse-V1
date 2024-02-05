@@ -268,7 +268,7 @@ if __name__ == "__main__":
     #              0, 0, 0, 0,
     #              -45.94, -60, -35.69, -45.94]  # loosely based on kraynyukova values
     
-    mean_list = [0, 0, 0, 0,
+    mean_list = [-4.39, -4.39, -4.39, -4.39,
             0, 0, 0, 0,
             -45.94, -45.94, -45.94, -45.94]  # for testing convergence
      
