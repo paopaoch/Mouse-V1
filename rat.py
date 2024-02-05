@@ -291,6 +291,7 @@ class NetworkExecuter(Rodents):
             print(f"ERROR: the object was initialised for {self.neuron_num} neurons but got {len(weights)}")
             return
         else:
+            print("Updated Weight matrix")
             self.update_weight_matrix(weights)
         
         all_rates = []
