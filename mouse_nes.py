@@ -264,21 +264,21 @@ if __name__ == "__main__":
         device = "cpu"
         print("GPU not available. Model will be created on CPU.")
 
-    mean_list = [-5.865,-7.78, 0, -4.39,
-                 0, 0, 0, 0,
-                 -45.94, -60, -35.69, -45.94]  # loosely based on kraynyukova values
+    # mean_list = [-5.865,-7.78, 0, -4.39,
+    #              0, 0, 0, 0,
+    #              -45.94, -60, -35.69, -45.94]  # loosely based on kraynyukova values
     
-    # mean_list = [-4.39, -4.39, -4.39, -4.39,
-    #         0, 0, 0, 0,
-    #         -45.94, -45.94, -45.94, -45.94]  # for testing convergence
+    mean_list = [-4.39, -4.39, -4.39, -4.39,
+            0, 0, 0, 0,
+            -45.94, -45.94, -45.94, -45.94]  # for testing convergence
      
     # var_list = [0.5, 0.5, 0.5, 0.5, 
     #             0.5, 0.5, 0.5, 0.5, 
     #             1.2, 1.2, 1.2, 1.2]
     
-    var_list = [1.5, 1.5, 1.5, 1.5, 
-                1.5, 1.5, 1.5, 1.5, 
-                2.2, 2.2, 2.2, 2.2]
+    var_list = [10.5, 10.5, 10.5, 10.5, 
+                10.5, 10.5, 10.5, 10.5, 
+                20.2, 20.2, 20.2, 20.2]
     
     mean, cov = make_torch_params(mean_list, var_list, device=device)
 
