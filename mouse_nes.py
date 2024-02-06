@@ -255,7 +255,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 if __name__ == "__main__":
 
-    desc = "First run did not converge. Try a wider variance."
+    desc = "Model is not really converging and barely any heterogeneity is shown, I suspect that its because of the J / Na factor. This run tries a larger J values with a sqrt(Na) value instead."
 
     if torch.cuda.is_available():
         device = "cuda:0"
@@ -269,7 +269,12 @@ if __name__ == "__main__":
     #              -45.94, -60, -35.69, -45.94]  # loosely based on kraynyukova values
     
 
-    mean_list = [-5.865,-7.78, 0, -4.39, 
+    # mean_list = [-5.865,-7.78, 0, -4.39, 
+    #              -7.7089, -7.7089, -7.7089, -7.7089, 
+    #              -60, -60, -60, -60]
+
+
+    mean_list = [2.865, 2.78, 5, 2.39, 
                  -7.7089, -7.7089, -7.7089, -7.7089, 
                  -60, -60, -60, -60]
 
@@ -290,4 +295,4 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 80, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc))
+    print(nes_multigaussian_optim(mean, cov, 80, 24, y_E, y_I, device=device, neuron_num=10000, desc=desc))

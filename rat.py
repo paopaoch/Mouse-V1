@@ -213,7 +213,7 @@ class WeightsGenerator(Rodents):
 
 
     def _get_sub_weight_matrix(self, diff: torch.Tensor, index: int):
-        J_single = self._sigmoid(self.j_hyperparameter[index], 1/4, 4) / diff.shape[1]  # could be a sqrt # this is the number of presynaptic neurons
+        J_single = self._sigmoid(self.j_hyperparameter[index], 1/4, 4) / torch.sqrt(torch.tensor(diff.shape[1]))  # could be a sqrt # this is the number of presynaptic neurons
         return J_single * self._sigmoid(self._sigmoid(self.p_hyperparameter[index], 1/3, 1)
                                                                             * self._cric_gauss(diff, self._sigmoid(self.w_hyperparameter[index], 1 / 180, 180))
                                                                             - torch.rand(len(diff), len(diff[0]), device=self.device, requires_grad=False), 32)
@@ -434,7 +434,7 @@ if __name__ == "__main__":
     # P_array = [-7.7089, -7.7089, -7.7089, -7.7089]
     # w_array = [-45.94, -60, -35.69, -45.94]
 
-    J_array = [-5.865,-7.78, 0, -4.39]
+    J_array = [2.865, 2.78, 5, 2.39]
     P_array = [-7.7089, -7.7089, -7.7089, -7.7089]
     w_array = [-60, -60, -60, -60]
 
@@ -445,7 +445,13 @@ if __name__ == "__main__":
     keen = WeightsGenerator(J_array, P_array, w_array, 10000)
     W, accepted = keen.generate_weight_matrix()
 
-    print(accepted)
+    # TEST FOR CONSITENCY IN ACCEPTANCE
+    accepted_dict = {True:0, False:0}
+    for _ in tqdm(range(30)):
+        W, accepted = keen.generate_weight_matrix()
+        accepted_dict[bool(accepted)] += 1
+    print(accepted_dict[True] / 30)
+
 
     # executer = NetworkExecuter(10000)
     # responses, avg_step = executer.run_all_orientation_and_contrast(W)
