@@ -431,7 +431,7 @@ if __name__ == "__main__":
     # w_array = [-45.94, -60, -35.69, -45.94]
 
     J_array = [-5.865,-7.78, 0, -4.39]
-    P_array = [-4.4278, -4.4278, -4.4278, -4.4278]
+    P_array = [-7.7089, -7.7089, -7.7089, -7.7089]
     w_array = [-45.94, -60, -35.69, -45.94]
 
     # J_array = [  0.6131,  -6.8548,   2.2939,  -5.6821]  # NES values  # These values are wrong
@@ -443,19 +443,19 @@ if __name__ == "__main__":
 
     print(accepted)
 
-    executer = NetworkExecuter(10000)
-    responses, avg_step = executer.run_all_orientation_and_contrast(W)
-    print(responses.shape, avg_step)
+    # executer = NetworkExecuter(10000)
+    # responses, avg_step = executer.run_all_orientation_and_contrast(W)
+    # print(responses.shape, avg_step)
 
-    one_res = []
-    for i in range(10000):
-        one_res.append(responses[i][7][4])
+    # one_res = []
+    # for i in range(10000):
+    #     one_res.append(responses[i][7][4])
     
-    plt.plot(one_res)
-    plt.title("Activity of the network")
-    plt.xlabel("Neuron Index")
-    plt.ylabel("Response / Hz")
-    plt.show()
+    # plt.plot(one_res)
+    # plt.title("Activity of the network")
+    # plt.xlabel("Neuron Index")
+    # plt.ylabel("Response / Hz")
+    # plt.show()
 
     plt.imshow(W, cmap="seismic", vmin=-np.max(np.abs(np.array(W))), vmax=np.max(np.abs(np.array(W))))
     plt.colorbar()

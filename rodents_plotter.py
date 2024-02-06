@@ -137,39 +137,39 @@ def centralise_all_curves(responses):
 
 if __name__ == "__main__":
 
-    # # Get the network response
+    # Get the network response
 
-    # J_array = [-5.865,-7.78, 0, -4.39]
-    # P_array = [0, 0, 0, 0]
-    # w_array = [-45.94, -60, -35.69, -45.94]
-    # generator = WeightsGenerator(J_array, P_array, w_array, 10000)
-    # W, accepted = generator.generate_weight_matrix()
+    J_array = [-5.865,-7.78, 0, -4.39]
+    P_array = [0, 0, 0, 0]
+    w_array = [-45.94, -60, -35.69, -45.94]
+    generator = WeightsGenerator(J_array, P_array, w_array, 10000)
+    W, accepted = generator.generate_weight_matrix()
 
-    # executer = NetworkExecuter(10000)
-    # responses, avg_step = executer.run_all_orientation_and_contrast(W)
-    # data_E = centralise_all_curves(np.array(responses[0:8000].data))
-    # data_I = centralise_all_curves(np.array(responses[8000:].data))
-    # data = np.concatenate((data_E, data_I), axis=0)
+    executer = NetworkExecuter(10000)
+    responses, avg_step = executer.run_all_orientation_and_contrast(W)
+    data_E = centralise_all_curves(np.array(responses[0:8000].data))
+    data_I = centralise_all_curves(np.array(responses[8000:].data))
+    data = np.concatenate((data_E, data_I), axis=0)
 
-    # print_tuning_curve(data[500])
-    # print_tuning_curve(data[-500])
+    print_tuning_curve(data[500])
+    print_tuning_curve(data[-500])
     
-    # print_activity(data)
+    print_activity(responses)
 
-    # print_tuning_curve(neuro_SVD(data[500])[0])
-    # print_tuning_curve(neuro_SVD(data[-500])[0])
+    print_tuning_curve(neuro_SVD(data[500])[0])
+    print_tuning_curve(neuro_SVD(data[-500])[0])
 
-    # plot_percentage_explained(data)
+    plot_percentage_explained(data)
 
-    # plot_frac_of_var(data)
+    plot_frac_of_var(data)
 
-    # plot_hist(get_circ_var, data_E)
-    # plot_hist(get_max_firing_rate, data_E)
-    # plot_hist(get_mean_firing_rate, data_E)
+    plot_hist(get_circ_var, data_E)
+    plot_hist(get_max_firing_rate, data_E)
+    plot_hist(get_mean_firing_rate, data_E)
 
-    # plot_hist(get_circ_var, data_I)
-    # plot_hist(get_max_firing_rate, data_I)
-    # plot_hist(get_mean_firing_rate, data_I)
+    plot_hist(get_circ_var, data_I)
+    plot_hist(get_max_firing_rate, data_I)
+    plot_hist(get_mean_firing_rate, data_I)
 
 
 
