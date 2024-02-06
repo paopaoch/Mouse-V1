@@ -438,19 +438,19 @@ if __name__ == "__main__":
 
     print(accepted)
 
-    # executer = NetworkExecuter(W)
-    # responses, avg_step = executer.run_all_orientation_and_contrast()
-    # print(responses.shape, avg_step)
+    executer = NetworkExecuter(10000)
+    responses, avg_step = executer.run_all_orientation_and_contrast(W)
+    print(responses.shape, avg_step)
 
-    # one_res = []
-    # for i in range(10000):
-    #     one_res.append(responses[i][7][4])
+    one_res = []
+    for i in range(10000):
+        one_res.append(responses[i][7][4])
     
-    # plt.plot(one_res)
-    # plt.title("Activity of the network")
-    # plt.xlabel("Neuron Index")
-    # plt.ylabel("Response / Hz")
-    # plt.show()
+    plt.plot(one_res)
+    plt.title("Activity of the network")
+    plt.xlabel("Neuron Index")
+    plt.ylabel("Response / Hz")
+    plt.show()
 
     plt.imshow(W, cmap="seismic", vmin=-np.max(np.abs(np.array(W))), vmax=np.max(np.abs(np.array(W))))
     plt.colorbar()
