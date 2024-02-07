@@ -61,7 +61,7 @@ def sort_two_arrays(losses: list, samples: list, device="cpu"):  # sort accordin
 
 
 def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int, samples_per_iter: int, y_E, y_I,
-                            neuron_num=10000, eta_delta=1, eta_sigma=0.08, eta_B=0.08, 
+                            neuron_num=10000, eta_delta=0.1, eta_sigma=0.06, eta_B=0.06, 
                             device="cpu", avg_step_weighting=0.002, desc="", alpha=torch.tensor(0.1)):
     # Init model and loss function
     J, P, w = mean_to_params(mean)
@@ -278,9 +278,13 @@ if __name__ == "__main__":
     #              -7.7089, -7.7089, -7.7089, -7.7089, 
     #              -60, -60, -60, -60]
 
-    mean_list = [  0.6131,  -6.8548,   2.2939,  -5.6821,
-               -0.6996,  -7.7089,  -1.3388, -4.4278,
-               -12.3577, -15.2088,  -9.6759, -14.3590]
+    # mean_list = [  0.6131,  -6.8548,   2.2939,  -5.6821,
+    #            -0.6996,  -7.7089,  -1.3388, -4.4278,
+    #            -12.3577, -15.2088,  -9.6759, -14.3590]
+        
+    mean_list = [  0.3697,   0.5445,   0.2453,   1.0729,  
+                 -1.2837,  -1.6330,  -1.4351, -1.3699, 
+                 -15.0819, -15.0336, -15.4095, -15.0615]
 
     # mean_list = [  0.6131,  0.6131,   0.6131,  0.6131, 
     #              -1.3388,  -1.3388,  -1.3388, -1.3388, 
