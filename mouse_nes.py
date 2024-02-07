@@ -61,8 +61,8 @@ def sort_two_arrays(losses: list, samples: list, device="cpu"):  # sort accordin
 
 
 def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int, samples_per_iter: int, y_E, y_I,
-                            neuron_num=10000, eta_delta=0.1, eta_sigma=0.06, eta_B=0.06, 
-                            device="cpu", avg_step_weighting=0.002, desc="", alpha=torch.tensor(0.1)):
+                            neuron_num=10000, eta_delta=0.5, eta_sigma=0.06, eta_B=0.06, 
+                            device="cpu", avg_step_weighting=0.002, desc="", alpha=torch.tensor(0.03)):
     # Init model and loss function
     J, P, w = mean_to_params(mean)
     loss_function = MouseLossFunction(device=device)
@@ -255,7 +255,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 if __name__ == "__main__":
 
-    desc = "Model still hasn't converted properly. Found a bug in testing the matrix (fixed). These values are the values with are valid. We will run it at a very low cov matrix. 😭"
+    desc = "Suspecting that the model is not converging because of the high important mixing. This trial is to try this again but with lower important mixing"
 
     if torch.cuda.is_available():
         device = "cuda:0"
@@ -264,42 +264,19 @@ if __name__ == "__main__":
         device = "cpu"
         print("GPU not available. Model will be created on CPU.")
 
-    # mean_list = [-5.865,-7.78, 0, -4.39,
-    #              0, 0, 0, 0,
-    #              -45.94, -60, -35.69, -45.94]  # loosely based on kraynyukova values
-    
-
-    # mean_list = [-5.865,-7.78, 0, -4.39, 
-    #              -7.7089, -7.7089, -7.7089, -7.7089, 
-    #              -60, -60, -60, -60]
-
-
-    # mean_list = [2.865, 2.78, 5, 2.39, 
-    #              -7.7089, -7.7089, -7.7089, -7.7089, 
-    #              -60, -60, -60, -60]
-
-    # mean_list = [  0.6131,  -6.8548,   2.2939,  -5.6821,
-    #            -0.6996,  -7.7089,  -1.3388, -4.4278,
-    #            -12.3577, -15.2088,  -9.6759, -14.3590]
         
-    mean_list = [  0.3697,   0.5445,   0.2453,   1.0729,  
-                 -1.2837,  -1.6330,  -1.4351, -1.3699, 
-                 -15.0819, -15.0336, -15.4095, -15.0615]
+    mean_list = [-0.0, -2.0433024950639624, 4.39444915467244, 2.043302495063962, 
+                 -4.1588830833596715, 2.541893581161611, -0.0, -0.0, 
+                 -102.69807452417032, -171.99206010493853, -40.16583923655776, -102.69807452417032]
 
-    # mean_list = [  0.6131,  0.6131,   0.6131,  0.6131, 
-    #              -1.3388,  -1.3388,  -1.3388, -1.3388, 
-    #              -15.2088, -15.2088,  -15.2088, -15.2088]
      
     var_list = [0.01, 0.01, 0.01, 0.01, 
                 0.01, 0.01, 0.01, 0.01, 
                 0.05, 0.05, 0.05, 0.05]
     
-    # var_list = [10.5, 10.5, 10.5, 10.5, 
-    #             10.5, 10.5, 10.5, 10.5, 
-    #             20.2, 20.2, 20.2, 20.2]
     
     mean, cov = make_torch_params(mean_list, var_list, device=device)
 
     y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 100, 24, y_E, y_I, device=device, neuron_num=10000, desc=desc))
+    print(nes_multigaussian_optim(mean, cov, 100, 18, y_E, y_I, device=device, neuron_num=10000, desc=desc))

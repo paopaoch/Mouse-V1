@@ -59,10 +59,10 @@ w_to_params = lambda x: _inverse_sigmoid(x, 1/180, 180)
 
 if __name__ == "__main__":
 
-    J_EE = 1.5
-    J_EI = 1
-    J_IE = 2.5
-    J_II = 2
+    J_EE = 2
+    J_EI = 1.5
+    J_IE = 3
+    J_II = 2.5
 
     P_EE = 0.2
     P_EI = 0.7
