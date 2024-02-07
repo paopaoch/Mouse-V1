@@ -163,3 +163,5 @@ playground*
 *.log
 
 response.*
+
+ignore_plots_*

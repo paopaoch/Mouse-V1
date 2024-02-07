@@ -208,9 +208,14 @@ class WeightsGenerator(Rodents):
     def calc_theoretical_weights_tot(self, i, N_b):
         """Calculate weights tot for the contraints"""
         k = 1 / (4 * (self._sigmoid(self.w_hyperparameter[i], 1 / 180, 180) * torch.pi / 180) ** 2)
-        k = k.cpu()
-        bessel: torch.Tensor = i0(k)  # This function returns a tensor
-        bessel = bessel.cuda()
+        
+        if self.device == "cpu":
+            bessel: torch.Tensor = i0(k)  # i0 does not work in cuda
+        else:
+            k = k.cpu()
+            bessel: torch.Tensor = i0(k)
+            bessel = bessel.cuda()
+
         j = self._sigmoid(self.j_hyperparameter[i], 1/4, 4)
         p = self._sigmoid(self.p_hyperparameter[i], 1/3, 1)
         return j * torch.sqrt(torch.tensor(N_b)) * p * torch.exp(-k) * bessel

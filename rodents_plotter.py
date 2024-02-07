@@ -5,6 +5,13 @@ import time
 from tqdm import tqdm
 from rat import get_data, WeightsGenerator, NetworkExecuter
 from scipy.stats import circvar
+import os
+
+SHOW = False
+
+if not SHOW:
+    FOLDER_NAME = f"./plots/ignore_plots_{time.time()}"
+    os.mkdir(FOLDER_NAME)
 
 def print_tuning_curve(tuning_curve):
     if type(tuning_curve) == torch.Tensor:
@@ -15,12 +22,20 @@ def print_tuning_curve(tuning_curve):
     plt.title("I Neuron (Pre-trained Model)")
     plt.xlabel("orientation index")
     plt.ylabel("contrast index")
-    plt.show()
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(f"{FOLDER_NAME}/tuning_curve_image_{time.time()}.png")
+        plt.close()
 
     for c in tuning_curve:
         plt.plot(c)
 
-    plt.show()
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(f"{FOLDER_NAME}/tuning_curve_{time.time()}.png")
+        plt.close()
 
 
 def print_activity(responses):
@@ -32,7 +47,11 @@ def print_activity(responses):
     plt.title("Activity of the network")
     plt.xlabel("Neuron Index")
     plt.ylabel("Response / Hz")
-    plt.show()
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(f"{FOLDER_NAME}/activity_{time.time()}.png")
+        plt.close()
 
 
 def neuro_SVD(tuning_curve):
@@ -72,7 +91,10 @@ def plot_percentage_explained(tuning_curves, title="", bin_size=0.02):
     plt.xlim(0, 1)
     plt.hist(percentages, bins)
     plt.title(title)
-    plt.show()
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(f"{FOLDER_NAME}/percentage_{time.time()}.png")
 
 
 def plot_frac_of_var(tuning_curves, title="", bin_size=0.0025):
@@ -84,7 +106,11 @@ def plot_frac_of_var(tuning_curves, title="", bin_size=0.0025):
     plt.title(title)
     plt.xlabel("Fraction of data explained by first SV")
     plt.ylabel("Unit count")
-    plt.show()
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(f"{FOLDER_NAME}/frac_of_var_{time.time()}.png")
+        plt.close()
 
 
 def get_circ_var(tuning_curve, contrast_index=7):
@@ -113,7 +139,11 @@ def plot_hist(func, responses, contrast_index=7, title="", bin_size=None, bin_nu
         plt.hist(circ_vars, bin_num)
         
     plt.title(title)
-    plt.show()
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(f"{FOLDER_NAME}/hist_{time.time()}.png")
+        plt.close()
 
 
 def get_max_index(tuning_curve):
@@ -138,10 +168,10 @@ def centralise_all_curves(responses):
 if __name__ == "__main__":
 
     # Get the network response
+    J_array = [  0.6131,  -6.8548,   2.2939,  -5.6821]
+    P_array = [-0.6996,  -7.7089,  -1.3388, -4.4278]
+    w_array = [-12.3577, -15.2088,  -9.6759, -14.3590]
 
-    J_array = [-5.865,-7.78, 0, -4.39]
-    P_array = [0, 0, 0, 0]
-    w_array = [-45.94, -60, -35.69, -45.94]
     generator = WeightsGenerator(J_array, P_array, w_array, 10000)
     W, accepted = generator.generate_weight_matrix()
 
@@ -175,6 +205,7 @@ if __name__ == "__main__":
 
     # Get the data
     data_E, data_I = get_data()
+    responses = np.concatenate((np.array(data_E.data), np.array(data_I.data)), axis=0)
     data_E = centralise_all_curves(np.array(data_E.data))
     data_I = centralise_all_curves(np.array(data_I.data))
     data = np.concatenate((data_E, data_I), axis=0)
@@ -182,7 +213,7 @@ if __name__ == "__main__":
     print_tuning_curve(data[5])
     print_tuning_curve(data[-5])
     
-    print_activity(data)
+    print_activity(responses)
 
     print_tuning_curve(neuro_SVD(data[5])[0])
     print_tuning_curve(neuro_SVD(data[-5])[0])
