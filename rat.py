@@ -24,6 +24,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from scipy.special import i0
 
 torch.set_default_dtype(torch.float32)
 
@@ -180,24 +181,38 @@ class WeightsGenerator(Rodents):
         weights = torch.cat((torch.cat((prob_EE, prob_EI), dim=1),
                     torch.cat((prob_IE, prob_II), dim=1)), dim=0)
 
-        w_tot_EE = torch.abs(torch.sum(prob_EE)) / self.neuron_num_e
-        w_tot_EI = torch.abs(torch.sum(prob_EI)) / self.neuron_num_e
-        w_tot_IE = torch.abs(torch.sum(prob_IE)) / self.neuron_num_i
-        w_tot_II = torch.abs(torch.sum(prob_IE)) / self.neuron_num_i
-        is_valid = ((w_tot_EE / w_tot_IE) < (w_tot_EI / w_tot_II)) < 1
+        # W_tot_EE = torch.abs(torch.sum(prob_EE)) / self.neuron_num_e
+        # W_tot_EI = torch.abs(torch.sum(prob_EI)) / self.neuron_num_e
+        # W_tot_IE = torch.abs(torch.sum(prob_IE)) / self.neuron_num_i
+        # W_tot_II = torch.abs(torch.sum(prob_II)) / self.neuron_num_i
+        # is_valid = ((W_tot_EE / W_tot_IE) < (W_tot_EI / W_tot_II)) < 1
+        # print(W_tot_EE)
+        # print(W_tot_EI)
+        # print(W_tot_IE)
+        # print(W_tot_II)
 
+        # Theoretical calculation of W_tot
+        W_tot_EE = self.calc_theoretical_weights_tot(0, self.neuron_num_e)
+        W_tot_EI = self.calc_theoretical_weights_tot(1, self.neuron_num_i)
+        W_tot_IE = self.calc_theoretical_weights_tot(2, self.neuron_num_e)
+        W_tot_II = self.calc_theoretical_weights_tot(3, self.neuron_num_i)
+        # print(W_tot_EE)
+        # print(W_tot_EI)
+        # print(W_tot_IE)
+        # print(W_tot_II)
 
+        is_valid = ((W_tot_EE / W_tot_IE) < (W_tot_EI / W_tot_II)) < 1
         return weights, is_valid  # Conditions to be changed once we include stimulus
-    
-
-    def validate_weights_matrix(self, weights):
-        """Return a boolean stating if the matrix is in the valid regime"""
-        pass
 
 
-    def calc_weights_tot(self, weights):
+    def calc_theoretical_weights_tot(self, i, N_b):
         """Calculate weights tot for the contraints"""
-        pass
+        k = 1 / (4 * (self._sigmoid(self.w_hyperparameter[i], 1 / 180, 180) * torch.pi / 180) ** 2)
+        bessel = i0(k)  # This function returns a tensor
+        j = self._sigmoid(self.j_hyperparameter[i], 1/4, 4)
+        p = self._sigmoid(self.p_hyperparameter[i], 1/3, 1)
+        return j * torch.sqrt(torch.tensor(N_b)) * p * torch.exp(-k) * bessel
+        
 
 
     def set_parameters(self, J_array, P_array, w_array):
@@ -434,23 +449,28 @@ if __name__ == "__main__":
     # P_array = [-7.7089, -7.7089, -7.7089, -7.7089]
     # w_array = [-45.94, -60, -35.69, -45.94]
 
-    J_array = [2.865, 2.78, 5, 2.39]
-    P_array = [-7.7089, -7.7089, -7.7089, -7.7089]
-    w_array = [-60, -60, -60, -60]
+    # J_array = [2.865, 2.78, 5, 2.39]
+    # P_array = [-7.7089, -7.7089, -7.7089, -7.7089]
+    # w_array = [-60, -60, -60, -60]
 
     # J_array = [  0.6131,  -6.8548,   2.2939,  -5.6821]  # NES values  # These values are wrong
     # P_array = [-0.6996,  -7.7089,  -1.3388, -4.4278] 
     # w_array = [-12.3577, -15.2088,  -9.6759, -14.3590]
 
+    J_array = [  0.6131,  0.6131,   0.6131,  0.6131]
+    P_array = [-1.3388,  -1.3388,  -1.3388, -1.3388]
+    w_array = [-15.2088, -15.2088,  -15.2088, -15.2088]
+
     keen = WeightsGenerator(J_array, P_array, w_array, 10000)
     W, accepted = keen.generate_weight_matrix()
+    print(accepted)
 
-    # TEST FOR CONSITENCY IN ACCEPTANCE
-    accepted_dict = {True:0, False:0}
-    for _ in tqdm(range(30)):
-        W, accepted = keen.generate_weight_matrix()
-        accepted_dict[bool(accepted)] += 1
-    print(accepted_dict[True] / 30)
+    # # TEST FOR CONSITENCY IN ACCEPTANCE
+    # accepted_dict = {True:0, False:0}
+    # for _ in tqdm(range(30)):
+    #     W, accepted = keen.generate_weight_matrix()
+    #     accepted_dict[bool(accepted)] += 1
+    # print(accepted_dict[True] / 30)
 
 
     # executer = NetworkExecuter(10000)

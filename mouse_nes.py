@@ -33,7 +33,7 @@ def make_torch_params(mean_list, var_list, device="cpu"):
     # Mean
     d = len(var_list)
     mean_tensor = torch.tensor(mean_list, device=device, dtype=torch.float32)
-    var_tensor = torch.diag(torch.tensor(var_list, device=device, dtype=torch.float32)) + torch.ones((d, d), device=device) * 0.1
+    var_tensor = torch.diag(torch.tensor(var_list, device=device, dtype=torch.float32)) + torch.ones((d, d), device=device) * 0.001
     return mean_tensor, var_tensor
 
 
@@ -255,7 +255,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 if __name__ == "__main__":
 
-    desc = "Model is not really converging and barely any heterogeneity is shown, I suspect that its because of the J / Na factor. This run tries a larger J values with a sqrt(Na) value instead."
+    desc = "Model still hasn't converted properly. Found a bug in testing the matrix (fixed). These values are the values with are valid. We will run it at a very low cov matrix. 😭"
 
     if torch.cuda.is_available():
         device = "cuda:0"
@@ -274,18 +274,18 @@ if __name__ == "__main__":
     #              -60, -60, -60, -60]
 
 
-    mean_list = [2.865, 2.78, 5, 2.39, 
-                 -7.7089, -7.7089, -7.7089, -7.7089, 
-                 -60, -60, -60, -60]
+    # mean_list = [2.865, 2.78, 5, 2.39, 
+    #              -7.7089, -7.7089, -7.7089, -7.7089, 
+    #              -60, -60, -60, -60]
 
 
-    # mean_list = [-5.865, -5.865, -5.865, -5.865,
-    #         0, 0, 0, 0,
-    #         -60, -60, -60, -60]  # for testing convergence
+    mean_list = [  0.6131,  0.6131,   0.6131,  0.6131, 
+                 -1.3388,  -1.3388,  -1.3388, -1.3388, 
+                 -15.2088, -15.2088,  -15.2088, -15.2088]
      
-    var_list = [0.1, 0.1, 0.1, 0.1, 
-                0.1, 0.1, 0.1, 0.1, 
-                0.5, 0.5, 0.5, 0.5]
+    var_list = [0.01, 0.01, 0.01, 0.01, 
+                0.01, 0.01, 0.01, 0.01, 
+                0.05, 0.05, 0.05, 0.05]
     
     # var_list = [10.5, 10.5, 10.5, 10.5, 
     #             10.5, 10.5, 10.5, 10.5, 
@@ -295,4 +295,4 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 80, 24, y_E, y_I, device=device, neuron_num=10000, desc=desc))
+    print(nes_multigaussian_optim(mean, cov, 100, 24, y_E, y_I, device=device, neuron_num=10000, desc=desc))
