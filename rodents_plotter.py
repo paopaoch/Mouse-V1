@@ -168,9 +168,9 @@ def centralise_all_curves(responses):
 if __name__ == "__main__":
 
     # Get the network response
-    J_array = [  0.6131,  -6.8548,   2.2939,  -5.6821]
-    P_array = [-0.6996,  -7.7089,  -1.3388, -4.4278]
-    w_array = [-12.3577, -15.2088,  -9.6759, -14.3590]
+    J_array = [-2.0433024950639624, -4.394449154672439, 2.043302495063962, -0.0]
+    P_array = [-4.1588830833596715, 2.541893581161611, -0.0, -0.0]
+    w_array = [-102.69807452417032, -171.99206010493853, -40.16583923655776, -102.69807452417032]
 
     generator = WeightsGenerator(J_array, P_array, w_array, 10000)
     W, accepted = generator.generate_weight_matrix()

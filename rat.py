@@ -201,7 +201,7 @@ class WeightsGenerator(Rodents):
         # print(W_tot_IE)
         # print(W_tot_II)
 
-        is_valid = ((W_tot_EE / W_tot_IE) < (W_tot_EI / W_tot_II)) < 1
+        is_valid = ((W_tot_EE / W_tot_IE) < (W_tot_EI / W_tot_II)) and ((W_tot_EI / W_tot_II) < 1)
         return weights, is_valid  # Conditions to be changed once we include stimulus
 
 
