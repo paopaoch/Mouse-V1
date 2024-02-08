@@ -258,7 +258,7 @@ if __name__ == "__main__":
     desc = "Suspecting that the model is not converging because of the high important mixing. This trial is to try this again but with lower important mixing"
 
     if torch.cuda.is_available():
-        device = "cuda:0"
+        device = "cuda:1"
         print("Model will be created on GPU")
     else:
         device = "cpu"

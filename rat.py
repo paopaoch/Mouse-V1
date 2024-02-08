@@ -214,7 +214,7 @@ class WeightsGenerator(Rodents):
         else:
             k = k.cpu()
             bessel: torch.Tensor = i0(k)
-            bessel = bessel.cuda()
+            bessel = bessel.cuda(device=self.device)
 
         j = self._sigmoid(self.j_hyperparameter[i], 1/4, 4)
         p = self._sigmoid(self.p_hyperparameter[i], 1/3, 1)
