@@ -62,7 +62,7 @@ def sort_two_arrays(losses: list, samples: list, device="cpu"):  # sort accordin
 
 def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int, samples_per_iter: int, y_E, y_I,
                             neuron_num=10000, eta_delta=0.5, eta_sigma=0.06, eta_B=0.06, 
-                            device="cpu", avg_step_weighting=0.002, desc="", alpha=torch.tensor(0.03)):
+                            device="cpu", avg_step_weighting=0.002, desc="", alpha=torch.tensor(0.01)):
     # Init model and loss function
     J, P, w = mean_to_params(mean)
     loss_function = MouseLossFunction(device=device)
