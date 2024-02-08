@@ -1,6 +1,8 @@
 from scipy.special import i0
 import math
 
+# TODO: PUT THIS WHOLE THING INSIDE 2 CLASSES, ONE CALLED CONNECTIONS AND THE OTHER CALL CONDITIONS
+
 
 def calc_theoretical_weights_tot(J, P, w, N_b):
     k = 1 / (4 * (w * math.pi / 180) ** 2)
@@ -25,7 +27,7 @@ def second_condition(w_EE, w_EI, w_IE, w_II):
     if not (w_EI < w_EE):
         print("Second condition, first inequality")
         return False
-    if not (w_EE == w_II):
+    if not (w_EE == w_II):  # TODO: Change this to a soft condition
         print("Second condition, second inequality")
         return False
     if not (w_II < w_IE):
@@ -59,20 +61,43 @@ w_to_params = lambda x: _inverse_sigmoid(x, 1/180, 180)
 
 if __name__ == "__main__":
 
-    J_EE = 2
-    J_EI = 1.5
-    J_IE = 3
-    J_II = 2.5
+    INIT_PARAMS = True
 
-    P_EE = 0.2
-    P_EI = 0.7
-    P_IE = 0.5
-    P_II = 0.5
+    if INIT_PARAMS:
+        J_EE = 2
+        J_EI = 1.5
+        J_IE = 3
+        J_II = 2.5
 
-    w_EE = 65
-    w_EI = 50
-    w_IE = 80
-    w_II = 65
+        P_EE = 0.2
+        P_EI = 0.7
+        P_IE = 0.5
+        P_II = 0.5
+
+        w_EE = 65
+        w_EI = 50
+        w_IE = 80
+        w_II = 65
+
+    else:
+        mean_list = [ 6.7310e-02, -2.1517e+00,  4.5293e+00,  2.0414e+00, -4.1712e+00,
+                2.5880e+00, -6.7668e-02, -6.4035e-02, -1.0263e+02, -1.7228e+02,
+                -4.0358e+01, -1.0280e+02]
+
+        J_EE = _sigmoid(mean_list[0], 1/4, 4)
+        J_EI = _sigmoid(mean_list[1], 1/4, 4)
+        J_IE = _sigmoid(mean_list[2], 1/4, 4)
+        J_II = _sigmoid(mean_list[3], 1/4, 4)
+
+        P_EE = _sigmoid(mean_list[4], 1/3, 1)
+        P_EI = _sigmoid(mean_list[5], 1/3, 1)
+        P_IE = _sigmoid(mean_list[6], 1/3, 1)
+        P_II = _sigmoid(mean_list[7], 1/3, 1)
+
+        w_EE = _sigmoid(mean_list[8], 1/180, 180)
+        w_EI = _sigmoid(mean_list[9], 1/180, 180)
+        w_IE = _sigmoid(mean_list[10], 1/180, 180)
+        w_II = _sigmoid(mean_list[11], 1/180, 180)
 
     W_tot_EE = calc_theoretical_weights_tot(J_EE, P_EE, w_EE, 8000)
     W_tot_EI = calc_theoretical_weights_tot(J_EI, P_EI, w_EI, 2000)
@@ -85,8 +110,8 @@ if __name__ == "__main__":
     
     print([J_EE, J_EI, J_IE, J_II, P_EE ,P_EI ,P_IE , P_II, w_EE ,w_EI ,w_IE ,w_II])
     print("mean_list =", [J_to_params(J_EE), J_to_params(J_EI), J_to_params(J_IE), J_to_params(J_II), 
-           P_to_params(P_EE), P_to_params(P_EI), P_to_params(P_IE), P_to_params(P_II),  
-           w_to_params(w_EE), w_to_params(w_EI), w_to_params(w_IE), w_to_params(w_II)])
+        P_to_params(P_EE), P_to_params(P_EI), P_to_params(P_IE), P_to_params(P_II),  
+        w_to_params(w_EE), w_to_params(w_EI), w_to_params(w_IE), w_to_params(w_II)])
     
     print("J_array =", [J_to_params(J_EE), J_to_params(J_EI), J_to_params(J_IE), J_to_params(J_II)])
     print("P_array =", [P_to_params(P_EE), P_to_params(P_EI), P_to_params(P_IE), P_to_params(P_II)])
