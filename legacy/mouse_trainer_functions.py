@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch import optim
 from tqdm import tqdm
-from mouse import MMDLossFunction, NeuroNN
+from legacy.mouse import MMDLossFunction, NeuroNN
 from datetime import datetime
 import sys
 import random

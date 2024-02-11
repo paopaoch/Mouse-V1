@@ -171,6 +171,16 @@ class WeightsGenerator(Rodents):
         self.j_hyperparameter = torch.tensor(J_array, device=device)
         self.p_hyperparameter = torch.tensor(P_array, device=device)
         self.w_hyperparameter = torch.tensor(w_array, device=device)
+
+        # Sigmoid values for parameters
+        self.J_steep = 1/70
+        self.J_scale = 700
+
+        self.P_steep = 1/3
+        self.P_scale = 1
+
+        self.w_steep = 1/180
+        self.w_scale = 180
     
 
     def generate_weight_matrix(self):
@@ -207,7 +217,7 @@ class WeightsGenerator(Rodents):
 
     def calc_theoretical_weights_tot(self, i, N_b):
         """Calculate weights tot for the contraints"""
-        k = 1 / (4 * (self._sigmoid(self.w_hyperparameter[i], 1 / 180, 180) * torch.pi / 180) ** 2)
+        k = 1 / (4 * (self._sigmoid(self.w_hyperparameter[i], self.w_steep, self.w_scale) * torch.pi / 180) ** 2)
         
         if self.device == "cpu":
             bessel: torch.Tensor = i0(k)  # i0 does not work in cuda
@@ -216,8 +226,8 @@ class WeightsGenerator(Rodents):
             bessel: torch.Tensor = i0(k)
             bessel = bessel.cuda(device=self.device)
 
-        j = self._sigmoid(self.j_hyperparameter[i], 1/4, 4)
-        p = self._sigmoid(self.p_hyperparameter[i], 1/3, 1)
+        j = self._sigmoid(self.j_hyperparameter[i], self.J_steep, self.J_scale)
+        p = self._sigmoid(self.p_hyperparameter[i], self.P_steep, self.P_scale)
         return j * torch.sqrt(torch.tensor(N_b)) * p * torch.exp(-k) * bessel
         
 
@@ -235,10 +245,10 @@ class WeightsGenerator(Rodents):
 
 
     def _get_sub_weight_matrix(self, diff: torch.Tensor, index: int):
-        J_single = self._sigmoid(self.j_hyperparameter[index], 1/4, 4) / torch.sqrt(torch.tensor(diff.shape[1]))  # could be a sqrt # this is the number of presynaptic neurons
-        return J_single * self._sigmoid(self._sigmoid(self.p_hyperparameter[index], 1/3, 1)
-                                                                            * self._cric_gauss(diff, self._sigmoid(self.w_hyperparameter[index], 1 / 180, 180))
-                                                                            - torch.rand(len(diff), len(diff[0]), device=self.device, requires_grad=False), 32)
+        J_single = self._sigmoid(self.j_hyperparameter[index], self.J_steep, self.J_scale) / torch.sqrt(torch.tensor(diff.shape[1]))  # dont have to be a sqrt # this is the number of presynaptic neurons
+        return J_single * self._sigmoid(self._sigmoid(self.p_hyperparameter[index], self.P_steep, self.P_scale)
+                                        * self._cric_gauss(diff, self._sigmoid(self.w_hyperparameter[index], self.w_steep, self.w_scale))
+                                        - torch.rand(len(diff), len(diff[0]), device=self.device, requires_grad=False), 32)
     
 
 
@@ -448,9 +458,13 @@ class NetworkExecuter(Rodents):
 
 
 if __name__ == "__main__":
-    J_array = [-0.0, -2.0433024950639624, 4.39444915467244, 2.043302495063962]
-    P_array = [-4.1588830833596715, 2.541893581161611, -0.0, -0.0]
-    w_array = [-102.69807452417032, -171.99206010493853, -40.16583923655776, -102.69807452417032]
+    # J_array = [-196.23522666345744, -267.49580460120103, -153.80572041353537, -258.52970608602016]
+    # P_array = [-8.83331693749932, -4.1588830833596715, -6.591673732008658, -4.1588830833596715]
+    # w_array = [-102.69807452417032, -171.99206010493853, -40.16583923655776, -102.69807452417032] 
+
+    J_array = [-196.23522666345744, -267.49580460120103, -153.80572041353537, -258.52970608602016]
+    P_array = [-10.990684938388938, -1.2163953243244932, -8.83331693749932, -1.2163953243244932]
+    w_array = [-255.84942256760897, -304.50168192079303, -214.12513203729057, -255.84942256760897] 
 
     keen = WeightsGenerator(J_array, P_array, w_array, 10000)
     W, accepted = keen.generate_weight_matrix()
