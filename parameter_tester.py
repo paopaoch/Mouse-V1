@@ -40,7 +40,7 @@ class ConstraintChecker:
                               [w_to_params(EE.w), w_to_params(EI.w), w_to_params(IE.w), w_to_params(II.w)],
                               EE.N + II.N)
 
-        print("Error found:\n")
+        print("Out of bounds found:\n")
         self.kraynyukova_J_condition()
         self.kraynyukova_w_condition()
         self.W_tot_condition()
@@ -84,11 +84,11 @@ class ConstraintChecker:
         for i, connection in enumerate(self.connections):
             if (connection.J / math.sqrt(connection.N)) < 0.25:
                 print(f"efficacy_condition, {self.connection_names[i]} is too low")
-                print(connection.J / connection.N, '\n')
+                print(connection.J / math.sqrt(connection.N), '\n')
 
             if (connection.J / math.sqrt(connection.N)) > 2:
                 print(f"efficacy_condition, {self.connection_names[i]} is too high")
-                print(connection.J / connection.N, '\n')
+                print(connection.J / math.sqrt(connection.N), '\n')
 
 
     def connection_count_condition(self):
@@ -161,8 +161,8 @@ if __name__ == "__main__":
         IE = Connection(70, 0.05, 42, N_E)
         II = Connection(17, 0.4, 35, N_I)
     else:
-        mean_list = [-195.9062, -267.7093, -154.0280, -258.2302,  -11.1119,   -0.9881,
-          -8.7208,   -0.8117, -255.1647, -303.3352, -212.7686, -256.8705]
+        mean_list = [  -3.1964,  -18.4160,    8.4417,  -15.4357,  -10.5172,   -1.4569,
+          -8.9367,   -1.0970, -254.7556, -304.4044, -214.2530, -253.4417]
         
         EE = Connection(params_to_J(mean_list[0]), params_to_P(mean_list[4]), params_to_w(mean_list[8]), N_E)
         EI = Connection(params_to_J(mean_list[1]), params_to_P(mean_list[5]), params_to_w(mean_list[9]), N_I)

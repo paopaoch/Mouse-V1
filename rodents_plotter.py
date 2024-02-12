@@ -2,24 +2,29 @@ import torch
 import matplotlib.pyplot as plt
 import numpy as np
 import time
+from datetime import datetime
 from tqdm import tqdm
 from rat import get_data, WeightsGenerator, NetworkExecuter
 from scipy.stats import circvar
 import os
+import pickle
 
-SHOW = False
-
-if not SHOW:
+if __name__ == "__main__":
+    SHOW = bool(input("Enter for save plots: "))
     FOLDER_NAME = f"./plots/ignore_plots_{time.time()}"
-    os.mkdir(FOLDER_NAME)
+    if not SHOW:
+        os.mkdir(FOLDER_NAME)
+else:
+    SHOW = True
+    FOLDER_NAME = None
 
-def print_tuning_curve(tuning_curve):
+def print_tuning_curve(tuning_curve, title=""):
     if type(tuning_curve) == torch.Tensor:
         tuning_curve = np.array(tuning_curve.data)
 
     plt.imshow(tuning_curve, cmap='viridis')
     plt.colorbar()
-    plt.title("I Neuron (Pre-trained Model)")
+    plt.title(title)
     plt.xlabel("orientation index")
     plt.ylabel("contrast index")
     if SHOW:
@@ -30,6 +35,9 @@ def print_tuning_curve(tuning_curve):
 
     for c in tuning_curve:
         plt.plot(c)
+        plt.title(title)
+        plt.xlabel("orientation index")
+        plt.ylabel("Responses")
 
     if SHOW:
         plt.show()
@@ -38,13 +46,13 @@ def print_tuning_curve(tuning_curve):
         plt.close()
 
 
-def print_activity(responses):
+def print_activity(responses, title=""):
     one_res = []
     for tuning_curve in responses:
         one_res.append(tuning_curve[7][4])
 
     plt.plot(one_res)
-    plt.title("Activity of the network")
+    plt.title(title)
     plt.xlabel("Neuron Index")
     plt.ylabel("Response / Hz")
     if SHOW:
@@ -85,16 +93,15 @@ def get_all_fraction_of_variance(responses):
     return frac_of_vars
 
 
-def plot_percentage_explained(tuning_curves, title="", bin_size=0.02):
+def plot_percentage_explained(tuning_curves, title=""):
     percentages = get_all_percentage_explained(tuning_curves)
-    bins = np.arange(min(percentages), max(percentages) + bin_size, bin_size)
-    plt.xlim(0, 1)
-    plt.hist(percentages, bins)
+    plt.hist(percentages, 10)
     plt.title(title)
     if SHOW:
         plt.show()
     else:
         plt.savefig(f"{FOLDER_NAME}/percentage_{time.time()}.png")
+        plt.close()
 
 
 def plot_frac_of_var(tuning_curves, title="", bin_size=0.0025):
@@ -126,7 +133,7 @@ def get_mean_firing_rate(tuning_curve, contrast_index=None):
     return np.mean(tuning_curve)
 
 
-def plot_hist(func, responses, contrast_index=7, title="", bin_size=None, bin_num=10):
+def plot_hist(func, responses, contrast_index=7, title="", bin_size=None, bin_num=20):
     circ_vars = []
 
     for response in responses:
@@ -167,65 +174,88 @@ def centralise_all_curves(responses):
 
 if __name__ == "__main__":
 
-    # Get the network response
-    J_array = [-196.23522666345744, -267.49580460120103, -153.80572041353537, -258.52970608602016]
-    P_array = [-10.990684938388938, -1.2163953243244932, -8.83331693749932, -1.2163953243244932]
-    w_array = [-255.84942256760897, -304.50168192079303, -214.12513203729057, -255.84942256760897]  
-
-    generator = WeightsGenerator(J_array, P_array, w_array, 10000)
-    W, accepted = generator.generate_weight_matrix()
-
-    executer = NetworkExecuter(10000)
-    responses, avg_step = executer.run_all_orientation_and_contrast(W)
-    data_E = centralise_all_curves(np.array(responses[0:8000].data))
-    data_I = centralise_all_curves(np.array(responses[8000:].data))
-    data = np.concatenate((data_E, data_I), axis=0)
-
-    print_tuning_curve(data[500])
-    print_tuning_curve(data[-500])
-    
-    print_activity(responses)
-
-    print_tuning_curve(neuro_SVD(data[500])[0])
-    print_tuning_curve(neuro_SVD(data[-500])[0])
-
-    plot_percentage_explained(data)
-
-    plot_frac_of_var(data)
-
-    plot_hist(get_circ_var, data_E)
-    plot_hist(get_max_firing_rate, data_E)
-    plot_hist(get_mean_firing_rate, data_E)
-
-    plot_hist(get_circ_var, data_I)
-    plot_hist(get_max_firing_rate, data_I)
-    plot_hist(get_mean_firing_rate, data_I)
+    not_data = bool(input("Enter for plotting data: "))
 
 
+    if not_data:
+        responses_path = input("Path to response file: ")
+        if responses_path == "":
+            # Get the network response
+            J_array = [-3.196400000000001, -18.416, 8.4417, -15.4357]
+            P_array = [-10.5172, -1.4569, -8.9367, -1.0969999999999998]
+            w_array = [-254.75560000000002, -304.4044, -214.253, -253.4417]
 
-    # Get the data
-    data_E, data_I = get_data()
-    responses = np.concatenate((np.array(data_E.data), np.array(data_I.data)), axis=0)
-    data_E = centralise_all_curves(np.array(data_E.data))
-    data_I = centralise_all_curves(np.array(data_I.data))
-    data = np.concatenate((data_E, data_I), axis=0)
+            generator = WeightsGenerator(J_array, P_array, w_array, 10000)
+            W, accepted = generator.generate_weight_matrix()
 
-    print_tuning_curve(data[5])
-    print_tuning_curve(data[-5])
-    
-    print_activity(responses)
+            executer = NetworkExecuter(10000)
+            responses, _ = executer.run_all_orientation_and_contrast(W)
 
-    print_tuning_curve(neuro_SVD(data[5])[0])
-    print_tuning_curve(neuro_SVD(data[-5])[0])
+            with open(f"{FOLDER_NAME}/responses.pkl", "wb") as f:
+                pickle.dump(responses, f)
+            with open(f"{FOLDER_NAME}/plot_log.log", 'w') as f:
+                f.write(f"PLOT LOG FILE FOR {datetime.now()}\n\n")
+                f.write(f"J_array = {J_array}\n")
+                f.write(f"P_array = {P_array}\n")
+                f.write(f"w_array = {w_array}\n")
+            
+        else:
+            with open(responses_path, 'rb') as f:
+                responses = pickle.load(f)
+            
+            if type(responses) != torch.Tensor:
+                responses = torch.tensor(responses)
 
-    plot_percentage_explained(data)
+        data_E = centralise_all_curves(np.array(responses[0:8000].data))
+        data_I = centralise_all_curves(np.array(responses[8000:].data))
+        data = np.concatenate((data_E, data_I), axis=0)
 
-    plot_frac_of_var(data)
+        print_tuning_curve(data[500], title="Example Excitatory Neuron Tuning Curve From Model")
+        print_tuning_curve(data[-500], title="Example Inhibitory Neuron Tuning Curve From Model")
+        
+        print_activity(responses, title="Example Response Plot for the Model")
 
-    plot_hist(get_circ_var, data_E)
-    plot_hist(get_max_firing_rate, data_E)
-    plot_hist(get_mean_firing_rate, data_E)
+        print_tuning_curve(neuro_SVD(data[500])[0], title="Example SVD of Excitatory Neuron Tuning Curve From Model")
+        print_tuning_curve(neuro_SVD(data[-500])[0], title="Example SVD of Inhibitory Neuron Tuning Curve From Model")
 
-    plot_hist(get_circ_var, data_I)
-    plot_hist(get_max_firing_rate, data_I)
-    plot_hist(get_mean_firing_rate, data_I)
+        plot_percentage_explained(data, title="Histogram of the percentage that the residue is left after SVD")
+
+        plot_frac_of_var(data_E, title="Fraction of explained variance (degree of contrast invariance) - Excitatory")
+        plot_frac_of_var(data_I, title="Fraction of explained variance (degree of contrast invariance) - Inhibitory")
+
+        plot_hist(get_circ_var, data_E, title="Histogram of the circular variance of the model E tuning curves")
+        plot_hist(get_max_firing_rate, data_E, title="Histogram of the max firing rate of the model E tuning curves")
+        plot_hist(get_mean_firing_rate, data_E, title="Histogram of the nean firing rate of the model E tuning curves")
+
+        plot_hist(get_circ_var, data_I, title="Histogram of the circular variance of the model I tuning curves")
+        plot_hist(get_max_firing_rate, data_I, title="Histogram of the max firing rate of the model I tuning curves")
+        plot_hist(get_mean_firing_rate, data_I, title="Histogram of the nean firing rate of the model I tuning curves")
+
+    else:
+        # Get the data
+        data_E, data_I = get_data()
+        responses = np.concatenate((np.array(data_E.data), np.array(data_I.data)), axis=0)
+        data_E = centralise_all_curves(np.array(data_E.data))
+        data_I = centralise_all_curves(np.array(data_I.data))
+        data = np.concatenate((data_E, data_I), axis=0)
+
+        print_tuning_curve(data[5], title="Example Excitatory Neuron Tuning Curve From Data")
+        print_tuning_curve(data[-5], title="Example Inhibitory Neuron Tuning Curve From Data")
+        
+        print_activity(responses, title="Response Plot for the data")
+
+        print_tuning_curve(neuro_SVD(data[5])[0], title="Example SVD of Excitatory Neuron Tuning Curve From Data")
+        print_tuning_curve(neuro_SVD(data[-5])[0], title="Example SVD of Inhibitory Neuron Tuning Curve From Data")
+
+        plot_percentage_explained(data, title="Histogram of the percentage that the residue is left after SVD")
+
+        plot_frac_of_var(data_E, title="Fraction of explained variance (degree of contrast invariance) - Excitatory")
+        plot_frac_of_var(data_I, title="Fraction of explained variance (degree of contrast invariance) - Inhibitory")
+
+        plot_hist(get_circ_var, data_E, title="Histogram of the circular variance of the data E tuning curves")
+        plot_hist(get_max_firing_rate, data_E, title="Histogram of the max firing rate of the data E tuning curves")
+        plot_hist(get_mean_firing_rate, data_E, title="Histogram of the nean firing rate of the data E tuning curves")
+
+        plot_hist(get_circ_var, data_I, title="Histogram of the circular variance of the data I tuning curves")
+        plot_hist(get_max_firing_rate, data_I, title="Histogram of the max firing rate of the data I tuning curves")
+        plot_hist(get_mean_firing_rate, data_I, title="Histogram of the nean firing rate of the data I tuning curves")
