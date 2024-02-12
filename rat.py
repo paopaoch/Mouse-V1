@@ -173,8 +173,8 @@ class WeightsGenerator(Rodents):
         self.w_hyperparameter = torch.tensor(w_array, device=device)
 
         # Sigmoid values for parameters
-        self.J_steep = 1/70
-        self.J_scale = 700
+        self.J_steep = 1/10
+        self.J_scale = 100
 
         self.P_steep = 1/3
         self.P_scale = 1

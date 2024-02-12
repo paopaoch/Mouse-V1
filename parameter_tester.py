@@ -3,8 +3,8 @@ import math
 from rat import WeightsGenerator
 import numpy as np
 
-J_steep = 1/70
-J_scale = 700
+J_steep = 1/10
+J_scale = 100
 
 P_steep = 1/3
 P_scale = 1
@@ -161,9 +161,8 @@ if __name__ == "__main__":
         IE = Connection(70, 0.05, 42, N_E)
         II = Connection(17, 0.4, 35, N_I)
     else:
-        mean_list = [ 6.7310e-02, -2.1517e+00,  4.5293e+00,  2.0414e+00, -4.1712e+00,
-                2.5880e+00, -6.7668e-02, -6.4035e-02, -1.0263e+02, -1.7228e+02,
-                -4.0358e+01, -1.0280e+02]
+        mean_list = [-195.9062, -267.7093, -154.0280, -258.2302,  -11.1119,   -0.9881,
+          -8.7208,   -0.8117, -255.1647, -303.3352, -212.7686, -256.8705]
         
         EE = Connection(params_to_J(mean_list[0]), params_to_P(mean_list[4]), params_to_w(mean_list[8]), N_E)
         EI = Connection(params_to_J(mean_list[1]), params_to_P(mean_list[5]), params_to_w(mean_list[9]), N_I)
