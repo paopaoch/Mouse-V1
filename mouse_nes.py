@@ -258,7 +258,7 @@ if __name__ == "__main__":
     desc = "Suspecting that the model is not converging because of the high important mixing. This trial is to try this again but with lower important mixing"
 
     if torch.cuda.is_available():
-        device = "cuda:1"
+        device = "cuda:0"
         print("Model will be created on GPU")
     else:
         device = "cpu"
@@ -268,9 +268,9 @@ if __name__ == "__main__":
     mean_list = [-4.054651081081644, -17.346010553881065, 8.472978603872036, -15.85627263740382, -10.990684938388938, -1.2163953243244932, -8.83331693749932, -1.2163953243244932, -255.84942256760897, -304.50168192079303, -214.12513203729057, -255.84942256760897]
 
      
-    var_list = [0.1, 0.1, 0.1, 0.1, 
-                0.03, 0.03, 0.03, 0.03, 
-                0.1, 0.1, 0.1, 0.2]
+    var_list = [0.3, 0.3, 0.3, 0.3, 
+                0.1, 0.1, 0.1, 0.1, 
+                0.5, 0.5, 0.5, 0.5]
     
     
     mean, cov = make_torch_params(mean_list, var_list, device=device)
