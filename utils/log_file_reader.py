@@ -2,7 +2,8 @@ import pandas as pd
 import os
 
 if __name__ == "__main__":
-    file_name = input("path to log file: ")
+    # file_name = input("path to log file: ")
+    file_name = r"playground/log_nes7.log"
     current_dir = os.getcwd()
 
     losses = {
