@@ -326,8 +326,9 @@ class NetworkExecuter(Rodents):
         """Update self.weights and self.weights2 which is the weights and weights squares respectively."""
         self.weights = weights
         self.weights2 = torch.square(self.weights)
-        self.weights_FF = weights_FF
-        self.weights_FF2 = torch.square(weights_FF)
+        if weights_FF is not None:
+            self.weights_FF = weights_FF
+            self.weights_FF2 = torch.square(weights_FF)
 
 
     def run_all_orientation_and_contrast(self, weights, weights_FF=None):
