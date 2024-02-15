@@ -322,7 +322,7 @@ class NetworkExecuter(Rodents):
     # -------------------------Public Methods--------------------
 
 
-    def update_weight_matrix(self, weights, weights_FF) -> None:
+    def update_weight_matrix(self, weights, weights_FF=None) -> None:
         """Update self.weights and self.weights2 which is the weights and weights squares respectively."""
         self.weights = weights
         self.weights2 = torch.square(self.weights)
@@ -330,7 +330,7 @@ class NetworkExecuter(Rodents):
         self.weights_FF2 = torch.square(weights_FF)
 
 
-    def run_all_orientation_and_contrast(self, weights, weights_FF):
+    def run_all_orientation_and_contrast(self, weights, weights_FF=None):
         """should condense this down to one single loop like the loss function, 
         runtime will be less but memory might be bad because of (10000, 10000, 12).
         Maybe we can keep the 2 loops but use (10000, 10000, 4) instead. In other words,
