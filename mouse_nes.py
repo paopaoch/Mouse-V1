@@ -259,7 +259,7 @@ if __name__ == "__main__":
     desc = "xNES is not optimising properly, trying to swap the optimising direction"
 
     if torch.cuda.is_available():
-        device = "cuda:1"
+        device = "cuda:0"
         print("Model will be created on GPU")
     else:
         device = "cpu"
