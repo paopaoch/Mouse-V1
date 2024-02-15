@@ -219,7 +219,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             grad_B = torch.trace(grad_M) - grad_sigma * torch.eye(len(grad_M), device=device)
 
             # Update parameters
-            mean = mean + eta_delta * sigma * B @ grad_delta
+            mean = mean - eta_delta * sigma * B @ grad_delta
             sigma = sigma * torch.exp((eta_sigma / 2) * grad_sigma)
             B = B * torch.exp((eta_B / 2) * grad_B)
             f.flush()
@@ -269,9 +269,9 @@ if __name__ == "__main__":
     # mean_list = [-3.305099999999999, -18.417600000000004, 8.1351, -15.356800000000002, -10.745999999999999, -1.4150999999999998, -9.0855, -0.9312000000000004, -255.2007, -304.419, -214.15180000000004, -253.78870000000003]
     mean_list = [-4.054651081081644, -17.346010553881065, 8.472978603872036, -15.85627263740382, -10.990684938388938, -1.2163953243244932, -8.83331693749932, -1.2163953243244932, -255.84942256760897, -304.50168192079303, -214.12513203729057, -255.84942256760897] 
      
-    var_list = [1, 1, 1, 1, 
-                1, 1, 1, 1, 
-                1, 1, 1, 1]
+    var_list = [0.3, 0.3, 0.3, 0.3, 
+                0.1, 0.1, 0.1, 0.1, 
+                0.5, 0.5, 0.5, 0.5]
     
     
     mean, cov = make_torch_params(mean_list, var_list, device=device)
