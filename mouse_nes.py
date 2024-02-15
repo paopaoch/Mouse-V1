@@ -256,7 +256,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 
 if __name__ == "__main__":
-    desc = "xNES is not optimising properly, so we will try a very large covariance."
+    desc = "xNES is not optimising properly, trying to swap the optimising direction"
 
     if torch.cuda.is_available():
         device = "cuda:1"
