@@ -256,7 +256,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 
 if __name__ == "__main__":
-    desc = "Will try to run the model for a large number of samples all with a variance of 0.1 and for 400 itterations"
+    desc = "Will try to run the model for a large number of samples all with a variance of 0.1 and for 5000 itterations as this is where it is shown that xNES needs. (This should run for weeks T.T)"
 
     if torch.cuda.is_available():
         device = "cuda:1"
@@ -278,4 +278,4 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 400, 24, y_E, y_I, device=device, neuron_num=10000, desc=desc))
+    print(nes_multigaussian_optim(mean, cov, 5000, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc))
