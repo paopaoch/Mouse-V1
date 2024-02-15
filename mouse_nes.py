@@ -80,7 +80,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         f.write(f"Code ran on the {datetime.now()}\n\n")
         f.write(f"Device: {device}\n")
         f.write(f"OS: {sys.platform}\n")
-        f.write(f"Machine: {socket.gethostname()}")
+        f.write(f"Machine: {socket.gethostname()}\n")
         f.write("Trainer type: xNES\n\n")
         f.write(f"{desc}\n\n")
         f.write("Metadata:\n")
@@ -219,7 +219,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             grad_B = torch.trace(grad_M) - grad_sigma * torch.eye(len(grad_M), device=device)
 
             # Update parameters
-            mean = mean - eta_delta * sigma * B @ grad_delta
+            mean = mean + eta_delta * sigma * B @ grad_delta
             sigma = sigma * torch.exp((eta_sigma / 2) * grad_sigma)
             B = B * torch.exp((eta_B / 2) * grad_B)
             f.flush()
@@ -278,4 +278,4 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 80, 18, y_E, y_I, device=device, neuron_num=10000, desc=desc))
+    print(nes_multigaussian_optim(mean, cov, 400, 24, y_E, y_I, device=device, neuron_num=10000, desc=desc))

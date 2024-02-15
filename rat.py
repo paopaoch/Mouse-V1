@@ -91,9 +91,6 @@ class MouseLossFunction:
         E = self.MMD(x_E, y_E)
         I = self.MMD(x_I, y_I)
 
-        print(E)
-        print(I)
-
         return E + I + (torch.maximum(self.one, avg_step) - 1) * self.avg_step_weighting, E + I
 
     
@@ -139,18 +136,21 @@ class MouseLossFunction:
 
 
 class Rodents:
-    def __init__(self, neuron_num, ratio=0.8, device="cpu"):
+    def __init__(self, neuron_num, ratio=0.8, device="cpu", feed_forward_num=100):
         self.neuron_num = neuron_num
         neuron_num_e = int(neuron_num * ratio)
         neuron_num_i = neuron_num - neuron_num_e
         self.neuron_num_e = neuron_num_e
         self.neuron_num_i = neuron_num_i
+        self.feed_forward_num = feed_forward_num
         self.device = device
         self.ratio = ratio
 
         self.pref_E = torch.linspace(0, 179.99, self.neuron_num_e, device=device, requires_grad=False)
         self.pref_I = torch.linspace(0, 179.99, self.neuron_num_i, device=device, requires_grad=False)
         self.pref = torch.cat([self.pref_E, self.pref_I]).to(device)
+
+        self.pref_F = torch.linspace(0, 179.99, self.feed_forward_num, device=device, requires_grad=False)
 
 
     @staticmethod
@@ -181,7 +181,14 @@ class WeightsGenerator(Rodents):
 
         self.w_steep = 1/180
         self.w_scale = 180
+
     
+    def generate_external_weight_matrix(self):
+        prob_EF = self._get_sub_weight_matrix(self._pref_diff(self.pref_E, self.pref_F), 4)
+        prob_IF = self._get_sub_weight_matrix(self._pref_diff(self.pref_E, self.pref_F), 5)
+        weights = torch.cat((prob_EF, prob_IF), dim=0)
+        return weights
+
 
     def generate_weight_matrix(self):
         prob_EE = self._get_sub_weight_matrix(self._pref_diff(self.pref_E, self.pref_E), 0)
@@ -202,7 +209,7 @@ class WeightsGenerator(Rodents):
         # print(W_tot_II)
 
         # Theoretical calculation of W_tot
-        W_tot_EE = self.calc_theoretical_weights_tot(0, self.neuron_num_e)
+        W_tot_EE = self.calc_theoretical_weights_tot(0, self.neuron_num_e)  # TODO: Move this out to another function
         W_tot_EI = self.calc_theoretical_weights_tot(1, self.neuron_num_i)
         W_tot_IE = self.calc_theoretical_weights_tot(2, self.neuron_num_e)
         W_tot_II = self.calc_theoretical_weights_tot(3, self.neuron_num_i)
@@ -262,6 +269,8 @@ class NetworkExecuter(Rodents):
 
         self.weights = None
         self.weights2 = None
+        self.weights_FF = None
+        self.weights_FF2 = None
 
         # Stim to inputs
         self.scaling_g = scaling_g * torch.ones(self.neuron_num, device=device, requires_grad=False)
@@ -313,13 +322,15 @@ class NetworkExecuter(Rodents):
     # -------------------------Public Methods--------------------
 
 
-    def update_weight_matrix(self, weights) -> None:
+    def update_weight_matrix(self, weights, weights_FF) -> None:
         """Update self.weights and self.weights2 which is the weights and weights squares respectively."""
         self.weights = weights
         self.weights2 = torch.square(self.weights)
+        self.weights_FF = weights_FF
+        self.weights_FF2 = torch.square(weights_FF)
 
 
-    def run_all_orientation_and_contrast(self, weights):
+    def run_all_orientation_and_contrast(self, weights, weights_FF):
         """should condense this down to one single loop like the loss function, 
         runtime will be less but memory might be bad because of (10000, 10000, 12).
         Maybe we can keep the 2 loops but use (10000, 10000, 4) instead. In other words,
@@ -331,7 +342,7 @@ class NetworkExecuter(Rodents):
             return
         else:
             print("Updated Weight matrix")
-            self.update_weight_matrix(weights)
+            self.update_weight_matrix(weights, weights_FF)
         
         all_rates = []
         avg_step_sum = torch.tensor(0, device=self.device)
@@ -366,10 +377,19 @@ class NetworkExecuter(Rodents):
         return self.mu, self.sigma
     
 
-    def _stim_to_inputs(self, contrast, grating_orientations, preferred_orientations):  # TODO: Implement this as a parameter
+    def _stim_to_inputs(self, contrast, grating_orientations, preferred_orientations):
         '''Set the inputs based on the contrast and orientation of the stimulus'''
         self.input_mean = contrast * 20 * self.scaling_g * self._cric_gauss(grating_orientations - preferred_orientations, self.w_ff)
         self.input_sd = self.sig_ext
+        return self.input_mean, self.input_sd
+    
+
+    def _stim_to_inputs_new(self, contrast, grating_orientation):  # TODO: Check this function
+        '''Set the inputs based on the contrast and orientation of the stimulus'''
+        ff_output = contrast * 20 * self.scaling_g * self._cric_gauss(grating_orientation - self.pref_F, self.w_ff)
+        self.input_mean = self.weights_FF @ ff_output
+        self.input_sd = self.weights_FF2 @ ff_output
+
         return self.input_mean, self.input_sd
 
 
@@ -382,7 +402,7 @@ class NetworkExecuter(Rodents):
     
     def _add_noise_to_rate(self, rate_fp):
         sigma = torch.sqrt(rate_fp / self.N_trial / self.recorded_spike_T)
-        rand = torch.rand(size=rate_fp.shape, device=self.device)
+        rand = torch.randn(size=rate_fp.shape, device=self.device)
         return rate_fp + sigma * rand
     
 
@@ -473,13 +493,15 @@ if __name__ == "__main__":
     # P_array = [-8.83331693749932, -4.1588830833596715, -6.591673732008658, -4.1588830833596715]
     # w_array = [-102.69807452417032, -171.99206010493853, -40.16583923655776, -102.69807452417032] 
 
-    J_array = [-196.23522666345744, -267.49580460120103, -153.80572041353537, -258.52970608602016]
-    P_array = [-10.990684938388938, -1.2163953243244932, -8.83331693749932, -1.2163953243244932]
-    w_array = [-255.84942256760897, -304.50168192079303, -214.12513203729057, -255.84942256760897] 
+    J_array = [-196.23522666345744, -267.49580460120103, -153.80572041353537, -258.52970608602016, -267.49580460120103, -258.52970608602016]
+    P_array = [-10.990684938388938, -1.2163953243244932, -8.83331693749932, -1.2163953243244932, -1.2163953243244932, -1.2163953243244932]
+    w_array = [-255.84942256760897, -304.50168192079303, -214.12513203729057, -255.84942256760897, -304.50168192079303, -255.84942256760897] 
 
     keen = WeightsGenerator(J_array, P_array, w_array, 10000)
     W, accepted = keen.generate_weight_matrix()
     print(accepted)
+
+    W_FF = keen.generate_external_weight_matrix()
 
     # # TEST FOR CONSITENCY IN ACCEPTANCE
     # accepted_dict = {True:0, False:0}
@@ -506,6 +528,13 @@ if __name__ == "__main__":
     plt.imshow(W, cmap="seismic", vmin=-np.max(np.abs(np.array(W))), vmax=np.max(np.abs(np.array(W))))
     plt.colorbar()
     plt.title(f"Connection weight matrix for {10000} neurons")
+    plt.xlabel("Neuron index")
+    plt.ylabel("Neuron index")
+    plt.show()
+
+    plt.imshow(W_FF, cmap="seismic", vmin=-np.max(np.abs(np.array(W_FF))), vmax=np.max(np.abs(np.array(W_FF))))
+    plt.colorbar()
+    plt.title(f"Connection weight matrix feed forward neurons")
     plt.xlabel("Neuron index")
     plt.ylabel("Neuron index")
     plt.show()
