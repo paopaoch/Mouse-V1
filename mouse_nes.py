@@ -219,7 +219,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             grad_B = torch.trace(grad_M) - grad_sigma * torch.eye(len(grad_M), device=device)
 
             # Update parameters
-            mean = mean - eta_delta * sigma * B @ grad_delta  # NOTE: Changed this to negative
+            mean = mean + eta_delta * sigma * B @ grad_delta
             sigma = sigma * torch.exp((eta_sigma / 2) * grad_sigma)
             B = B * torch.exp((eta_B / 2) * grad_B)
             f.flush()
@@ -256,10 +256,10 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 
 if __name__ == "__main__":
-    desc = "Not sure why xNES is not optimising and seems to be maximising instead? Still dont think that is the case because we already swapped the loss when we sorted the array but this run swaps the direction of the optimisation."
+    desc = "xNES is not optimising properly, so we will try a very large covariance."
 
     if torch.cuda.is_available():
-        device = "cuda:0"
+        device = "cuda:1"
         print("Model will be created on GPU")
     else:
         device = "cpu"
@@ -269,9 +269,9 @@ if __name__ == "__main__":
     # mean_list = [-3.305099999999999, -18.417600000000004, 8.1351, -15.356800000000002, -10.745999999999999, -1.4150999999999998, -9.0855, -0.9312000000000004, -255.2007, -304.419, -214.15180000000004, -253.78870000000003]
     mean_list = [-4.054651081081644, -17.346010553881065, 8.472978603872036, -15.85627263740382, -10.990684938388938, -1.2163953243244932, -8.83331693749932, -1.2163953243244932, -255.84942256760897, -304.50168192079303, -214.12513203729057, -255.84942256760897] 
      
-    var_list = [0.3, 0.3, 0.3, 0.3, 
-                0.1, 0.1, 0.1, 0.1, 
-                0.5, 0.5, 0.5, 0.5]
+    var_list = [1, 1, 1, 1, 
+                1, 1, 1, 1, 
+                1, 1, 1, 1]
     
     
     mean, cov = make_torch_params(mean_list, var_list, device=device)
