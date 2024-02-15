@@ -382,7 +382,7 @@ class NetworkExecuter(Rodents):
     
     def _add_noise_to_rate(self, rate_fp):
         sigma = torch.sqrt(rate_fp / self.N_trial / self.recorded_spike_T)
-        rand = torch.rand(size=rate_fp.shape)
+        rand = torch.rand(size=rate_fp.shape, device=self.device)
         return rate_fp + sigma * rand
     
 
