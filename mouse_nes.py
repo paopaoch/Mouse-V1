@@ -4,6 +4,7 @@ from datetime import datetime
 import sys
 from tqdm import tqdm
 from rat import MouseLossFunction, WeightsGenerator, NetworkExecuter, get_data
+import socket
 
 
 class MouseDataPoint:
@@ -55,13 +56,13 @@ def get_utilities(length: int, device="cpu"):  # samples are sorted in ascending
 
 def sort_two_arrays(losses: list, samples: list, device="cpu"):  # sort according to array1
     combined_arrays = zip(losses, samples)
-    sorted_combined = sorted(combined_arrays, key=lambda x: x[0])
+    sorted_combined = sorted(combined_arrays, key=lambda x: x[0])  # TODO: Check this + or -
     sorted_losses, sorted_samples = zip(*sorted_combined)
     return torch.tensor(sorted_losses, device=device), torch.stack(sorted_samples)  # WARNING: Very prone to error, double check this
 
 
 def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int, samples_per_iter: int, y_E, y_I,
-                            neuron_num=10000, eta_delta=1, eta_sigma=0.06, eta_B=0.06, 
+                            neuron_num=10000, eta_delta=1, eta_sigma=0.08, eta_B=0.08, 
                             device="cpu", avg_step_weighting=0.002, desc="", alpha=torch.tensor(0.6)):
     # Init model and loss function
     J, P, w = mean_to_params(mean)
@@ -79,6 +80,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         f.write(f"Code ran on the {datetime.now()}\n\n")
         f.write(f"Device: {device}\n")
         f.write(f"OS: {sys.platform}\n")
+        f.write(f"Machine: {socket.gethostname()}")
         f.write("Trainer type: xNES\n\n")
         f.write(f"{desc}\n\n")
         f.write("Metadata:\n")
@@ -126,7 +128,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         prev_B = B.clone().detach()
 
         for i in tqdm(range(max_iter)):
-            f.write(f"ITERATION: {i} 😂\n")
+            f.write(f"ITERATION: {i}\n")
 
             samples = []
             losses = []
@@ -217,7 +219,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             grad_B = torch.trace(grad_M) - grad_sigma * torch.eye(len(grad_M), device=device)
 
             # Update parameters
-            mean = mean + eta_delta * sigma * B @ grad_delta
+            mean = mean - eta_delta * sigma * B @ grad_delta  # NOTE: Changed this to negative
             sigma = sigma * torch.exp((eta_sigma / 2) * grad_sigma)
             B = B * torch.exp((eta_B / 2) * grad_B)
             f.flush()
@@ -254,8 +256,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 
 if __name__ == "__main__":
-
-    desc = "Restarting training at the lowest point from the previous training"
+    desc = "Not sure why xNES is not optimising and seems to be maximising instead? Still dont think that is the case because we already swapped the loss when we sorted the array but this run swaps the direction of the optimisation."
 
     if torch.cuda.is_available():
         device = "cuda:0"
@@ -265,8 +266,8 @@ if __name__ == "__main__":
         print("GPU not available. Model will be created on CPU.")
 
         
-    mean_list = [-3.305099999999999, -18.417600000000004, 8.1351, -15.356800000000002, -10.745999999999999, -1.4150999999999998, -9.0855, -0.9312000000000004, -255.2007, -304.419, -214.15180000000004, -253.78870000000003]
-
+    # mean_list = [-3.305099999999999, -18.417600000000004, 8.1351, -15.356800000000002, -10.745999999999999, -1.4150999999999998, -9.0855, -0.9312000000000004, -255.2007, -304.419, -214.15180000000004, -253.78870000000003]
+    mean_list = [-4.054651081081644, -17.346010553881065, 8.472978603872036, -15.85627263740382, -10.990684938388938, -1.2163953243244932, -8.83331693749932, -1.2163953243244932, -255.84942256760897, -304.50168192079303, -214.12513203729057, -255.84942256760897] 
      
     var_list = [0.3, 0.3, 0.3, 0.3, 
                 0.1, 0.1, 0.1, 0.1, 

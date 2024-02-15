@@ -181,9 +181,9 @@ if __name__ == "__main__":
         responses_path = input("Path to response file: ")
         if responses_path == "":
             # Get the network response
-            J_array = [-3.196400000000001, -18.416, 8.4417, -15.4357]
-            P_array = [-10.5172, -1.4569, -8.9367, -1.0969999999999998]
-            w_array = [-254.75560000000002, -304.4044, -214.253, -253.4417]
+            J_array = [-2.812500000000001, -18.768, 7.9368, -15.099900000000002]
+            P_array = [-10.3102, -2.2084999999999995, -8.3778, -1.4937999999999998]
+            w_array = [-254.9576, -304.4856, -215.381, -253.83] 
 
             generator = WeightsGenerator(J_array, P_array, w_array, 10000)
             W, accepted = generator.generate_weight_matrix()
@@ -225,11 +225,11 @@ if __name__ == "__main__":
 
         plot_hist(get_circ_var, data_E, title="Histogram of the circular variance of the model E tuning curves")
         plot_hist(get_max_firing_rate, data_E, title="Histogram of the max firing rate of the model E tuning curves")
-        plot_hist(get_mean_firing_rate, data_E, title="Histogram of the nean firing rate of the model E tuning curves")
+        plot_hist(get_mean_firing_rate, data_E, title="Histogram of the mean firing rate of the model E tuning curves")
 
         plot_hist(get_circ_var, data_I, title="Histogram of the circular variance of the model I tuning curves")
         plot_hist(get_max_firing_rate, data_I, title="Histogram of the max firing rate of the model I tuning curves")
-        plot_hist(get_mean_firing_rate, data_I, title="Histogram of the nean firing rate of the model I tuning curves")
+        plot_hist(get_mean_firing_rate, data_I, title="Histogram of the mean firing rate of the model I tuning curves")
 
     else:
         # Get the data
@@ -254,8 +254,8 @@ if __name__ == "__main__":
 
         plot_hist(get_circ_var, data_E, title="Histogram of the circular variance of the data E tuning curves")
         plot_hist(get_max_firing_rate, data_E, title="Histogram of the max firing rate of the data E tuning curves")
-        plot_hist(get_mean_firing_rate, data_E, title="Histogram of the nean firing rate of the data E tuning curves")
+        plot_hist(get_mean_firing_rate, data_E, title="Histogram of the mean firing rate of the data E tuning curves")
 
         plot_hist(get_circ_var, data_I, title="Histogram of the circular variance of the data I tuning curves")
         plot_hist(get_max_firing_rate, data_I, title="Histogram of the max firing rate of the data I tuning curves")
-        plot_hist(get_mean_firing_rate, data_I, title="Histogram of the nean firing rate of the data I tuning curves")
+        plot_hist(get_mean_firing_rate, data_I, title="Histogram of the mean firing rate of the data I tuning curves")

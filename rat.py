@@ -305,6 +305,10 @@ class NetworkExecuter(Rodents):
                     1.0616084849547165, .64290613877355551, .14805913578876898], device=device
                     , requires_grad=False)
         
+        # Add noise to fix point output
+        self.N_trial = 50
+        self.recorded_spike_T = 0.5
+        
 
     # -------------------------Public Methods--------------------
 
@@ -336,6 +340,7 @@ class NetworkExecuter(Rodents):
             steady_states = []
             for orientation in self.orientations:
                 rate, avg_step = self._get_steady_state_output(contrast, orientation)
+                rate = self._add_noise_to_rate(rate)
                 steady_states.append(rate)
                 avg_step_sum = avg_step_sum + avg_step
                 count += 1
@@ -361,7 +366,7 @@ class NetworkExecuter(Rodents):
         return self.mu, self.sigma
     
 
-    def _stim_to_inputs(self, contrast, grating_orientations, preferred_orientations):
+    def _stim_to_inputs(self, contrast, grating_orientations, preferred_orientations):  # TODO: Implement this as a parameter
         '''Set the inputs based on the contrast and orientation of the stimulus'''
         self.input_mean = contrast * 20 * self.scaling_g * self._cric_gauss(grating_orientations - preferred_orientations, self.w_ff)
         self.input_sd = self.sig_ext
@@ -373,6 +378,12 @@ class NetworkExecuter(Rodents):
         # Solve using Euler
         r_fp, avg_step = self._euler2fixedpt(r_init)
         return r_fp, avg_step
+    
+    
+    def _add_noise_to_rate(self, rate_fp):
+        sigma = torch.sqrt(rate_fp / self.N_trial / self.recorded_spike_T)
+        rand = torch.rand(size=rate_fp.shape)
+        return rate_fp + sigma * rand
     
 
     # -------------------------MOVE SIM UTILS INTO THE SAME CLASS------------------
