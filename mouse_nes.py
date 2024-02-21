@@ -185,7 +185,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                         preds_I = preds[weights_generator.neuron_num_e:]
                         current_loss, _ = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step)
                     else:
-                        current_loss = torch.tensor(10000, dtype=torch.float32)  # This is pretty much infinity. Need to find a better scaling for rejected weights
+                        current_loss = torch.tensor(10000, dtype=torch.float32)  # This is pretty much infinity. TODO: find a better scaling for rejected weights
                         rejected += 1
 
                     samples.append(sample)

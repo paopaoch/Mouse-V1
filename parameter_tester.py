@@ -161,8 +161,9 @@ if __name__ == "__main__":
         IE = Connection(70, 0.05, 42, N_E)
         II = Connection(17, 0.4, 35, N_I)
     else:
-        mean_list = [  -2.8125,  -18.7680,    7.9368,  -15.0999,  -10.3102,   -2.2085,
-          -8.3778,   -1.4938, -254.9576, -304.4856, -215.3810, -253.8300]
+        mean_list = [-3.9440e+00, -1.6740e+01,  8.4091e+00, -1.5425e+01, 
+           -9.7804e+00, -1.4716e+00, -9.2311e+00, -1.7742e-01, 
+            -2.5519e+02, -3.0496e+02, -2.1453e+02, -2.5578e+02]
         
         EE = Connection(params_to_J(mean_list[0]), params_to_P(mean_list[4]), params_to_w(mean_list[8]), N_E)
         EI = Connection(params_to_J(mean_list[1]), params_to_P(mean_list[5]), params_to_w(mean_list[9]), N_I)
