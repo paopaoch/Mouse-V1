@@ -24,14 +24,15 @@ executer = NetworkExecuter(10000, device=device)
 loss_function = MouseLossFunction(device=device)
 
 with open("loss_comparer.log", "w") as f:
-    for _ in range(100):
+    for i in range(100):
+        print(i)
         weights1, _ = wg1.generate_weight_matrix()
         response1, _ = executer.run_all_orientation_and_contrast(weights=weights1)
 
         weights2, _ = wg2.generate_weight_matrix()
         response2, _ = executer.run_all_orientation_and_contrast(weights=weights2)
 
-        _ , loss = loss_function.calculate_loss(response1[:8000], response2[:8000], response1[8000:], response2[8000:], avg_step=0)
+        _ , loss = loss_function.calculate_loss(response1[:8000], response2[:8000], response1[8000:], response2[8000:], avg_step=torch.tensor(0))
 
         f.write(f"{loss}")
         f.flush()
