@@ -34,5 +34,5 @@ with open("loss_comparer.log", "w") as f:
 
         _ , loss = loss_function.calculate_loss(response1[:8000], response2[:8000], response1[8000:], response2[8000:], avg_step=torch.tensor(0))
 
-        f.write(f"{loss}")
+        f.write(f"{loss}\n")
         f.flush()
