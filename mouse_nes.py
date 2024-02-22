@@ -179,13 +179,13 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                     J, P, w = mean_to_params(mean)
                     weights_generator.set_parameters(J, P, w)
                     weights, weights_valid = weights_generator.generate_weight_matrix()
-                    if weights_valid:
+                    if weights_valid == torch.tensor(0, device=device):
                         preds, avg_step = network_executer.run_all_orientation_and_contrast(weights)
                         preds_E = preds[:weights_generator.neuron_num_e]
                         preds_I = preds[weights_generator.neuron_num_e:]
                         current_loss, _ = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step)
                     else:
-                        current_loss = torch.tensor(10000, dtype=torch.float32)  # This is pretty much infinity. TODO: find a better scaling for rejected weights
+                        current_loss = 1000 * weights_valid
                         rejected += 1
 
                     samples.append(sample)

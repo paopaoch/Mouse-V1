@@ -198,21 +198,19 @@ class WeightsGenerator(Rodents):
         weights = torch.cat((torch.cat((prob_EE, prob_EI), dim=1),
                     torch.cat((prob_IE, prob_II), dim=1)), dim=0)
 
-        # W_tot_EE = torch.abs(torch.sum(prob_EE)) / self.neuron_num_e
-        # W_tot_EI = torch.abs(torch.sum(prob_EI)) / self.neuron_num_e
-        # W_tot_IE = torch.abs(torch.sum(prob_IE)) / self.neuron_num_i
-        # W_tot_II = torch.abs(torch.sum(prob_II)) / self.neuron_num_i
-        # is_valid = ((W_tot_EE / W_tot_IE) < (W_tot_EI / W_tot_II)) < 1
-        
-        # Theoretical calculation of W_tot
-        W_tot_EE = self.calc_theoretical_weights_tot(0, self.neuron_num_e)  # TODO: Move this out to another function
+        return weights, self.validate_weight_matrix()
+
+
+    def validate_weight_matrix(self):
+        W_tot_EE = self.calc_theoretical_weights_tot(0, self.neuron_num_e)
         W_tot_EI = self.calc_theoretical_weights_tot(1, self.neuron_num_i)  # TODO: Implement new condition
         W_tot_IE = self.calc_theoretical_weights_tot(2, self.neuron_num_e)
         W_tot_II = self.calc_theoretical_weights_tot(3, self.neuron_num_i)
 
-        is_valid = ((W_tot_EE / W_tot_IE) < (W_tot_EI / W_tot_II)) and ((W_tot_EI / W_tot_II) < 1)
-        return weights, is_valid  # Conditions to be changed once we include stimulus
-
+        first_condition = torch.maximum((W_tot_EE / W_tot_IE) - (W_tot_EI / W_tot_II), torch.tensor(0, device=self.device))
+        second_condition = torch.maximum((W_tot_EI / W_tot_II) - torch.tensor(1, device=self.device), torch.tensor(0, device=self.device))
+        
+        return torch.maximum(first_condition, second_condition)
 
     def calc_theoretical_weights_tot(self, i, N_b):
         """Calculate weights tot for the contraints"""
