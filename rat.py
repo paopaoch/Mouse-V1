@@ -203,20 +203,12 @@ class WeightsGenerator(Rodents):
         # W_tot_IE = torch.abs(torch.sum(prob_IE)) / self.neuron_num_i
         # W_tot_II = torch.abs(torch.sum(prob_II)) / self.neuron_num_i
         # is_valid = ((W_tot_EE / W_tot_IE) < (W_tot_EI / W_tot_II)) < 1
-        # print(W_tot_EE)
-        # print(W_tot_EI)
-        # print(W_tot_IE)
-        # print(W_tot_II)
-
+        
         # Theoretical calculation of W_tot
         W_tot_EE = self.calc_theoretical_weights_tot(0, self.neuron_num_e)  # TODO: Move this out to another function
-        W_tot_EI = self.calc_theoretical_weights_tot(1, self.neuron_num_i)
+        W_tot_EI = self.calc_theoretical_weights_tot(1, self.neuron_num_i)  # TODO: Implement new condition
         W_tot_IE = self.calc_theoretical_weights_tot(2, self.neuron_num_e)
         W_tot_II = self.calc_theoretical_weights_tot(3, self.neuron_num_i)
-        # print(W_tot_EE)
-        # print(W_tot_EI)
-        # print(W_tot_IE)
-        # print(W_tot_II)
 
         is_valid = ((W_tot_EE / W_tot_IE) < (W_tot_EI / W_tot_II)) and ((W_tot_EI / W_tot_II) < 1)
         return weights, is_valid  # Conditions to be changed once we include stimulus
@@ -366,7 +358,10 @@ class NetworkExecuter(Rodents):
 
 
     def _get_steady_state_output(self, contrast, grating_orientations):
-        self._stim_to_inputs(contrast, grating_orientations, self.pref)
+        if self.weights_FF is None:
+            self._stim_to_inputs(contrast, grating_orientations, self.pref)
+        else:
+            self._stim_to_inputs_with_ff(contrast, grating_orientations, self.pref)
         r_fp, avg_step = self._solve_fixed_point()
         return r_fp, avg_step
 
@@ -385,7 +380,7 @@ class NetworkExecuter(Rodents):
         return self.input_mean, self.input_sd
     
 
-    def _stim_to_inputs_new(self, contrast, grating_orientation):  # TODO: Check this function
+    def _stim_to_inputs_with_ff(self, contrast, grating_orientation):  # TODO: Check this function
         '''Set the inputs based on the contrast and orientation of the stimulus'''
         ff_output = contrast * 20 * self.scaling_g * self._cric_gauss(grating_orientation - self.pref_F, self.w_ff)
         self.input_mean = self.weights_FF @ ff_output
@@ -394,9 +389,8 @@ class NetworkExecuter(Rodents):
         return self.input_mean, self.input_sd
 
 
-    def _solve_fixed_point(self): # tau_ref varies with E and I
-        r_init = torch.zeros(self.neuron_num, device=self.device) # Need to change this to a matrix
-        # Solve using Euler
+    def _solve_fixed_point(self):
+        r_init = torch.zeros(self.neuron_num, device=self.device)
         r_fp, avg_step = self._euler2fixedpt(r_init)
         return r_fp, avg_step
     
