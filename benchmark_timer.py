@@ -16,8 +16,8 @@ P_array = [-2.5418935811616112, 4.1588830833596715, -2.5418935811616112, 4.15888
 w_array = [-237.28336161747745, -255.84942256760897, -214.12513203729057, -225.49733432916625, -237.28336161747745, -237.28336161747745] 
 
 WG = WeightsGenerator(J_array, P_array, w_array, 4000, device=device)
-NE = NetworkExecuter(4000)
-loss_function = MouseLossFunction()
+NE = NetworkExecuter(4000, device=device)
+loss_function = MouseLossFunction(device=device)
 
 start = time.time()
 recurrent_weights, _ = WG.generate_weight_matrix()
