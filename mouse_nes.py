@@ -56,7 +56,7 @@ def get_utilities(length: int, device="cpu"):  # samples are sorted in ascending
 
 def sort_two_arrays(losses: list, samples: list, device="cpu"):  # sort according to array1
     combined_arrays = zip(losses, samples)
-    sorted_combined = sorted(combined_arrays, key=lambda x: x[0])  # TODO: Check this + or -
+    sorted_combined = sorted(combined_arrays, key=lambda x: x[0])
     sorted_losses, sorted_samples = zip(*sorted_combined)
     return torch.tensor(sorted_losses, device=device), torch.stack(sorted_samples)  # WARNING: Very prone to error, double check this
 
@@ -278,4 +278,4 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 5000, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc))
+    print(nes_multigaussian_optim(mean, cov, 200, 24, y_E, y_I, device=device, neuron_num=10000, desc=desc))
