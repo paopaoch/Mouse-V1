@@ -185,7 +185,7 @@ class WeightsGenerator(Rodents):
     
     def generate_external_weight_matrix(self):
         prob_EF = self._get_sub_weight_matrix(self._pref_diff(self.pref_E, self.pref_F), 4)
-        prob_IF = self._get_sub_weight_matrix(self._pref_diff(self.pref_E, self.pref_F), 5)
+        prob_IF = self._get_sub_weight_matrix(self._pref_diff(self.pref_I, self.pref_F), 5)
         weights = torch.cat((prob_EF, prob_IF), dim=0)
         return weights
 
@@ -265,9 +265,9 @@ class NetworkExecuter(Rodents):
         self.weights_FF2 = None
 
         # Stim to inputs
-        self.scaling_g = scaling_g * torch.ones(self.neuron_num, device=device, requires_grad=False)
-        self.w_ff = w_ff * torch.ones(self.neuron_num, device=device, requires_grad=False)
-        self.sig_ext = sig_ext * torch.ones(self.neuron_num, device=device, requires_grad=False)
+        self.scaling_g = torch.tensor(scaling_g, device=device)
+        self.w_ff = torch.tensor(w_ff, device=device)
+        self.sig_ext = torch.tensor(sig_ext, device=device)
         
         # Time constants for the ricciardi
         T_alpha = 0.5
@@ -359,9 +359,9 @@ class NetworkExecuter(Rodents):
 
     def _get_steady_state_output(self, contrast, grating_orientations):
         if self.weights_FF is None:
-            self._stim_to_inputs(contrast, grating_orientations, self.pref)
+            self._stim_to_inputs(contrast, grating_orientations)
         else:
-            self._stim_to_inputs_with_ff(contrast, grating_orientations, self.pref)
+            self._stim_to_inputs_with_ff(contrast, grating_orientations)
         r_fp, avg_step = self._solve_fixed_point()
         return r_fp, avg_step
 
@@ -373,9 +373,9 @@ class NetworkExecuter(Rodents):
         return self.mu, self.sigma
     
 
-    def _stim_to_inputs(self, contrast, grating_orientations, preferred_orientations):
+    def _stim_to_inputs(self, contrast, grating_orientations):
         '''Set the inputs based on the contrast and orientation of the stimulus'''
-        self.input_mean = contrast * 20 * self.scaling_g * self._cric_gauss(grating_orientations - preferred_orientations, self.w_ff)
+        self.input_mean = contrast * 20 * self.scaling_g * self._cric_gauss(grating_orientations - self.pref, self.w_ff)
         self.input_sd = self.sig_ext
         return self.input_mean, self.input_sd
     

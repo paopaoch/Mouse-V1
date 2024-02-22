@@ -152,14 +152,14 @@ if __name__ == "__main__":
 
     INITIAL = bool(input("Initial Params? (default False): "))
     print("\nInitial: ", INITIAL, '\n')
-    N_E = 8000
-    N_I = 2000
+    N_E = 3200
+    N_I = 800
 
     if INITIAL:
-        EE = Connection(40, 0.025, 35, N_E)
-        EI = Connection(15, 0.4, 28, N_I)
-        IE = Connection(70, 0.05, 42, N_E)
-        II = Connection(17, 0.4, 35, N_I)
+        EE = Connection(20, 0.3, 38, N_E)
+        EI = Connection(8, 0.8, 35, N_I)
+        IE = Connection(35, 0.3, 42, N_E)
+        II = Connection(8, 0.8, 40, N_I)
     else:
         mean_list = [-3.9440e+00, -1.6740e+01,  8.4091e+00, -1.5425e+01, 
            -9.7804e+00, -1.4716e+00, -9.2311e+00, -1.7742e-01, 
