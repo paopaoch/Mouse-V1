@@ -70,7 +70,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
     network_executer = NetworkExecuter(neuron_num, device=device)
     weights_generator = WeightsGenerator(J, P, w, neuron_num, device=device)
     weights, weights_valid = weights_generator.generate_weight_matrix()
-    if not weights_valid:
+    if weights_valid != torch.tensor(0, device=device):
         print("ERROR WEIGHT IS NOT VALID")
         return
 
