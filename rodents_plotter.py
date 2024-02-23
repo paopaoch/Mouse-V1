@@ -181,14 +181,14 @@ if __name__ == "__main__":
         responses_path = input("Path to response file: ")
         if responses_path == "":
             # Get the network response
-            J_array = [-2.812500000000001, -18.768, 7.9368, -15.099900000000002]
-            P_array = [-10.3102, -2.2084999999999995, -8.3778, -1.4937999999999998]
-            w_array = [-254.9576, -304.4856, -215.381, -253.83] 
+            J_array = [-13.862943611198906, -24.423470353692043, -6.1903920840622355, -24.423470353692043]
+            P_array = [-2.5418935811616112, 4.1588830833596715, -2.5418935811616112, 4.1588830833596715]
+            w_array = [-237.28336161747745, -255.84942256760897, -214.12513203729057, -225.49733432916625]
 
-            generator = WeightsGenerator(J_array, P_array, w_array, 10000)
+            generator = WeightsGenerator(J_array, P_array, w_array, 1000)
             W, accepted = generator.generate_weight_matrix()
 
-            executer = NetworkExecuter(10000)
+            executer = NetworkExecuter(1000)
             responses, _ = executer.run_all_orientation_and_contrast(W)
 
             with open(f"{FOLDER_NAME}/responses.pkl", "wb") as f:
@@ -206,17 +206,17 @@ if __name__ == "__main__":
             if type(responses) != torch.Tensor:
                 responses = torch.tensor(responses)
 
-        data_E = centralise_all_curves(np.array(responses[0:8000].data))
-        data_I = centralise_all_curves(np.array(responses[8000:].data))
+        data_E = centralise_all_curves(np.array(responses[0:800].data))
+        data_I = centralise_all_curves(np.array(responses[800:].data))
         data = np.concatenate((data_E, data_I), axis=0)
 
-        print_tuning_curve(data[500], title="Example Excitatory Neuron Tuning Curve From Model")
-        print_tuning_curve(data[-500], title="Example Inhibitory Neuron Tuning Curve From Model")
+        print_tuning_curve(data[100], title="Example Excitatory Neuron Tuning Curve From Model")
+        print_tuning_curve(data[-100], title="Example Inhibitory Neuron Tuning Curve From Model")
         
         print_activity(responses, title="Example Response Plot for the Model")
 
-        print_tuning_curve(neuro_SVD(data[500])[0], title="Example SVD of Excitatory Neuron Tuning Curve From Model")
-        print_tuning_curve(neuro_SVD(data[-500])[0], title="Example SVD of Inhibitory Neuron Tuning Curve From Model")
+        print_tuning_curve(neuro_SVD(data[100])[0], title="Example SVD of Excitatory Neuron Tuning Curve From Model")
+        print_tuning_curve(neuro_SVD(data[-100])[0], title="Example SVD of Inhibitory Neuron Tuning Curve From Model")
 
         plot_percentage_explained(data, title="Histogram of the percentage that the residue is left after SVD")
 

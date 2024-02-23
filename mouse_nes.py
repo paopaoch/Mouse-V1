@@ -80,7 +80,8 @@ def calc_loss(trials,
 
 def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int, samples_per_iter: int, y_E, y_I,
                             neuron_num=10000, eta_delta=1, eta_sigma=0.08, eta_B=0.08, 
-                            device="cpu", avg_step_weighting=0.002, desc="", alpha=torch.tensor(0.6), trials=1):
+                            device="cpu", avg_step_weighting=0.002, desc="", alpha=0.6, trials=1):
+    alpha = torch.tensor(alpha, device=device)
     # Init model and loss function
     J, P, w = mean_to_params(mean)
     loss_function = MouseLossFunction(device=device)
@@ -267,7 +268,7 @@ if __name__ == "__main__":
     desc = "Trials to test whether averaging across trials to reduce randomness will help"
 
     if torch.cuda.is_available():
-        device = "cuda:1"
+        device = "cuda:0"
         print("Model will be created on GPU")
     else:
         device = "cpu"
@@ -286,4 +287,4 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=3))
+    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=3, alpha=1))
