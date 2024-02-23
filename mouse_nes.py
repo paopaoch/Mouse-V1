@@ -67,11 +67,11 @@ def calc_loss(trials,
              loss_function: MouseLossFunction):
     loss_sum = 0
     mmd_sum = 0
-    preds_E = preds[:weights_generator.neuron_num_e]
-    preds_I = preds[weights_generator.neuron_num_e:]
     for _ in range(trials):
         weights, _ = weights_generator.generate_weight_matrix()
         preds, avg_step = network_executer.run_all_orientation_and_contrast(weights)
+        preds_E = preds[:weights_generator.neuron_num_e]
+        preds_I = preds[weights_generator.neuron_num_e:]
         trial_loss, trial_mmd_loss = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step)
         loss_sum += trial_loss
         mmd_sum += trial_mmd_loss
