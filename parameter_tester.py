@@ -157,8 +157,8 @@ if __name__ == "__main__":
 
     INITIAL = bool(input("Initial Params? (default False): "))
     print("\nInitial: ", INITIAL, '\n')
-    N_E = 8000
-    N_I = 2000
+    N_E = 800
+    N_I = 200
 
     if INITIAL:
         EE = Connection(30, 0.4, 100, N_E)
