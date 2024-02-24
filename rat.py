@@ -14,7 +14,7 @@ ConnectivityWeights: Inherit from Rodents for weight matrix generation.
 
 NetworkExecuter: Inherit from Rodents for running the network given a weight matrix.
 
-NOTE: THIS FILE DOES NOT INHERIT FROM torch.nn AND DOES NOT SUPPORT BACKPROPAGATION AND GRADIENT BASED OPTIMISATION.
+NOTE: THIS FILE DOES NOT INHERIT FROM torch.nn AND DUE TO RANDOMNESS, DOES NOT SUPPORT BACKPROPAGATION AND GRADIENT BASED OPTIMISATION.
         PLEASE REFER TO mouse.py FOR LEGACY CODE WHICH DOES SUPPORTS AUTOGRAD.
 
 """

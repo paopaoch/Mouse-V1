@@ -1,6 +1,7 @@
 from scipy.special import i0
 import math
 from rat import WeightsGenerator
+from rodents_plotter import plot_weights
 import numpy as np
 
 J_steep = 1/10
@@ -156,18 +157,17 @@ if __name__ == "__main__":
 
     INITIAL = bool(input("Initial Params? (default False): "))
     print("\nInitial: ", INITIAL, '\n')
-    N_E = 800
-    N_I = 200
+    N_E = 8000
+    N_I = 2000
 
     if INITIAL:
-        EE = Connection(20, 0.3, 38, N_E)
-        EI = Connection(8, 0.8, 35, N_I)
-        IE = Connection(35, 0.3, 42, N_E)
-        II = Connection(8, 0.8, 40, N_I)
+        EE = Connection(30, 0.4, 100, N_E)
+        EI = Connection(16, 0.5, 80, N_I)
+        IE = Connection(80, 0.2, 110, N_E)
+        II = Connection(10, 0.8, 105, N_I)
     else:
-        mean_list = [-3.9440e+00, -1.6740e+01,  8.4091e+00, -1.5425e+01, 
-           -9.7804e+00, -1.4716e+00, -9.2311e+00, -1.7742e-01, 
-            -2.5519e+02, -3.0496e+02, -2.1453e+02, -2.5578e+02]
+        mean_list = [  -5.2643,  -17.1993,    8.9735,  -16.9678,  -10.6865,   -1.1378,
+          -8.4228,   -1.7431, -256.1803, -305.3347, -213.7711, -257.2071]
         
         EE = Connection(params_to_J(mean_list[0]), params_to_P(mean_list[4]), params_to_w(mean_list[8]), N_E)
         EI = Connection(params_to_J(mean_list[1]), params_to_P(mean_list[5]), params_to_w(mean_list[9]), N_I)
@@ -183,6 +183,13 @@ if __name__ == "__main__":
             P_to_params(EE.P), P_to_params(EI.P), P_to_params(IE.P), P_to_params(II.P),  
             w_to_params(EE.w), w_to_params(EI.w), w_to_params(IE.w), w_to_params(II.w)], '\n')
     
-    print("J_array =", [J_to_params(EE.J), J_to_params(EI.J), J_to_params(IE.J), J_to_params(II.J)])
-    print("P_array =", [P_to_params(EE.P), P_to_params(EI.P), P_to_params(IE.P), P_to_params(II.P)])
-    print("w_array =", [w_to_params(EE.w), w_to_params(EI.w), w_to_params(IE.w), w_to_params(II.w)], '\n')
+    J = [J_to_params(EE.J), J_to_params(EI.J), J_to_params(IE.J), J_to_params(II.J)]
+    P = [P_to_params(EE.P), P_to_params(EI.P), P_to_params(IE.P), P_to_params(II.P)]
+    w = [w_to_params(EE.w), w_to_params(EI.w), w_to_params(IE.w), w_to_params(II.w)]
+
+    print("J_array =", J)
+    print("P_array =", P)
+    print("w_array =", w, '\n')
+
+    wg = WeightsGenerator(J, P, w, N_E + N_I)
+    plot_weights(wg.generate_weight_matrix()[0])

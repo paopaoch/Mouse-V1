@@ -18,6 +18,16 @@ else:
     SHOW = True
     FOLDER_NAME = None
 
+
+def plot_weights(W):
+    plt.imshow(W, cmap="seismic", vmin=-np.max(np.abs(np.array(W))), vmax=np.max(np.abs(np.array(W))))
+    plt.colorbar()
+    plt.title(f"Connection weight matrix for {len(W)} neurons")
+    plt.xlabel("Neuron index")
+    plt.ylabel("Neuron index")
+    plt.show()
+
+
 def print_tuning_curve(tuning_curve, title=""):
     if type(tuning_curve) == torch.Tensor:
         tuning_curve = np.array(tuning_curve.data)
@@ -181,9 +191,13 @@ if __name__ == "__main__":
         responses_path = input("Path to response file: ")
         if responses_path == "":
             # Get the network response
-            J_array = [-13.862943611198906, -24.423470353692043, -6.1903920840622355, -24.423470353692043]
-            P_array = [-2.5418935811616112, 4.1588830833596715, -2.5418935811616112, 4.1588830833596715]
-            w_array = [-237.28336161747745, -255.84942256760897, -214.12513203729057, -225.49733432916625]
+            # J_array = [-13.862943611198906, -24.423470353692043, -6.1903920840622355, -24.423470353692043]
+            # P_array = [-2.5418935811616112, 6.591673732008657, -2.5418935811616112, 6.591673732008657]
+            # w_array = [81.35732227375028, 60.56500259181835, 147.77649937256945, 124.76649250079015]
+
+            J_array = [-8.472978603872036, -16.582280766035325, 13.862943611198906, -21.972245773362197]
+            P_array = [-1.2163953243244932, -0.0, -4.1588830833596715, 4.1588830833596715]
+            w_array = [40.165839236557744, -40.16583923655776, 81.35732227375028, 60.56500259181835] 
 
             generator = WeightsGenerator(J_array, P_array, w_array, 1000)
             W, accepted = generator.generate_weight_matrix()
