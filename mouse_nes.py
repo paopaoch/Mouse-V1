@@ -268,7 +268,7 @@ if __name__ == "__main__":
     desc = "Removing important mixing seems to work but we will try to increase the learning rate as well as the covariance matrix size for a faster convergence."
 
     if torch.cuda.is_available():
-        device = "cuda:0"
+        device = "cuda:1"
         print("Model will be created on GPU")
     else:
         device = "cpu"
@@ -286,4 +286,4 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=1, alpha=1, eta_delta=1))
+    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=3, alpha=1, eta_delta=2))

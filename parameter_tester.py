@@ -3,6 +3,7 @@ import math
 from rat import WeightsGenerator
 from rodents_plotter import plot_weights
 import numpy as np
+from tqdm import tqdm
 
 J_steep = 1/10
 J_scale = 100
@@ -19,111 +20,157 @@ class Connection:
         self.P = P
         self.w = w
         self.N = N
+        self.root_N = math.sqrt(N)
         self.W_tot = self.calc_theoretical_weights_tot()
 
     def calc_theoretical_weights_tot(self):
         k = 1 / (4 * (self.w * math.pi / 180) ** 2)
         bessel = i0(k)
-        return self.J * math.sqrt(self.N) * self.P * math.exp(-k) * bessel
+        return self.J * self.root_N * self.P * math.exp(-k) * bessel
     
 
 class ConstraintChecker:
-    def __init__(self, EE: Connection, EI: Connection, IE: Connection, II: Connection):
+    def __init__(self, EE: Connection, EI: Connection, IE: Connection, II: Connection, print_statement=True, test_trials=10):
         self.EE = EE
         self.EI = EI
         self.IE = IE
         self.II = II
         self.connections = [self.EE, self.EI, self.IE, self.II]
         self.connection_names = ["EE", "EI", "IE", "II"]
+        self.print_statement = print_statement
         
         self.wg = WeightsGenerator([J_to_params(EE.J), J_to_params(EI.J), J_to_params(IE.J), J_to_params(II.J)],
                               [P_to_params(EE.P), P_to_params(EI.P), P_to_params(IE.P), P_to_params(II.P)],
                               [w_to_params(EE.w), w_to_params(EI.w), w_to_params(IE.w), w_to_params(II.w)],
                               EE.N + II.N)
+        
+        self.test_trials = test_trials
 
-        print("Out of bounds found:\n")
-        self.kraynyukova_J_condition()
-        self.kraynyukova_w_condition()
-        self.W_tot_condition()
-        self.efficacy_condition()
-        self.connection_count_condition()
+
+    def check_bounds(self):
+        if self.print_statement:
+            print("Out of bounds found:\n")
+        error = False
+        error = self.kraynyukova_J_condition() or error
+        error = self.kraynyukova_w_condition() or error
+        error = self.W_tot_condition() or error
+        error = self.efficacy_condition() or error
+        error = self.connection_count_condition() or error
+        return error
+
 
     def kraynyukova_J_condition(self):
-        if not (EI.J / EI.N < EE.J / EI.N):
-            print("kraynyukova_J_condition, J_EI/N_I < J_EE/N_E")
-            print(EI.J / EI.N, EE.J / EI.N, '\n')
-        if not (EE.J / EE.N < II.J / II.N):
-            print("kraynyukova_J_condition, J_EE/N_E < J_II/N_I")
-            print(EE.J / EE.N, II.J / II.N, '\n')
-        if not (II.J / II.N < IE.J / IE.N):
-            print("kraynyukova_J_condition, J_II/N_I < J_IE/N_E")
-            print(II.J / II.N, IE.J / IE.N, '\n')
-    
+        error = False
+        if not (self.EI.J / self.EI.root_N < self.EE.J / self.EI.root_N):
+            if self.print_statement:
+                print("kraynyukova_J_condition, J_EI/root(N_I) < J_EE/root(N_E)")
+                print(self.EI.J / self.EI.root_N, self.EE.J / self.EI.root_N, '\n')
+            error = True
+        if not (self.EE.J / self.EE.root_N < self.II.J / self.II.root_N):
+            if self.print_statement:
+                print("kraynyukova_J_condition, J_EE/root(N_E) < J_II/root(N_I)")
+                print(self.EE.J / self.EE.root_N, self.II.J / self.II.root_N, '\n')
+            error = True
+        if not (self.II.J / self.II.root_N < self.IE.J / self.IE.root_N):
+            if self.print_statement:
+                print("kraynyukova_J_condition, J_II/root(N_I) < J_IE/root(N_E)")
+                print(self.II.J / self.II.root_N, self.IE.J / self.IE.root_N, '\n')
+            error = True
+        return error
+
 
     def kraynyukova_w_condition(self):
-        if not (EI.w < EE.w):
-            print("kraynyukova_w_condition, w_EI < w_EE")
-            print(EI.w, EE.w, '\n')
-        if abs(EE.w - II.w) > 10:  # 10 is a guess as in the paper they use the approx sign
-            print("kraynyukova_w_condition, w_EE ~= w_II")
-            print(EE.w, II.w, '\n')
-        if not (II.w < IE.w):
-            print("kraynyukova_w_condition, w_II < w_IE")
-            print(II.w, IE.w, '\n')
+        error = False
+        if not (self.EI.w < self.EE.w):
+            if self.print_statement:
+                print("kraynyukova_w_condition, w_EI < w_EE")
+                print(self.EI.w, self.EE.w, '\n')
+            error = True
+        if abs(self.EE.w - self.II.w) > 10:  # 10 is a guess as in the paper they use the approx sign
+            if self.print_statement:
+                print("kraynyukova_w_condition, w_EE ~= w_II")
+                print(self.EE.w, self.II.w, '\n')
+            error = True
+        if not (self.II.w < self.IE.w):
+            if self.print_statement:
+                print("kraynyukova_w_condition, w_II < w_IE")
+                print(self.II.w, self.IE.w, '\n')
+            error = True
+        return error
 
     
     def W_tot_condition(self):
-        if not ((EE.W_tot / IE.W_tot) < (EI.W_tot / II.W_tot)):
-            print("W_tot_condition, (W_tot_EE / W_tot_IE) < (W_tot_EI / W_tot_II)")
-            print((EE.W_tot / IE.W_tot), (EI.W_tot / II.W_tot), '\n')
-        if not ((EI.W_tot / II.W_tot) < 1):
-            print("W_tot_condition, (W_tot_EI / W_tot_II) < 1")
-            print((EI.W_tot / II.W_tot), 1, '\n')
-
+        error = False
+        if not ((self.EE.W_tot / self.IE.W_tot) < (self.EI.W_tot / self.II.W_tot)):
+            if self.print_statement:
+                print("W_tot_condition, (W_tot_EE / W_tot_IE) < (W_tot_EI / W_tot_II)")
+                print((self.EE.W_tot / self.IE.W_tot), (self.EI.W_tot / self.II.W_tot), '\n')
+            error = True
+        if not ((self.EI.W_tot / self.II.W_tot) < 1):
+            if self.print_statement:
+                print("W_tot_condition, (W_tot_EI / W_tot_II) < 1")
+                print((self.EI.W_tot / self.II.W_tot), 1, '\n')
+            error = True
+        return error
 
     def efficacy_condition(self):
+        error = False
         for i, connection in enumerate(self.connections):
-            if (connection.J / math.sqrt(connection.N)) < 0.25:
-                print(f"efficacy_condition, {self.connection_names[i]} is too low")
-                print(connection.J / math.sqrt(connection.N), '\n')
+            if (connection.J / connection.root_N) < 0.25:
+                if self.print_statement:
+                    print(f"efficacy_condition, {self.connection_names[i]} is too low")
+                    print(connection.J / connection.root_N, '\n')
+                error = True
 
-            if (connection.J / math.sqrt(connection.N)) > 2:
-                print(f"efficacy_condition, {self.connection_names[i]} is too high")
-                print(connection.J / math.sqrt(connection.N), '\n')
+            if (connection.J / connection.root_N) > 2:
+                if self.print_statement:
+                    print(f"efficacy_condition, {self.connection_names[i]} is too high")
+                    print(connection.J / connection.root_N, '\n')
+                error = True
+        return error
+
+
+    def get_connection_count(self):
+        E_total = 0
+        I_total = 0
+        weights, _ = self.wg.generate_weight_matrix()
+        for i in range(self.EE.N + self.II.N):
+            row = np.array(weights[i].data)
+            E_total += np.sum(self._normalise(row[:self.EE.N]))
+            I_total += np.sum(self._normalise(np.abs(row[self.EE.N:])))
+        return E_total, I_total
 
 
     def connection_count_condition(self):
         error = False
-        for trial in range(10):  # as weight matrix is random we will test it 10 times
-            E_total = 0
-            I_total = 0
-            weights, _ = self.wg.generate_weight_matrix()
-            for i in range(self.EE.N + self.II.N):
-                row = np.array(weights[i].data)
-                E_total += np.sum(self._normalise(row[:self.EE.N]))
-                I_total += np.sum(self._normalise(np.abs(row[self.EE.N:])))
+        for _ in range(self.test_trials):  # as weight matrix is random we will test it 10 times
+            E_total, I_total = self.get_connection_count()
 
             if E_total / (self.EE.N + self.II.N) > 1200:
-                print("Too many E connections")
-                print(E_total / (self.EE.N + self.II.N), '\n')
+                if self.print_statement:
+                    print("Too many E connections")
+                    print(E_total / (self.EE.N + self.II.N), '\n')
                 error = True
             elif E_total / (self.EE.N + self.II.N) < 350:
-                print("Too little E connections")
-                print(E_total / (self.EE.N + self.II.N), '\n')
+                if self.print_statement:
+                    print("Too little E connections")
+                    print(E_total / (self.EE.N + self.II.N), '\n')
                 error = True
 
             if I_total / (self.EE.N + self.II.N) > 1200:
-                print("Too many I connections")
-                print(I_total / (self.EE.N + self.II.N), '\n')
+                if self.print_statement:
+                    print("Too many I connections")
+                    print(I_total / (self.EE.N + self.II.N), '\n')
                 error = True
             elif I_total / (self.EE.N + self.II.N) < 350:
-                print("Too little I connections")
-                print(I_total / (self.EE.N + self.II.N), '\n')
+                if self.print_statement:
+                    print("Too little I connections")
+                    print(I_total / (self.EE.N + self.II.N), '\n')
                 error = True
 
-            if error and trial > 1:
-                return
-            
+            if error:
+                return error
+        return error
 
 
     @staticmethod
@@ -148,33 +195,60 @@ params_to_J = lambda x: _sigmoid(x, J_steep, J_scale)
 params_to_P = lambda x: _sigmoid(x, P_steep, P_scale)
 params_to_w = lambda x: _sigmoid(x, w_steep, w_scale)
 
+def _get_random_params(std_vec):  # TODO: This function should draw valid parameters from constraint conditions
+    return std_vec
 
-def get_random_valid_params():
-    return
+def get_random_valid_params(trials=100, n=10000):
+    std_vec = np.array([1/J_steep, 1/P_steep, 1/w_steep,
+                        1/J_steep, 1/P_steep, 1/w_steep,
+                        1/J_steep, 1/P_steep, 1/w_steep,
+                        1/J_steep, 1/P_steep, 1/w_steep,])
+    for _ in tqdm(range(trials)):
+        sample = _get_random_params(std_vec) * np.random.randn(len(std_vec)) # TODO: Change this random to non-random
+        EE = Connection(params_to_J(sample[0]), params_to_P(sample[1]), params_to_w(sample[2]), n)
+        EI = Connection(params_to_J(sample[3]), params_to_P(sample[4]), params_to_w(sample[5]), n)
+        IE = Connection(params_to_J(sample[6]), params_to_P(sample[7]), params_to_w(sample[8]), n)
+        II = Connection(params_to_J(sample[9]), params_to_P(sample[10]), params_to_w(sample[11]), n)
+        cc = ConstraintChecker(EE, EI, IE, II, print_statement=True, test_trials=1)
+        error = cc.check_bounds()
+        if not error:
+            return EE, EI, IE, II
+    return None, None, None, None
 
 
 if __name__ == "__main__":
 
-    INITIAL = bool(input("Initial Params? (default False): "))
-    print("\nInitial: ", INITIAL, '\n')
+    SEARCH_INIT = bool(input("Search Params? (default False): "))
+
     N_E = 8000
     N_I = 2000
 
-    if INITIAL:
-        EE = Connection(30, 0.4, 100, N_E)
-        EI = Connection(16, 0.5, 80, N_I)
-        IE = Connection(80, 0.2, 110, N_E)
-        II = Connection(10, 0.8, 105, N_I)
+    if SEARCH_INIT:
+        EE, EI, IE, II = get_random_valid_params(trials=1000, n=N_E + N_I)
+        if EE is None:
+            print("Not found!")
+            exit()
+    
     else:
-        mean_list = [  -5.2643,  -17.1993,    8.9735,  -16.9678,  -10.6865,   -1.1378,
-          -8.4228,   -1.7431, -256.1803, -305.3347, -213.7711, -257.2071]
-        
-        EE = Connection(params_to_J(mean_list[0]), params_to_P(mean_list[4]), params_to_w(mean_list[8]), N_E)
-        EI = Connection(params_to_J(mean_list[1]), params_to_P(mean_list[5]), params_to_w(mean_list[9]), N_I)
-        IE = Connection(params_to_J(mean_list[2]), params_to_P(mean_list[6]), params_to_w(mean_list[10]), N_E)
-        II = Connection(params_to_J(mean_list[3]), params_to_P(mean_list[7]), params_to_w(mean_list[11]), N_I)
+        INITIAL = bool(input("Initial Params? (default False): "))
+        print("\nInitial: ", INITIAL, '\n')
 
-    ConstraintChecker(EE, EI, IE, II)
+        if INITIAL:
+            EE = Connection(30, 0.4, 100, N_E)
+            EI = Connection(16, 0.5, 80, N_I)
+            IE = Connection(80, 0.2, 110, N_E)
+            II = Connection(10, 0.8, 105, N_I)
+        else:
+            mean_list = [  -5.2643,  -17.1993,    8.9735,  -16.9678,  -10.6865,   -1.1378,
+            -8.4228,   -1.7431, -256.1803, -305.3347, -213.7711, -257.2071]
+            
+            EE = Connection(params_to_J(mean_list[0]), params_to_P(mean_list[4]), params_to_w(mean_list[8]), N_E)
+            EI = Connection(params_to_J(mean_list[1]), params_to_P(mean_list[5]), params_to_w(mean_list[9]), N_I)
+            IE = Connection(params_to_J(mean_list[2]), params_to_P(mean_list[6]), params_to_w(mean_list[10]), N_E)
+            II = Connection(params_to_J(mean_list[3]), params_to_P(mean_list[7]), params_to_w(mean_list[11]), N_I)
+
+    cc = ConstraintChecker(EE, EI, IE, II)
+    cc.check_bounds()
 
     print("Values in code:\n")
 
