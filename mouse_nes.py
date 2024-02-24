@@ -265,7 +265,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 
 if __name__ == "__main__":
-    desc = "Removing important mixing seems to work but we will try to increase the learning rate as well as the covariance matrix size for a faster convergence."
+    desc = "Running the same test as fully removing important mixing but doubling the learning rate to look at convergence."
 
     if torch.cuda.is_available():
         device = "cuda:1"
