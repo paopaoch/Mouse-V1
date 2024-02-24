@@ -292,7 +292,7 @@ class NetworkExecuter(Rodents):
 
         # Constants for euler
         self.Nmax=300
-        self.Navg=280
+        self.Navg=297
         self.dt=0.001
         self.xtol=1e-5
         self.xmin=1e-0

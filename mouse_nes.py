@@ -265,7 +265,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 
 if __name__ == "__main__":
-    desc = "Running the same test as fully removing important mixing but doubling the learning rate to look at convergence."
+    desc = "xNES seems to not like it when we double the learning rate perhaps because of the dynamic learning rate. Try optimising with less importance of avg step."
 
     if torch.cuda.is_available():
         device = "cuda:1"
@@ -286,4 +286,4 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=3, alpha=1, eta_delta=2))
+    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=3, alpha=1, eta_delta=1))
