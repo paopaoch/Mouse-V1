@@ -268,7 +268,7 @@ if __name__ == "__main__":
     desc = "xNES seems to not like it when we double the learning rate perhaps because of the dynamic learning rate. Try optimising with less importance of avg step."
 
     if torch.cuda.is_available():
-        device = "cuda:1"
+        device = "cuda:0"
         print("Model will be created on GPU")
     else:
         device = "cpu"
