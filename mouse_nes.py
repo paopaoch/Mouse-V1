@@ -85,7 +85,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
     alpha = torch.tensor(alpha, device=device)
     # Init model and loss function
     J, P, w = mean_to_params(mean)
-    loss_function = MouseLossFunction(device=device)
+    loss_function = MouseLossFunction(device=device, avg_step_weighting=avg_step_weighting)
     network_executer = NetworkExecuter(neuron_num, device=device)
     weights_generator = WeightsGenerator(J, P, w, neuron_num, device=device)
     weights, weights_valid = weights_generator.generate_weight_matrix()
@@ -110,6 +110,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         f.write(f"Number of xNES optimisation step: {max_iter}\n")
         f.write(f"Number of samples per optimisation step: {samples_per_iter}\n")
         f.write(f"Number of trials per full simulation: {trials}\n")
+        f.write(f"Alpha for important mixing: {alpha}\n")
         f.write(f"Learning Rates: eta_delta={eta_delta}, eta_sigma={eta_sigma}, eta_B={eta_B}\n")
         f.write(f"---------------------------------------------------\n\n")
         f.write(f"Initial parameters\n")

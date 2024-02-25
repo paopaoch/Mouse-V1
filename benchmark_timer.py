@@ -3,11 +3,13 @@ from rat import get_data, WeightsGenerator, NetworkExecuter, MouseLossFunction
 import time
 import matplotlib.pyplot as plt
 
+torch.set_default_dtype(torch.float32)
+
 if torch.cuda.is_available():
     device = "cuda:1"
     print("Model will be created on GPU")
 else:
-    device = "cpu"
+    device = "cpu"  # MPS is too slow
     print("GPU not available. Model will be created on CPU.")
 
 X, Y = get_data(device=device)

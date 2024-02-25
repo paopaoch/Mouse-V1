@@ -67,7 +67,7 @@ def get_data(device="cpu"):
         result_array = result_array.transpose((0, 2, 1))
         result_array = result_array * 1000
 
-        output.append(torch.tensor(result_array, device=device))
+        output.append(torch.tensor(result_array, device=device, dtype=torch.float32))
 
     return output
 
@@ -221,7 +221,7 @@ class WeightsGenerator(Rodents):
         else:
             k = k.cpu()
             bessel: torch.Tensor = i0(k)
-            bessel = bessel.cuda(device=self.device)
+            bessel = bessel.to(device=self.device)
 
         j = self._sigmoid(self.j_hyperparameter[i], self.J_steep, self.J_scale)
         p = self._sigmoid(self.p_hyperparameter[i], self.P_steep, self.P_scale)
