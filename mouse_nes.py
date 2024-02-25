@@ -64,7 +64,8 @@ def sort_two_arrays(losses: list, samples: list, device="cpu"):  # sort accordin
 def calc_loss(trials,
              weights_generator: WeightsGenerator, 
              network_executer: NetworkExecuter, 
-             loss_function: MouseLossFunction):
+             loss_function: MouseLossFunction,
+             y_E, y_I):
     loss_sum = 0
     mmd_sum = 0
     for _ in range(trials):
@@ -109,6 +110,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         f.write(f"Number of xNES optimisation step: {max_iter}\n")
         f.write(f"Number of samples per optimisation step: {samples_per_iter}\n")
         f.write(f"Number of trials per full simulation: {trials}\n")
+        f.write(f"Alpha for important mixing: {alpha}\n")
         f.write(f"Learning Rates: eta_delta={eta_delta}, eta_sigma={eta_sigma}, eta_B={eta_B}\n")
         f.write(f"---------------------------------------------------\n\n")
         f.write(f"Initial parameters\n")
@@ -171,8 +173,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
             J, P, w = mean_to_params(mean)
             weights_generator.set_parameters(J, P, w)
-            weights, weights_valid = weights_generator.generate_weight_matrix()
-            mean_loss, mean_MMD_loss = calc_loss(trials, weights_generator, network_executer, loss_function)
+            mean_loss, mean_MMD_loss = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I)
             
             print("current_mean_loss: ", mean_loss, mean_MMD_loss)
             print("mean: ", mean)
@@ -192,11 +193,11 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                 p = torch.maximum(alpha, 1 - prob / previous_prob)
                 accept_p = torch.rand(1)[0]
                 if accept_p < p:
-                    J, P, w = mean_to_params(mean)
+                    J, P, w = mean_to_params(zk)  # NOTE: Think I found a bug, this was mean not zk!
                     weights_generator.set_parameters(J, P, w)
                     weights, weights_valid = weights_generator.generate_weight_matrix()
                     if weights_valid == torch.tensor(0, device=device):
-                        current_loss, _ = calc_loss(trials, weights_generator, network_executer, loss_function)
+                        current_loss, _ = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I)
                     else:
                         current_loss = 1000 * weights_valid
                         rejected += 1
@@ -245,7 +246,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
         J, P, w = mean_to_params(mean)
         weights_generator.set_parameters(J, P, w)
-        mean_loss, mean_MMD_loss = calc_loss(trials, weights_generator, network_executer, loss_function)
+        mean_loss, mean_MMD_loss = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I)
 
         f.write(f"---------------------------------------------------\n\n\n")
         f.write("Final loss and MMD loss:\n")

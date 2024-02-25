@@ -3,16 +3,18 @@ from rat import get_data, WeightsGenerator, NetworkExecuter, MouseLossFunction
 import time
 import matplotlib.pyplot as plt
 
+torch.set_default_dtype(torch.float32)
+
 if torch.cuda.is_available():
     device = "cuda:1"
     print("Model will be created on GPU")
 else:
-    device = "cpu"
+    device = "cpu"  # MPS is too slow
     print("GPU not available. Model will be created on CPU.")
 
 X, Y = get_data(device=device)
-n = 10000
-n_E = 8000
+n = 1000
+n_E = 800
 
 J_array = [-13.862943611198906, -24.423470353692043, -6.1903920840622355, -24.423470353692043, -24.423470353692043, -24.423470353692043]
 P_array = [-2.5418935811616112, 4.1588830833596715, -2.5418935811616112, 4.1588830833596715, -2.5418935811616112, -2.5418935811616112]
