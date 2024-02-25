@@ -157,8 +157,8 @@ if __name__ == "__main__":
 
     INITIAL = bool(input("Initial Params? (default False): "))
     print("\nInitial: ", INITIAL, '\n')
-    N_E = 800
-    N_I = 200
+    N_E = 8000
+    N_I = 2000
 
     if INITIAL:
         EE = Connection(30, 0.4, 100, N_E)
@@ -166,8 +166,8 @@ if __name__ == "__main__":
         IE = Connection(80, 0.2, 110, N_E)
         II = Connection(10, 0.8, 105, N_I)
     else:
-        mean_list = [  -5.2643,  -17.1993,    8.9735,  -16.9678,  -10.6865,   -1.1378,
-          -8.4228,   -1.7431, -256.1803, -305.3347, -213.7711, -257.2071]
+        mean_list = [  -5.3943,  -17.2444,    8.9355,  -16.5509,  -10.2303,   -0.6580,
+          -8.8399,   -1.5132, -256.3075, -305.1801, -213.9073, -257.2812]
         
         EE = Connection(params_to_J(mean_list[0]), params_to_P(mean_list[4]), params_to_w(mean_list[8]), N_E)
         EI = Connection(params_to_J(mean_list[1]), params_to_P(mean_list[5]), params_to_w(mean_list[9]), N_I)

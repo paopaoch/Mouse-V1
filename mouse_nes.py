@@ -173,7 +173,6 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
             J, P, w = mean_to_params(mean)
             weights_generator.set_parameters(J, P, w)
-            weights, weights_valid = weights_generator.generate_weight_matrix()
             mean_loss, mean_MMD_loss = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I)
             
             print("current_mean_loss: ", mean_loss, mean_MMD_loss)
@@ -194,7 +193,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                 p = torch.maximum(alpha, 1 - prob / previous_prob)
                 accept_p = torch.rand(1)[0]
                 if accept_p < p:
-                    J, P, w = mean_to_params(mean)
+                    J, P, w = mean_to_params(zk)  # NOTE: Think I found a bug, this was mean not zk!
                     weights_generator.set_parameters(J, P, w)
                     weights, weights_valid = weights_generator.generate_weight_matrix()
                     if weights_valid == torch.tensor(0, device=device):
@@ -288,4 +287,4 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=1, alpha=1, eta_delta=1))
+    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=3, alpha=1, eta_delta=1))

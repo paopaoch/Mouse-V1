@@ -28,4 +28,4 @@ if __name__ == "__main__":
         responses = 0
         print(y_E.shape, y_I.shape)
 
-    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=1000, desc=desc, trials=3, alpha=1, eta_delta=1, avg_step_weighting=0.0001))
+    print(nes_multigaussian_optim(mean, cov, 200, 24, y_E, y_I, device=device, neuron_num=1000, desc=desc, trials=3, alpha=1, eta_delta=1, avg_step_weighting=0.0001))
