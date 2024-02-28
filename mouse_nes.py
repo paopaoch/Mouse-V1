@@ -8,10 +8,11 @@ import socket
 
 
 class MouseDataPoint:
-    def __init__(self, loss: torch.Tensor, zk: torch.Tensor, prob: torch.Tensor):
+    def __init__(self, loss: torch.Tensor, zk: torch.Tensor, prob: torch.Tensor, accepted=True):
         self.loss = loss
         self.zk = zk
         self.prob = prob
+        self.accepted = accepted
     
     def get_loss(self):
         return self.loss.clone().detach()
@@ -155,6 +156,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             losses = []
             current_samples = []
             rejected = 0
+            accepted_loss = []
 
             # Important mixing
             for prev_sample in prev_samples:
@@ -167,6 +169,8 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                     losses.append(prev_sample.get_loss())
                     prev_sample.update_prob(p)
                     current_samples.append(prev_sample)
+                    if prev_sample.accepted:
+                        accepted_loss.append(prev_sample.get_loss())
 
             print(f"Number of samples reused: {len(samples)}")
             f.write(f"Number of samples reused: {len(samples)}\n")
@@ -193,25 +197,31 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                 p = torch.maximum(alpha, 1 - prob / previous_prob)
                 accept_p = torch.rand(1)[0]
                 if accept_p < p:
-                    J, P, w = mean_to_params(zk)  # NOTE: Think I found a bug, this was mean not zk!
+                    J, P, w = mean_to_params(zk)
                     weights_generator.set_parameters(J, P, w)
-                    weights, weights_valid = weights_generator.generate_weight_matrix()
+                    _, weights_valid = weights_generator.generate_weight_matrix()
                     if weights_valid == torch.tensor(0, device=device):
                         current_loss, _ = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I)
+                        accepted_loss.append(current_loss.clone().detach())
+                        accepted = True
                     else:
                         current_loss = 1000 * weights_valid
                         rejected += 1
+                        accepted = False
 
                     samples.append(sample)
                     losses.append(current_loss.clone().detach())
 
                     data_point = MouseDataPoint(current_loss.clone().detach(), 
                                                 zk.clone().detach(), 
-                                                prob.clone().detach())
+                                                prob.clone().detach(),
+                                                accepted=accepted)
+                    
                     current_samples.append(data_point)
 
             loss_sorted, samples_sorted = sort_two_arrays(losses, samples, device=device)
-            
+            accepted_loss_tensor = torch.tensor(accepted_loss, device=device)
+
             avg_loss = torch.mean(loss_sorted)
             min_loss = torch.min(loss_sorted)
             max_loss = torch.max(loss_sorted)
@@ -220,6 +230,9 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             f.write(f"Avg loss {avg_loss}\n")
             f.write(f"Min loss {min_loss}\n")
             f.write(f"Max loss {max_loss}\n")
+            f.write(f"Avg accepted loss {torch.mean(accepted_loss_tensor)}\n")
+            f.write(f"Min accepted loss {torch.min(accepted_loss_tensor)}\n")
+            f.write(f"Max accepted loss {torch.max(accepted_loss_tensor)}\n")
             f.write(f"Rejected {rejected}\n")
             f.write("\n\n\n")
 
@@ -266,7 +279,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 
 if __name__ == "__main__":
-    desc = "THE BUG IS FIXED. THINGS ARE NOW CONVERGING! Try adjusting the cov matrix."
+    desc = "Try with a lower avg step effect"
 
     if torch.cuda.is_available():
         device = "cuda:0"
@@ -287,4 +300,4 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=1, alpha=1, eta_delta=1, avg_step_weighting=0.001))
+    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=2, alpha=1, eta_delta=1, avg_step_weighting=0.1))

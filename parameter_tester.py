@@ -220,8 +220,8 @@ if __name__ == "__main__":
 
     SEARCH_INIT = bool(input("Search Params? (default False): "))
 
-    N_E = 8000
-    N_I = 2000
+    N_E = 800
+    N_I = 200
 
     if SEARCH_INIT:
         EE, EI, IE, II = get_random_valid_params(trials=1000, n=N_E + N_I)
@@ -234,13 +234,12 @@ if __name__ == "__main__":
         print("\nInitial: ", INITIAL, '\n')
 
         if INITIAL:
-            EE = Connection(30, 0.4, 100, N_E)
-            EI = Connection(16, 0.5, 80, N_I)
-            IE = Connection(80, 0.2, 110, N_E)
-            II = Connection(10, 0.8, 105, N_I)
+            EE = Connection(10, 0.3, 110, N_E)
+            EI = Connection(8, 0.9, 105, N_I)
+            IE = Connection(35, 0.3, 125, N_E)
+            II = Connection(8, 0.9, 120, N_I)
         else:
-            mean_list = [  -5.2643,  -17.1993,    8.9735,  -16.9678,  -10.6865,   -1.1378,
-            -8.4228,   -1.7431, -256.1803, -305.3347, -213.7711, -257.2071]
+            mean_list = [-14.1186, -24.8923,  -6.3335, -24.6895,  -2.9692,   6.5192,  -2.5976, 6.5347,  81.0852,  60.6460, 147.6750, 124.9975]
             
             EE = Connection(params_to_J(mean_list[0]), params_to_P(mean_list[4]), params_to_w(mean_list[8]), N_E)
             EI = Connection(params_to_J(mean_list[1]), params_to_P(mean_list[5]), params_to_w(mean_list[9]), N_I)

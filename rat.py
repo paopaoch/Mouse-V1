@@ -209,7 +209,7 @@ class WeightsGenerator(Rodents):
 
         first_condition = torch.maximum((W_tot_EE / W_tot_IE) - (W_tot_EI / W_tot_II), torch.tensor(0, device=self.device))
         second_condition = torch.maximum((W_tot_EI / W_tot_II) - torch.tensor(1, device=self.device), torch.tensor(0, device=self.device))
-        
+
         return torch.maximum(first_condition, second_condition)
 
     def calc_theoretical_weights_tot(self, i, N_b):
@@ -225,7 +225,7 @@ class WeightsGenerator(Rodents):
 
         j = self._sigmoid(self.j_hyperparameter[i], self.J_steep, self.J_scale)
         p = self._sigmoid(self.p_hyperparameter[i], self.P_steep, self.P_scale)
-        return j * torch.sqrt(torch.tensor(N_b)) * p * torch.exp(-k) * bessel
+        return j * torch.sqrt(torch.tensor(N_b, device=self.device)) * p * torch.exp(-k) * bessel
         
 
 
@@ -294,7 +294,6 @@ class NetworkExecuter(Rodents):
         self.Nmax=300
         self.Navg=280
         self.dt=0.001
-        self.xtol=1e-5
         self.xmin=1e-0
 
         # Constant for Ricciadi
@@ -423,7 +422,7 @@ class NetworkExecuter(Rodents):
             self._update_mu_sigma(xvec)
             dx = self.T_inv * (self._phi() - xvec) * self.dt
             xvec = xvec + dx
-            avg_sum = avg_sum + torch.abs(dx / torch.maximum(xmin, torch.abs(xvec)) ).max() / self.xtol
+            avg_sum = avg_sum + torch.abs(dx / torch.maximum(xmin, torch.abs(xvec)) ).max()
 
         return xvec, avg_sum / self.Navg
 
