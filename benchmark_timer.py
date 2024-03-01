@@ -12,7 +12,7 @@ else:
     device = "cpu"  # MPS is too slow
     print("GPU not available. Model will be created on CPU.")
 
-X, Y = get_data(device=device)
+# X, Y = get_data(device=device)
 n = 1000
 n_E = 800
 
@@ -30,17 +30,18 @@ NE = NetworkExecuter(n, device=device)
 loss_function = MouseLossFunction(device=device)
 
 start = time.time()
-recurrent_weights, _ = WG.generate_weight_matrix()
-feed_forward_weights = WG.generate_external_weight_matrix()
+print("Validate Weight Matrix:", WG.validate_weight_matrix())
+recurrent_weights = WG.generate_weight_matrix()
+feed_forward_weights = WG.generate_feed_forward_weight_matrix()
 print("Generate weights took:", time.time() - start)
 
-start = time.time()
-response, avg_step = NE.run_all_orientation_and_contrast(weights=recurrent_weights, weights_FF=feed_forward_weights)
-print("Get all tuning curves took:", time.time() - start)
+# start = time.time()
+# response, avg_step = NE.run_all_orientation_and_contrast(weights=recurrent_weights, weights_FF=feed_forward_weights)
+# print("Get all tuning curves took:", time.time() - start)
 
-start = time.time()
-loss = loss_function.calculate_loss(response[:n_E], X, response[n_E:], Y, avg_step)
-print("Calculating loss took:", time.time() - start)
+# start = time.time()
+# loss = loss_function.calculate_loss(response[:n_E], X, response[n_E:], Y, avg_step)
+# print("Calculating loss took:", time.time() - start)
 
 
 # NE.update_weight_matrix(recurrent_weights)

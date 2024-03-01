@@ -20,12 +20,16 @@ else:
 
 
 def plot_weights(W):
-    plt.imshow(W, cmap="seismic", vmin=-np.max(np.abs(np.array(W))), vmax=np.max(np.abs(np.array(W))))
+    plt.imshow(W, cmap="seismic", vmin=-np.max(np.abs(np.array(W))), vmax=np.max(np.abs(np.array(W))), interpolation='nearest', aspect='auto')
     plt.colorbar()
-    plt.title(f"Connection weight matrix for {len(W)} neurons")
+    plt.title(f"Connection weight matrix for {len(W)} by {len(W[0])} neurons")
     plt.xlabel("Neuron index")
     plt.ylabel("Neuron index")
-    plt.show()
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(f"{FOLDER_NAME}/weights_{time.time()}.png")
+        plt.close()
 
 
 def print_tuning_curve(tuning_curve, title=""):
@@ -190,28 +194,34 @@ if __name__ == "__main__":
     if not_data:
         responses_path = input("Path to response file: ")
         if responses_path == "":
+            neuron_num = 10000
+
             # Get the network response
-            # J_array = [-13.862943611198906, -24.423470353692043, -6.1903920840622355, -24.423470353692043]
-            # P_array = [-2.5418935811616112, 6.591673732008657, -2.5418935811616112, 6.591673732008657]
-            # w_array = [81.35732227375028, 60.56500259181835, 147.77649937256945, 124.76649250079015]
 
-            J_array = [-14.103000000000002, -24.8982, -6.3632, -24.713]
-            P_array = [-2.9139999999999997, 6.503499999999997, -2.6454, 6.550899999999997]
-            w_array = [81.11760000000002, 60.67120000000005, 147.6568, 125.0053]
+            J_array = [-3.054651081081644, -15.346010553881065, 10.472978603872036, -12.85627263740382, -20.346010553881065, -20.346010553881065]
+            P_array = [-12.990684938388938, -2.2163953243244932, -10.83331693749932, 0.2163953243244932, 5.2163953243244932, 5.2163953243244932] 
+            w_array = [-355.84942256760897, -404.50168192079303, -314.12513203729057, -355.84942256760897, -300.50168192079303, -300.50168192079303]
 
-            generator = WeightsGenerator(J_array, P_array, w_array, 1000)
-            W, accepted = generator.generate_weight_matrix()
+            generator = WeightsGenerator(J_array, P_array, w_array, neuron_num)
+            W = generator.generate_weight_matrix()
+            plot_weights(W)
+            if len(J_array) == 6:
+                W_FF = generator.generate_feed_forward_weight_matrix()
+                plot_weights(W_FF)
+            else:
+                W_FF = None
 
-            executer = NetworkExecuter(1000)
-            responses, _ = executer.run_all_orientation_and_contrast(W)
-
-            with open(f"{FOLDER_NAME}/responses.pkl", "wb") as f:
-                pickle.dump(responses, f)
-            with open(f"{FOLDER_NAME}/plot_log.log", 'w') as f:
-                f.write(f"PLOT LOG FILE FOR {datetime.now()}\n\n")
-                f.write(f"J_array = {J_array}\n")
-                f.write(f"P_array = {P_array}\n")
-                f.write(f"w_array = {w_array}\n")
+            executer = NetworkExecuter(neuron_num)
+            responses, _ = executer.run_all_orientation_and_contrast(W, W_FF)
+            
+            if not SHOW:
+                with open(f"{FOLDER_NAME}/responses.pkl", "wb") as f:
+                    pickle.dump(responses, f)
+                with open(f"{FOLDER_NAME}/plot_log.log", 'w') as f:
+                    f.write(f"PLOT LOG FILE FOR {datetime.now()}\n\n")
+                    f.write(f"J_array = {J_array}\n")
+                    f.write(f"P_array = {P_array}\n")
+                    f.write(f"w_array = {w_array}\n")
             
         else:
             with open(responses_path, 'rb') as f:
