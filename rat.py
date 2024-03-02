@@ -25,7 +25,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from scipy.special import i0
-from time import sleep
 
 torch.set_default_dtype(torch.float32)
 
@@ -261,8 +260,8 @@ class WeightsGenerator(Rodents):
 
 
 class NetworkExecuter(Rodents):
-    def __init__(self, neuron_num, ratio=0.8, scaling_g=1, w_ff=15, sig_ext=5, device="cpu"):
-        super().__init__(neuron_num, ratio, device)
+    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=1, w_ff=15, sig_ext=5, device="cpu"):
+        super().__init__(neuron_num, ratio, device, feed_forward_num)
 
         self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
         self.contrasts = [0, 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
@@ -496,11 +495,11 @@ class NetworkExecuter(Rodents):
 if __name__ == "__main__":
     from rodents_plotter import plot_weights
 
-    J_array = [-3.054651081081644, -15.346010553881065, 10.472978603872036, -12.85627263740382, -20.346010553881065, -20.346010553881065]
-    P_array = [-12.990684938388938, -2.2163953243244932, -10.83331693749932, 0.2163953243244932, 5.2163953243244932, 5.2163953243244932] 
-    w_array = [-355.84942256760897, -404.50168192079303, -314.12513203729057, -355.84942256760897, -300.50168192079303, -300.50168192079303]
+    J_array = [-9.444616088408516, -19.924301646902062, -0.0, -17.346010553881065, -24.560121837882853, -24.423470353692043]
+    P_array = [-4.1588830833596715, 1.8571176252186712, -3.796999119993828, 4.549042468104266, -1.2163953243244932, -1.2163953243244932]
+    w_array = [-364.38871760942556, -406.8966342150983, -320.1940915905865, -364.38871760942556, -509.97840193011893, -509.97840193011893]
 
-    keen = WeightsGenerator(J_array, P_array, w_array, 1000)
+    keen = WeightsGenerator(J_array, P_array, w_array, 10000, 1000)
     print(keen.validate_weight_matrix())
     W = keen.generate_weight_matrix()
     W_FF = keen.generate_feed_forward_weight_matrix()
@@ -509,7 +508,7 @@ if __name__ == "__main__":
 
     plot_weights(W_FF)
 
-    executer = NetworkExecuter(1000)
+    executer = NetworkExecuter(10000, 1000)
     executer.update_weight_matrix(W, W_FF)
     mean, sigma = executer._stim_to_inputs_with_ff(0.1, 45)
     plt.plot(mean)

@@ -247,9 +247,9 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             f.write(f"Avg loss {avg_loss}\n")
             f.write(f"Min loss {min_loss}\n")
             f.write(f"Max loss {max_loss}\n")
-            f.write(f"Avg accepted loss {torch.mean(accepted_loss_tensor)}\n")
-            f.write(f"Min accepted loss {torch.min(accepted_loss_tensor)}\n")
-            f.write(f"Max accepted loss {torch.max(accepted_loss_tensor)}\n")
+            f.write(f"Avg_accepted loss {torch.mean(accepted_loss_tensor)}\n")
+            f.write(f"Min_accepted loss {torch.min(accepted_loss_tensor)}\n")
+            f.write(f"Max_accepted loss {torch.max(accepted_loss_tensor)}\n")
             f.write(f"Rejected {rejected}\n")
             f.write("\n\n\n")
 

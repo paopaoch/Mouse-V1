@@ -60,6 +60,30 @@ def print_tuning_curve(tuning_curve, title=""):
         plt.close()
 
 
+def print_feed_forward_input(executer: NetworkExecuter, W, W_FF):
+    executer.update_weight_matrix(W, W_FF)
+    mean, sigma = executer._stim_to_inputs_with_ff(0.1, 45)
+    plt.plot(mean)
+    plt.title("Mean feed forward activity")
+    plt.xlabel("Neuron Index")
+    plt.ylabel("Response / Hz")
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(f"{FOLDER_NAME}/feed_forward_mean_activity_{time.time()}.png")
+        plt.close()
+
+    plt.plot(sigma)
+    plt.title("Standard deviation of the feed forward activity")
+    plt.xlabel("Neuron Index")
+    plt.ylabel("Response / Hz")
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(f"{FOLDER_NAME}/feed_forward_std_activity_{time.time()}.png")
+        plt.close()
+
+
 def print_activity(responses, title=""):
     one_res = []
     for tuning_curve in responses:
@@ -194,15 +218,16 @@ if __name__ == "__main__":
     if not_data:
         responses_path = input("Path to response file: ")
         if responses_path == "":
-            neuron_num = 10000
+            neuron_num = 1000
+            feed_forward_num = 100
 
             # Get the network response
 
-            J_array = [-3.054651081081644, -15.346010553881065, 10.472978603872036, -12.85627263740382, -20.346010553881065, -20.346010553881065]
-            P_array = [-12.990684938388938, -2.2163953243244932, -10.83331693749932, 0.2163953243244932, 5.2163953243244932, 5.2163953243244932] 
-            w_array = [-355.84942256760897, -404.50168192079303, -314.12513203729057, -355.84942256760897, -300.50168192079303, -300.50168192079303]
+            J_array = [-13.862943611198908, -24.423470353692043, -6.190392084062237, -24.423470353692043]
+            P_array = [-2.5418935811616112, 6.591673732008657, -2.5418935811616112, 6.591673732008657]
+            w_array = [81.35732227375028, 60.56500259181835, 147.77649937256945, 124.76649250079015]
 
-            generator = WeightsGenerator(J_array, P_array, w_array, neuron_num)
+            generator = WeightsGenerator(J_array, P_array, w_array, neuron_num, feed_forward_num)
             W = generator.generate_weight_matrix()
             plot_weights(W)
             if len(J_array) == 6:
@@ -211,7 +236,10 @@ if __name__ == "__main__":
             else:
                 W_FF = None
 
-            executer = NetworkExecuter(neuron_num)
+            executer = NetworkExecuter(neuron_num, feed_forward_num)
+            if len(J_array) == 6:
+                print_feed_forward_input(executer, W, W_FF)
+
             responses, _ = executer.run_all_orientation_and_contrast(W, W_FF)
             
             if not SHOW:

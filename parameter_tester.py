@@ -1,7 +1,6 @@
 from scipy.special import i0
 import math
 from rat import WeightsGenerator
-from rodents_plotter import plot_weights
 import numpy as np
 from tqdm import tqdm
 
@@ -30,7 +29,7 @@ class Connection:
     
 
 class ConstraintChecker:
-    def __init__(self, EE: Connection, EI: Connection, IE: Connection, II: Connection, EF: Connection=None, IF: Connection=None, print_statement=True, test_trials=10):
+    def __init__(self, EE: Connection, EI: Connection, IE: Connection, II: Connection, EF: Connection=None, IF: Connection=None, print_statement=True, test_trials=1):
         self.EE = EE
         self.EI = EI
         self.IE = IE
@@ -68,7 +67,7 @@ class ConstraintChecker:
 
     def check_bounds(self):
         if self.print_statement:
-            print("Out of bounds found:\n")
+            print("Out of bounds found:\n\n")
         error = False
         error = self.kraynyukova_J_condition() or error
         error = self.kraynyukova_w_condition() or error
@@ -153,7 +152,7 @@ class ConstraintChecker:
     def efficacy_condition(self):
         error = False
         for i, connection in enumerate(self.connections):
-            if (connection.J / connection.root_N) < 0.25:
+            if (connection.J / connection.root_N) < 0.2:
                 if self.print_statement:
                     print(f"efficacy_condition, {self.connection_names[i]} is too low")
                     print(connection.J / connection.root_N, '\n')
@@ -283,7 +282,7 @@ def get_random_valid_params(trials=100, n=10000):
 
 
 def print_values_in_code(EE: Connection, EI: Connection, IE: Connection, II: Connection, EF: Connection=None, IF:Connection=None):
-    print("Values in code:\n")
+    print("\n\nValues in code:\n")
 
     if EF is not None and IF is not None:
         print([EE.J, EI.J, IE.J, II.J, EF.J, IF.J, EE.P ,EI.P ,IE.P , II.P, EF.P, IF.P, EE.w, EI.w, IE.w, II.w, EF.w, IF.w], '\n')
@@ -318,8 +317,8 @@ if __name__ == "__main__":
 
     SEARCH_INIT = bool(input("Search Params? (default False): "))
 
-    N_E = 8000
-    N_I = 2000
+    N_E = 800
+    N_I = 200
     N_F = 100
 
     if SEARCH_INIT:
@@ -333,15 +332,15 @@ if __name__ == "__main__":
         print("\nInitial: ", INITIAL, '\n')
 
         if INITIAL:
-            EE = Connection(10, 0.3, 110, N_E)
-            EI = Connection(8, 0.9, 105, N_I)
-            IE = Connection(35, 0.3, 125, N_E)
-            II = Connection(8, 0.9, 120, N_I)
-            EF = None
-            IF = None
+            EE = Connection(40, 0.1, 51, N_E)
+            EI = Connection(12, 0.65, 47, N_I)
+            IE = Connection(50, 0.2, 56, N_E)
+            II = Connection(23, 0.82, 51, N_I)
+            EF = Connection(7.9, 0.2, 30, N_F)
+            IF = Connection(8, 0.2, 30, N_F)
         else:
-            mean_list = [-14.1186, -24.8923,  -6.3335, -24.6895,  -2.9692,   6.5192,  -2.5976, 6.5347,  81.0852,  60.6460, 147.6750, 124.9975]
-            # mean_list = [-3.054651081081644, -15.346010553881065, 10.472978603872036, -12.85627263740382, -20.346010553881065, -20.346010553881065, -12.990684938388938, -2.2163953243244932, -10.83331693749932, 0.2163953243244932, 5.2163953243244932, 5.2163953243244932, -355.84942256760897, -404.50168192079303, -314.12513203729057, -355.84942256760897, -300.50168192079303, -300.50168192079303]
+            # mean_list = [-14.1186, -24.8923,  -6.3335, -24.6895,  -2.9692,   6.5192,  -2.5976, 6.5347,  81.0852,  60.6460, 147.6750, 124.9975]
+            mean_list = [-13.862943611198906, -24.423470353692043, -6.1903920840622355, -24.423470353692043, -2.5418935811616112, 6.591673732008657, -2.5418935811616112, 6.591673732008657, 81.35732227375028, 60.56500259181835, 147.77649937256945, 124.76649250079015]
 
             if len(mean_list) == 18:
                 EE = Connection(params_to_J(mean_list[0]), params_to_P(mean_list[6]), params_to_w(mean_list[12]), N_E)
