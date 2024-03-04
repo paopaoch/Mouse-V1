@@ -4,7 +4,7 @@ import pickle
 
 
 if __name__ == "__main__":
-    desc = "Run at ground truth. Different initialisation"
+    desc = "Validate stopping criterion"
 
     if torch.cuda.is_available():
         device = "cuda:0"
@@ -29,4 +29,4 @@ if __name__ == "__main__":
         responses = 0
         print(y_E.shape, y_I.shape)
 
-    print(nes_multigaussian_optim(mean, cov, 100, 12, y_E, y_I, device=device, neuron_num=1000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1))
+    print(nes_multigaussian_optim(mean, cov, 100, 12, y_E, y_I, device=device, neuron_num=1000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, min_iter=15, stopping_criterion_step=0.001, stopping_criterion_tolerance=2))

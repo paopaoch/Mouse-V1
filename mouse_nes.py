@@ -91,7 +91,8 @@ def calc_loss(trials,
 
 def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int, samples_per_iter: int, y_E, y_I,
                             neuron_num=10000, feed_forward_num=100, eta_delta=1, eta_sigma=0.08, eta_B=0.08, 
-                            device="cpu", avg_step_weighting=0.002, desc="", alpha=0.6, trials=1, weights_valid_weighting=100000):
+                            device="cpu", avg_step_weighting=0.002, desc="", alpha=0.6, trials=1, weights_valid_weighting=1e5,
+                            min_iter=20, stopping_criterion_step=1e-5, stopping_criterion_tolerance=2):
     
     # local variable setup
     alpha = torch.tensor(alpha, device=device)
@@ -103,8 +104,8 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
     
     # Init model and loss function
     loss_function = MouseLossFunction(device=device, avg_step_weighting=avg_step_weighting)
-    network_executer = NetworkExecuter(neuron_num, device=device)
-    weights_generator = WeightsGenerator(J, P, w, neuron_num, device=device)
+    network_executer = NetworkExecuter(neuron_num, device=device, feed_forward_num=feed_forward_num)
+    weights_generator = WeightsGenerator(J, P, w, neuron_num, feed_forward_num=feed_forward_num, device=device)
     weights_valid = weights_generator.validate_weight_matrix()
 
     if weights_valid != torch.tensor(0, device=device):
@@ -122,11 +123,15 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         f.write(f"{desc}\n\n")
         f.write("Metadata:\n")
         f.write(f"Number of neurons: {weights_generator.neuron_num}\n")
+        f.write(f"Number of feedforward neurons: {weights_generator.feed_forward_num}\n")
         f.write(f"Number of Euler steps: {network_executer.Nmax}\n")
         f.write(f"Record average step after {network_executer.Navg} steps\n")
         f.write(f"Average step weighting: {avg_step_weighting}\n")
-        f.write(f"Valid weight weighting: {weights_valid_weighting}\n")
-        f.write(f"Number of xNES optimisation step: {max_iter}\n")
+        f.write(f"Valid weight weighting: {weights_valid_weighting}\n\n")
+        f.write(f"Max number of xNES optimisation step: {max_iter}\n")
+        f.write(f"Min number of xNES optimisation step: {min_iter}\n")
+        f.write(f"Stopping criterion step condition for xNES optimisation: {stopping_criterion_step}\n")
+        f.write(f"Stopping criterion step tolerance: {stopping_criterion_tolerance}\n")
         f.write(f"Number of samples per optimisation step: {samples_per_iter}\n")
         f.write(f"Number of trials per full simulation: {trials}\n")
         f.write(f"Alpha for important mixing: {alpha}\n")
@@ -167,6 +172,9 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         prev_sigma = sigma.clone().detach()
         prev_B = B.clone().detach()
 
+        avg_nes_step = 0
+        nes_loss = []
+        stopping_reached_count = 0
         for i in tqdm(range(max_iter)):
             f.write(f"ITERATION: {i}\n")
 
@@ -237,6 +245,9 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                     
                     current_samples.append(data_point)
 
+            if len(accepted_loss) == 0:
+                accepted_loss.append(torch.tensor(0, device=device))
+
             loss_sorted, samples_sorted = sort_two_arrays(losses, samples, device=device)
             accepted_loss_tensor = torch.tensor(accepted_loss, device=device)
 
@@ -248,13 +259,13 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             f.write(f"Avg loss {avg_loss}\n")
             f.write(f"Min loss {min_loss}\n")
             f.write(f"Max loss {max_loss}\n")
-            f.write(f"Avg_accepted loss {torch.mean(accepted_loss_tensor)}\n")  # TODO: This is buggy because accepted_loss_tensor could be empty but we assume it wont be
+            f.write(f"Avg_accepted loss {torch.mean(accepted_loss_tensor)}\n")
             f.write(f"Min_accepted loss {torch.min(accepted_loss_tensor)}\n")
             f.write(f"Max_accepted loss {torch.max(accepted_loss_tensor)}\n")
             f.write(f"Rejected {rejected}\n")
             f.write("\n\n\n")
 
-            # Compute gradients
+            # Compute natural gradients
             grad_delta = (samples_sorted.permute(1, 0) * utilities).permute(1, 0).sum(dim=(0))
             grad_M = torch.zeros(size=(len(samples_sorted[0]), len(samples_sorted[0])), device=device)
             for k, sample in enumerate(samples_sorted):
@@ -263,13 +274,26 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             grad_sigma = torch.trace(grad_M) / d
             grad_B = torch.trace(grad_M) - grad_sigma * torch.eye(len(grad_M), device=device)
 
-            # Update parameters
+            # Gradient descent step
             mean = mean + eta_delta * sigma * B @ grad_delta
             sigma = sigma * torch.exp((eta_sigma / 2) * grad_sigma)
             B = B * torch.exp((eta_B / 2) * grad_B)
             f.flush()
 
             prev_samples = current_samples.copy()
+
+            # Stopping criterion
+            nes_loss.append(torch.mean(accepted_loss_tensor))
+            avg_nes_step = torch.sum(torch.tensor(nes_loss, device=device)) / (i + 1)
+            if i > min_iter and (prev_avg_nes_step - avg_nes_step) < stopping_criterion_step:
+                stopping_reached_count += 1
+                if stopping_reached_count == stopping_criterion_tolerance:
+                    f.write(f"\n\nEarly stopping {avg_nes_step}\n\n")
+                    f.flush()
+                    break
+            else:
+                stopping_reached_count = 0
+            prev_avg_nes_step = avg_nes_step.clone().detach()
 
         # Get back parameters
         A_optimised = B * sigma
