@@ -144,7 +144,7 @@ class ConstraintChecker:
             error = True
         if not ((self.EI.W_tot / self.II.W_tot) < upper_bound):
             if self.print_statement:
-                print("W_tot_condition, (W_tot_EI / W_tot_II) < 1")
+                print("W_tot_condition, (W_tot_EI / W_tot_II) < (W_tot_EF / W_tot_IF)")
                 print((self.EI.W_tot / self.II.W_tot), upper_bound, '\n')
             error = True
         return error
@@ -341,8 +341,9 @@ if __name__ == "__main__":
             EF = None
             IF = None
         else:
-            mean_list = [-14.1186, -24.8923,  -6.3335, -24.6895,  -2.9692,   6.5192,  -2.5976, 6.5347,  81.0852,  60.6460, 147.6750, 124.9975]
+            # mean_list = [-14.1186, -24.8923,  -6.3335, -24.6895,  -2.9692,   6.5192,  -2.5976, 6.5347,  81.0852,  60.6460, 147.6750, 124.9975]
             # mean_list = [-10.2643, -26.1281,  -6.1062, -27.1854,   3.4119,   4.0403,   1.6751, 7.2852,  83.7292,  58.5569, 148.9278, 124.3186]
+            mean_list = [  -4.3780,  -17.6118,   -1.6726,  -12.3541,   -6.1590,    1.9147, -3.8297,    4.1561, -169.2730, -185.4463, -142.8051, -166.5040]
 
             if len(mean_list) == 18:
                 EE = Connection(params_to_J(mean_list[0]), params_to_P(mean_list[6]), params_to_w(mean_list[12]), N_E)
