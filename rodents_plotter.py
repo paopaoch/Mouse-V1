@@ -218,14 +218,14 @@ if __name__ == "__main__":
     if not_data:
         responses_path = input("Path to response file: ")
         if responses_path == "":
-            neuron_num = 1000
+            neuron_num = 10000
             feed_forward_num = 100
 
             # Get the network response
 
-            J_array = [-4.378, -17.6118, -1.6726000000000005, -12.3541]
-            P_array = [-6.159, 1.9146999999999998, -3.8297, 4.1561]
-            w_array = [-169.27300000000002, -185.44630000000004, -142.80510000000004, -166.504] 
+            J_array = [-3.5021000000000013, -18.6316, 8.6772, -16.4469]
+            P_array = [-9.2541, -3.9613000000000005, -8.3574, -1.6586000000000003]
+            w_array = [-255.27640000000002, -304.7763, -213.4516, -256.0815]
 
             generator = WeightsGenerator(J_array, P_array, w_array, neuron_num, feed_forward_num)
             W = generator.generate_weight_matrix()
