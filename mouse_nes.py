@@ -91,7 +91,7 @@ def calc_loss(trials,
 
 def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int, samples_per_iter: int, y_E, y_I,
                             neuron_num=10000, feed_forward_num=100, eta_delta=1, eta_sigma=0.08, eta_B=0.08, 
-                            device="cpu", avg_step_weighting=0.002, desc="", alpha=0.6, trials=1):
+                            device="cpu", avg_step_weighting=0.002, desc="", alpha=0.6, trials=1, weights_valid_weighting=100000):
     
     # local variable setup
     alpha = torch.tensor(alpha, device=device)
@@ -125,6 +125,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         f.write(f"Number of Euler steps: {network_executer.Nmax}\n")
         f.write(f"Record average step after {network_executer.Navg} steps\n")
         f.write(f"Average step weighting: {avg_step_weighting}\n")
+        f.write(f"Valid weight weighting: {weights_valid_weighting}\n")
         f.write(f"Number of xNES optimisation step: {max_iter}\n")
         f.write(f"Number of samples per optimisation step: {samples_per_iter}\n")
         f.write(f"Number of trials per full simulation: {trials}\n")
@@ -222,7 +223,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                         accepted_loss.append(current_loss.clone().detach())
                         accepted = True
                     else:
-                        current_loss = 1000 * weights_valid
+                        current_loss = weights_valid_weighting * weights_valid
                         rejected += 1
                         accepted = False
 
