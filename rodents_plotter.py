@@ -20,12 +20,16 @@ else:
 
 
 def plot_weights(W):
-    plt.imshow(W, cmap="seismic", vmin=-np.max(np.abs(np.array(W))), vmax=np.max(np.abs(np.array(W))))
+    plt.imshow(W, cmap="seismic", vmin=-np.max(np.abs(np.array(W))), vmax=np.max(np.abs(np.array(W))), interpolation='nearest', aspect='auto')
     plt.colorbar()
-    plt.title(f"Connection weight matrix for {len(W)} neurons")
+    plt.title(f"Connection weight matrix for {len(W)} by {len(W[0])} neurons")
     plt.xlabel("Neuron index")
     plt.ylabel("Neuron index")
-    plt.show()
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(f"{FOLDER_NAME}/weights_{time.time()}.png")
+        plt.close()
 
 
 def print_tuning_curve(tuning_curve, title=""):
@@ -53,6 +57,30 @@ def print_tuning_curve(tuning_curve, title=""):
         plt.show()
     else:
         plt.savefig(f"{FOLDER_NAME}/tuning_curve_{time.time()}.png")
+        plt.close()
+
+
+def print_feed_forward_input(executer: NetworkExecuter, W, W_FF):
+    executer.update_weight_matrix(W, W_FF)
+    mean, sigma = executer._stim_to_inputs_with_ff(0.1, 45)
+    plt.plot(mean)
+    plt.title("Mean feed forward activity")
+    plt.xlabel("Neuron Index")
+    plt.ylabel("Response / Hz")
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(f"{FOLDER_NAME}/feed_forward_mean_activity_{time.time()}.png")
+        plt.close()
+
+    plt.plot(sigma)
+    plt.title("Standard deviation of the feed forward activity")
+    plt.xlabel("Neuron Index")
+    plt.ylabel("Response / Hz")
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(f"{FOLDER_NAME}/feed_forward_std_activity_{time.time()}.png")
         plt.close()
 
 
@@ -190,28 +218,38 @@ if __name__ == "__main__":
     if not_data:
         responses_path = input("Path to response file: ")
         if responses_path == "":
+            neuron_num = 1000
+            feed_forward_num = 100
+
             # Get the network response
-            # J_array = [-13.862943611198906, -24.423470353692043, -6.1903920840622355, -24.423470353692043]
-            # P_array = [-2.5418935811616112, 6.591673732008657, -2.5418935811616112, 6.591673732008657]
-            # w_array = [81.35732227375028, 60.56500259181835, 147.77649937256945, 124.76649250079015]
 
-            J_array = [-14.103000000000002, -24.8982, -6.3632, -24.713]
-            P_array = [-2.9139999999999997, 6.503499999999997, -2.6454, 6.550899999999997]
-            w_array = [81.11760000000002, 60.67120000000005, 147.6568, 125.0053]
+            J_array = [-4.378, -17.6118, -1.6726000000000005, -12.3541]
+            P_array = [-6.159, 1.9146999999999998, -3.8297, 4.1561]
+            w_array = [-169.27300000000002, -185.44630000000004, -142.80510000000004, -166.504] 
 
-            generator = WeightsGenerator(J_array, P_array, w_array, 1000)
-            W, accepted = generator.generate_weight_matrix()
+            generator = WeightsGenerator(J_array, P_array, w_array, neuron_num, feed_forward_num)
+            W = generator.generate_weight_matrix()
+            plot_weights(W)
+            if len(J_array) == 6:
+                W_FF = generator.generate_feed_forward_weight_matrix()
+                plot_weights(W_FF)
+            else:
+                W_FF = None
 
-            executer = NetworkExecuter(1000)
-            responses, _ = executer.run_all_orientation_and_contrast(W)
+            executer = NetworkExecuter(neuron_num, feed_forward_num)
+            if len(J_array) == 6:
+                print_feed_forward_input(executer, W, W_FF)
 
-            with open(f"{FOLDER_NAME}/responses.pkl", "wb") as f:
-                pickle.dump(responses, f)
-            with open(f"{FOLDER_NAME}/plot_log.log", 'w') as f:
-                f.write(f"PLOT LOG FILE FOR {datetime.now()}\n\n")
-                f.write(f"J_array = {J_array}\n")
-                f.write(f"P_array = {P_array}\n")
-                f.write(f"w_array = {w_array}\n")
+            responses, _ = executer.run_all_orientation_and_contrast(W, W_FF)
+            
+            if not SHOW:
+                with open(f"{FOLDER_NAME}/responses.pkl", "wb") as f:
+                    pickle.dump(responses, f)
+                with open(f"{FOLDER_NAME}/plot_log.log", 'w') as f:
+                    f.write(f"PLOT LOG FILE FOR {datetime.now()}\n\n")
+                    f.write(f"J_array = {J_array}\n")
+                    f.write(f"P_array = {P_array}\n")
+                    f.write(f"w_array = {w_array}\n")
             
         else:
             with open(responses_path, 'rb') as f:

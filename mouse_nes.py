@@ -33,14 +33,19 @@ class MouseDataPoint:
 def make_torch_params(mean_list, var_list, device="cpu"):
     """Return a tensor with mean and a diagonal covariance matrix, TODO: add shape checking, positive definite check"""
     # Mean
-    d = len(var_list)
+    # d = len(var_list)
     mean_tensor = torch.tensor(mean_list, device=device, dtype=torch.float32)
-    var_tensor = torch.diag(torch.tensor(var_list, device=device, dtype=torch.float32)) + torch.ones((d, d), device=device) * 0.001
+    var_tensor = torch.diag(torch.tensor(var_list, device=device, dtype=torch.float32))  # + torch.ones((d, d), device=device) * 0.001
     return mean_tensor, var_tensor
 
 
 def mean_to_params(mean):
-    return mean[0:4], mean[4:8], mean[8:12]
+    if len(mean) == 12:  # No feed forward
+        return mean[0:4], mean[4:8], mean[8:12]
+    elif len(mean) == 18:  # With feed forward
+        return mean[0:6], mean[6:12], mean[12:18]
+    else:
+        raise IndexError(f"Expected an array of size 12 or 18 but found size {len(mean)}")
 
 
 def get_utilities(length: int, device="cpu"):  # samples are sorted in ascending order as we want lower loss
@@ -66,12 +71,16 @@ def calc_loss(trials,
              weights_generator: WeightsGenerator, 
              network_executer: NetworkExecuter, 
              loss_function: MouseLossFunction,
-             y_E, y_I):
+             y_E, y_I, feed_forward=False):
     loss_sum = 0
     mmd_sum = 0
     for _ in range(trials):
-        weights, _ = weights_generator.generate_weight_matrix()
-        preds, avg_step = network_executer.run_all_orientation_and_contrast(weights)
+        if feed_forward:
+            weights_FF = weights_generator.generate_feed_forward_weight_matrix()
+        else:
+            weights_FF = None
+        weights = weights_generator.generate_weight_matrix()
+        preds, avg_step = network_executer.run_all_orientation_and_contrast(weights, weights_FF)
         preds_E = preds[:weights_generator.neuron_num_e]
         preds_I = preds[weights_generator.neuron_num_e:]
         trial_loss, trial_mmd_loss = loss_function.calculate_loss(preds_E, y_E, preds_I, y_I, avg_step)
@@ -81,15 +90,23 @@ def calc_loss(trials,
 
 
 def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int, samples_per_iter: int, y_E, y_I,
-                            neuron_num=10000, eta_delta=1, eta_sigma=0.08, eta_B=0.08, 
+                            neuron_num=10000, feed_forward_num=100, eta_delta=1, eta_sigma=0.08, eta_B=0.08, 
                             device="cpu", avg_step_weighting=0.002, desc="", alpha=0.6, trials=1):
+    
+    # local variable setup
     alpha = torch.tensor(alpha, device=device)
-    # Init model and loss function
     J, P, w = mean_to_params(mean)
+    if len(mean) == 18:
+        feed_forward = True
+    else:
+        feed_forward = False
+    
+    # Init model and loss function
     loss_function = MouseLossFunction(device=device, avg_step_weighting=avg_step_weighting)
     network_executer = NetworkExecuter(neuron_num, device=device)
     weights_generator = WeightsGenerator(J, P, w, neuron_num, device=device)
-    weights, weights_valid = weights_generator.generate_weight_matrix()
+    weights_valid = weights_generator.validate_weight_matrix()
+
     if weights_valid != torch.tensor(0, device=device):
         print("ERROR WEIGHT IS NOT VALID")
         return
@@ -116,13 +133,13 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         f.write(f"---------------------------------------------------\n\n")
         f.write(f"Initial parameters\n")
         f.write(f"J\n")
-        f.write(str(weights_generator.j_hyperparameter))
+        f.write(str(weights_generator.J_parameters))
         f.write("\n")
         f.write(f"P\n")
-        f.write(str(weights_generator.p_hyperparameter))
+        f.write(str(weights_generator.P_parameters))
         f.write("\n")
         f.write(f"w\n")
-        f.write(str(weights_generator.w_hyperparameter))
+        f.write(str(weights_generator.w_parameters))
         f.write("\n\n")
         f.write("Covariance Matrix\n")
         f.write(str(cov))
@@ -143,7 +160,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         mean_zeros = torch.zeros(d, device=device)
         cov_iden = torch.eye(d, device=device)
         multivariate_normal = torch.distributions.MultivariateNormal(mean_zeros, cov_iden)
-        utilities = get_utilities(samples_per_iter, device=device)  # Utilities do not depend on the samples but depend on the number of samples, so fixed throughout
+        utilities = get_utilities(samples_per_iter, device=device)  # Utilities do not depend on the samples but depend on the number of samples, so is the same throughout
         prev_samples: list[MouseDataPoint] = []
         prev_mean = mean.clone().detach()
         prev_sigma = sigma.clone().detach()
@@ -177,7 +194,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
             J, P, w = mean_to_params(mean)
             weights_generator.set_parameters(J, P, w)
-            mean_loss, mean_MMD_loss = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I)
+            mean_loss, mean_MMD_loss = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I, feed_forward=feed_forward)
             
             print("current_mean_loss: ", mean_loss, mean_MMD_loss)
             print("mean: ", mean)
@@ -199,9 +216,9 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                 if accept_p < p:
                     J, P, w = mean_to_params(zk)
                     weights_generator.set_parameters(J, P, w)
-                    _, weights_valid = weights_generator.generate_weight_matrix()
+                    weights_valid = weights_generator.validate_weight_matrix()
                     if weights_valid == torch.tensor(0, device=device):
-                        current_loss, _ = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I)
+                        current_loss, _ = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I, feed_forward=feed_forward)
                         accepted_loss.append(current_loss.clone().detach())
                         accepted = True
                     else:
@@ -230,15 +247,15 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             f.write(f"Avg loss {avg_loss}\n")
             f.write(f"Min loss {min_loss}\n")
             f.write(f"Max loss {max_loss}\n")
-            f.write(f"Avg accepted loss {torch.mean(accepted_loss_tensor)}\n")
-            f.write(f"Min accepted loss {torch.min(accepted_loss_tensor)}\n")
-            f.write(f"Max accepted loss {torch.max(accepted_loss_tensor)}\n")
+            f.write(f"Avg_accepted loss {torch.mean(accepted_loss_tensor)}\n")
+            f.write(f"Min_accepted loss {torch.min(accepted_loss_tensor)}\n")
+            f.write(f"Max_accepted loss {torch.max(accepted_loss_tensor)}\n")
             f.write(f"Rejected {rejected}\n")
             f.write("\n\n\n")
 
             # Compute gradients
             grad_delta = (samples_sorted.permute(1, 0) * utilities).permute(1, 0).sum(dim=(0))
-            grad_M = torch.zeros(size=(len(samples_sorted[0]), len(samples_sorted[0])), device=device)  # does not make sense to condense this
+            grad_M = torch.zeros(size=(len(samples_sorted[0]), len(samples_sorted[0])), device=device)
             for k, sample in enumerate(samples_sorted):
                 grad_M += ((sample * sample.t()) - torch.eye(len(sample), device=device)) * utilities[k]
 
@@ -259,7 +276,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
         J, P, w = mean_to_params(mean)
         weights_generator.set_parameters(J, P, w)
-        mean_loss, mean_MMD_loss = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I)
+        mean_loss, mean_MMD_loss = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I, feed_forward=feed_forward)
 
         f.write(f"---------------------------------------------------\n\n\n")
         f.write("Final loss and MMD loss:\n")

@@ -164,13 +164,19 @@ class Rodents:
         """returns the sigmoidal value of the input tensor. The default steepness is 1."""
         return scaling / (1 + torch.exp(-steepness * array))
 
-class WeightsGenerator(Rodents):
-    def __init__(self, J_array: list, P_array: list, w_array: list, neuron_num: int, ratio=0.8, device="cpu"):
-        super().__init__(neuron_num, ratio, device)
 
-        self.j_hyperparameter = torch.tensor(J_array, device=device)
-        self.p_hyperparameter = torch.tensor(P_array, device=device)
-        self.w_hyperparameter = torch.tensor(w_array, device=device)
+class WeightsGenerator(Rodents):
+    def __init__(self, J_array: list, P_array: list, w_array: list, neuron_num: int, feed_forward_num=100, ratio=0.8, device="cpu"):
+        super().__init__(neuron_num, ratio, device, feed_forward_num)
+
+        if len(J_array) != len(P_array) or len(P_array) != len(w_array):
+            raise IndexError("Expect all parameter arrays to be the same length.")
+        if len(J_array) != 4 and len(J_array) != 6:
+            raise IndexError(f"Expect length of parameter arrays to be 4 or 6 but received {len(J_array)}.")
+
+        self.J_parameters = torch.tensor(J_array, device=device)
+        self.P_parameters = torch.tensor(P_array, device=device)
+        self.w_parameters = torch.tensor(w_array, device=device)
 
         # Sigmoid values for parameters
         self.J_steep = 1/10
@@ -183,7 +189,7 @@ class WeightsGenerator(Rodents):
         self.w_scale = 180
 
     
-    def generate_external_weight_matrix(self):
+    def generate_feed_forward_weight_matrix(self):
         prob_EF = self._get_sub_weight_matrix(self._pref_diff(self.pref_E, self.pref_F), 4)
         prob_IF = self._get_sub_weight_matrix(self._pref_diff(self.pref_I, self.pref_F), 5)
         weights = torch.cat((prob_EF, prob_IF), dim=0)
@@ -197,24 +203,30 @@ class WeightsGenerator(Rodents):
         prob_II = - self._get_sub_weight_matrix(self._pref_diff(self.pref_I, self.pref_I), 3)
         weights = torch.cat((torch.cat((prob_EE, prob_EI), dim=1),
                     torch.cat((prob_IE, prob_II), dim=1)), dim=0)
-
-        return weights, self.validate_weight_matrix()
+        return weights
 
 
     def validate_weight_matrix(self):
         W_tot_EE = self.calc_theoretical_weights_tot(0, self.neuron_num_e)
-        W_tot_EI = self.calc_theoretical_weights_tot(1, self.neuron_num_i)  # TODO: Implement new condition
+        W_tot_EI = self.calc_theoretical_weights_tot(1, self.neuron_num_i)
         W_tot_IE = self.calc_theoretical_weights_tot(2, self.neuron_num_e)
         W_tot_II = self.calc_theoretical_weights_tot(3, self.neuron_num_i)
 
+        if len(self.J_parameters) == 6:
+            W_tot_EF = self.calc_theoretical_weights_tot(4, self.feed_forward_num)
+            W_tot_IF = self.calc_theoretical_weights_tot(5, self.feed_forward_num)
+        else:
+            W_tot_EF = torch.tensor(1, device=self.device)
+            W_tot_IF = torch.tensor(1, device=self.device)
+        
         first_condition = torch.maximum((W_tot_EE / W_tot_IE) - (W_tot_EI / W_tot_II), torch.tensor(0, device=self.device))
-        second_condition = torch.maximum((W_tot_EI / W_tot_II) - torch.tensor(1, device=self.device), torch.tensor(0, device=self.device))
-
+        second_condition = torch.maximum((W_tot_EI / W_tot_II) - (W_tot_EF / W_tot_IF), torch.tensor(0, device=self.device))
         return torch.maximum(first_condition, second_condition)
+
 
     def calc_theoretical_weights_tot(self, i, N_b):
         """Calculate weights tot for the contraints"""
-        k = 1 / (4 * (self._sigmoid(self.w_hyperparameter[i], self.w_steep, self.w_scale) * torch.pi / 180) ** 2)
+        k = 1 / (4 * (self._sigmoid(self.w_parameters[i], self.w_steep, self.w_scale) * torch.pi / 180) ** 2)
         
         if self.device == "cpu":
             bessel: torch.Tensor = i0(k)  # i0 does not work in cuda
@@ -223,16 +235,15 @@ class WeightsGenerator(Rodents):
             bessel: torch.Tensor = i0(k)
             bessel = bessel.to(device=self.device)
 
-        j = self._sigmoid(self.j_hyperparameter[i], self.J_steep, self.J_scale)
-        p = self._sigmoid(self.p_hyperparameter[i], self.P_steep, self.P_scale)
+        j = self._sigmoid(self.J_parameters[i], self.J_steep, self.J_scale)
+        p = self._sigmoid(self.P_parameters[i], self.P_steep, self.P_scale)
         return j * torch.sqrt(torch.tensor(N_b, device=self.device)) * p * torch.exp(-k) * bessel
-        
 
 
     def set_parameters(self, J_array, P_array, w_array):
-        self.j_hyperparameter = torch.tensor(J_array, device=self.device)
-        self.p_hyperparameter = torch.tensor(P_array, device=self.device)
-        self.w_hyperparameter = torch.tensor(w_array, device=self.device)
+        self.J_parameters = torch.tensor(J_array, device=self.device)
+        self.P_parameters = torch.tensor(P_array, device=self.device)
+        self.w_parameters = torch.tensor(w_array, device=self.device)
         
 
     @staticmethod
@@ -242,20 +253,18 @@ class WeightsGenerator(Rodents):
 
 
     def _get_sub_weight_matrix(self, diff: torch.Tensor, index: int):
-        J_single = self._sigmoid(self.j_hyperparameter[index], self.J_steep, self.J_scale) / torch.sqrt(torch.tensor(diff.shape[1]))  # dont have to be a sqrt # this is the number of presynaptic neurons
-        return J_single * self._sigmoid(self._sigmoid(self.p_hyperparameter[index], self.P_steep, self.P_scale)
-                                        * self._cric_gauss(diff, self._sigmoid(self.w_hyperparameter[index], self.w_steep, self.w_scale))
+        J_single = self._sigmoid(self.J_parameters[index], self.J_steep, self.J_scale) / torch.sqrt(torch.tensor(diff.shape[1]))  # dont have to be a sqrt # this is the number of presynaptic neurons
+        return J_single * self._sigmoid(self._sigmoid(self.P_parameters[index], self.P_steep, self.P_scale)
+                                        * self._cric_gauss(diff, self._sigmoid(self.w_parameters[index], self.w_steep, self.w_scale))
                                         - torch.rand(len(diff), len(diff[0]), device=self.device, requires_grad=False), 32)
-    
-
 
 
 class NetworkExecuter(Rodents):
-    def __init__(self, neuron_num, ratio=0.8, scaling_g=1, w_ff=30, sig_ext=5, device="cpu"):
-        super().__init__(neuron_num, ratio, device)
+    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=1, w_ff=15, sig_ext=5, device="cpu"):
+        super().__init__(neuron_num, ratio, device, feed_forward_num)
 
         self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
-        self.contrasts = [0., 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
+        self.contrasts = [0, 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
 
         self.weights = None
         self.weights2 = None
@@ -318,6 +327,9 @@ class NetworkExecuter(Rodents):
         if weights_FF is not None:
             self.weights_FF = weights_FF
             self.weights_FF2 = torch.square(weights_FF)
+        else:
+            self.weights_FF = None
+            self.weights_FF2 = None
 
 
     def run_all_orientation_and_contrast(self, weights, weights_FF=None):
@@ -377,11 +389,11 @@ class NetworkExecuter(Rodents):
         return self.input_mean, self.input_sd
     
 
-    def _stim_to_inputs_with_ff(self, contrast, grating_orientation):  # TODO: Check this function
+    def _stim_to_inputs_with_ff(self, contrast, grating_orientation):
         '''Set the inputs based on the contrast and orientation of the stimulus'''
         ff_output = contrast * self.scaling_g * self._cric_gauss(grating_orientation - self.pref_F, self.w_ff)
         self.input_mean = self.weights_FF @ ff_output
-        self.input_sd = self.weights_FF2 @ ff_output
+        self.input_sd = self.weights_FF2 @ ff_output + torch.tensor(0.01, device=self.device)   # Adding a small DC offset here to prevent division by 0 error
 
         return self.input_mean, self.input_sd
 
@@ -481,52 +493,31 @@ class NetworkExecuter(Rodents):
 
 
 if __name__ == "__main__":
-    # J_array = [-196.23522666345744, -267.49580460120103, -153.80572041353537, -258.52970608602016]
-    # P_array = [-8.83331693749932, -4.1588830833596715, -6.591673732008658, -4.1588830833596715]
-    # w_array = [-102.69807452417032, -171.99206010493853, -40.16583923655776, -102.69807452417032] 
+    from rodents_plotter import plot_weights
 
-    J_array = [-196.23522666345744, -267.49580460120103, -153.80572041353537, -258.52970608602016, -267.49580460120103, -258.52970608602016]
-    P_array = [-10.990684938388938, -1.2163953243244932, -8.83331693749932, -1.2163953243244932, -1.2163953243244932, -1.2163953243244932]
-    w_array = [-255.84942256760897, -304.50168192079303, -214.12513203729057, -255.84942256760897, -304.50168192079303, -255.84942256760897] 
+    J_array = [-9.444616088408516, -19.924301646902062, -0.0, -17.346010553881065, -24.560121837882853, -24.423470353692043]
+    P_array = [-4.1588830833596715, 1.8571176252186712, -3.796999119993828, 4.549042468104266, -1.2163953243244932, -1.2163953243244932]
+    w_array = [-364.38871760942556, -406.8966342150983, -320.1940915905865, -364.38871760942556, -509.97840193011893, -509.97840193011893]
 
-    keen = WeightsGenerator(J_array, P_array, w_array, 10000)
-    W, accepted = keen.generate_weight_matrix()
-    print(accepted)
+    keen = WeightsGenerator(J_array, P_array, w_array, 10000, 1000)
+    print(keen.validate_weight_matrix())
+    W = keen.generate_weight_matrix()
+    W_FF = keen.generate_feed_forward_weight_matrix()
 
-    W_FF = keen.generate_external_weight_matrix()
+    plot_weights(W)
 
-    # # TEST FOR CONSITENCY IN ACCEPTANCE
-    # accepted_dict = {True:0, False:0}
-    # for _ in tqdm(range(30)):
-    #     W, accepted = keen.generate_weight_matrix()
-    #     accepted_dict[bool(accepted)] += 1
-    # print(accepted_dict[True] / 30)
+    plot_weights(W_FF)
 
-
-    # executer = NetworkExecuter(10000)
-    # responses, avg_step = executer.run_all_orientation_and_contrast(W)
-    # print(responses.shape, avg_step)
-
-    # one_res = []
-    # for i in range(10000):
-    #     one_res.append(responses[i][7][4])
-    
-    # plt.plot(one_res)
-    # plt.title("Activity of the network")
-    # plt.xlabel("Neuron Index")
-    # plt.ylabel("Response / Hz")
-    # plt.show()
-
-    plt.imshow(W, cmap="seismic", vmin=-np.max(np.abs(np.array(W))), vmax=np.max(np.abs(np.array(W))))
-    plt.colorbar()
-    plt.title(f"Connection weight matrix for {10000} neurons")
-    plt.xlabel("Neuron index")
-    plt.ylabel("Neuron index")
+    executer = NetworkExecuter(10000, 1000)
+    executer.update_weight_matrix(W, W_FF)
+    mean, sigma = executer._stim_to_inputs_with_ff(0.1, 45)
+    plt.plot(mean)
     plt.show()
 
-    plt.imshow(W_FF, cmap="seismic", vmin=-np.max(np.abs(np.array(W_FF))), vmax=np.max(np.abs(np.array(W_FF))))
-    plt.colorbar()
-    plt.title(f"Connection weight matrix feed forward neurons")
-    plt.xlabel("Neuron index")
-    plt.ylabel("Neuron index")
+    plt.plot(sigma)
     plt.show()
+
+    mean, sigma = executer._stim_to_inputs(0.1, 45)
+    plt.plot(mean)
+    plt.show()
+    print(sigma)

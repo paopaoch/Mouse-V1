@@ -1,7 +1,6 @@
 from scipy.special import i0
 import math
 from rat import WeightsGenerator
-from rodents_plotter import plot_weights
 import numpy as np
 from tqdm import tqdm
 
@@ -30,37 +29,68 @@ class Connection:
     
 
 class ConstraintChecker:
-    def __init__(self, EE: Connection, EI: Connection, IE: Connection, II: Connection, print_statement=True, test_trials=10):
+    def __init__(self, EE: Connection, EI: Connection, IE: Connection, II: Connection, EF: Connection=None, IF: Connection=None, print_statement=True, test_trials=1):
         self.EE = EE
         self.EI = EI
         self.IE = IE
         self.II = II
+        self.EF = EF
+        self.IF = IF
+        self.print_statement = print_statement
+        self.test_trials = test_trials
+
         self.connections = [self.EE, self.EI, self.IE, self.II]
         self.connection_names = ["EE", "EI", "IE", "II"]
-        self.print_statement = print_statement
+        J = [J_to_params(EE.J), J_to_params(EI.J), J_to_params(IE.J), J_to_params(II.J)]
+        P = [P_to_params(EE.P), P_to_params(EI.P), P_to_params(IE.P), P_to_params(II.P)]
+        w = [w_to_params(EE.w), w_to_params(EI.w), w_to_params(IE.w), w_to_params(II.w)]
+
+        if EF is not None and IF is not None:
+            self.feed_forward = True
+            self.connections.append(EF)
+            self.connection_names.append("EF")
+            J.append(J_to_params(EF.J))
+            P.append(P_to_params(EF.P))
+            w.append(w_to_params(EF.w))
+            self.connections.append(IF)
+            self.connection_names.append("IF")
+            J.append(J_to_params(IF.J))
+            P.append(P_to_params(IF.P))
+            w.append(w_to_params(IF.w))
+            
+            self.wg = WeightsGenerator(J, P, w, EE.N + II.N, EF.N)
+        else:
+            self.wg = WeightsGenerator(J, P, w, EE.N + II.N)
+            self.feed_forward = False
         
-        self.wg = WeightsGenerator([J_to_params(EE.J), J_to_params(EI.J), J_to_params(IE.J), J_to_params(II.J)],
-                              [P_to_params(EE.P), P_to_params(EI.P), P_to_params(IE.P), P_to_params(II.P)],
-                              [w_to_params(EE.w), w_to_params(EI.w), w_to_params(IE.w), w_to_params(II.w)],
-                              EE.N + II.N)
-        
-        self.test_trials = test_trials
 
 
     def check_bounds(self):
         if self.print_statement:
-            print("Out of bounds found:\n")
+            print("Out of bounds found:\n\n")
         error = False
         error = self.kraynyukova_J_condition() or error
         error = self.kraynyukova_w_condition() or error
         error = self.W_tot_condition() or error
         error = self.efficacy_condition() or error
         error = self.connection_count_condition() or error
+        if self.feed_forward:
+            error = self.connection_count_condition_FF() or error
         return error
 
 
     def kraynyukova_J_condition(self):
         error = False
+        if self.feed_forward and not (self.EF.J / self.EF.root_N < self.IF.J / self.IF.root_N):
+            if self.print_statement:
+                print("kraynyukova_J_condition, J_EF/root(N_F) < J_IF/root(N_F)")
+                print(self.EF.J / self.EF.root_N, self.IF.J / self.IF.root_N, '\n')
+            error = True
+        if self.feed_forward and not (self.IF.J / self.IF.root_N < self.EI.J / self.EI.root_N):
+            if self.print_statement:
+                print("kraynyukova_J_condition, J_IF/root(N_F) < J_EI/root(N_I)")
+                print(self.IF.J / self.IF.root_N, self.EI.J / self.EI.root_N, '\n')
+            error = True
         if not (self.EI.J / self.EI.root_N < self.EE.J / self.EI.root_N):
             if self.print_statement:
                 print("kraynyukova_J_condition, J_EI/root(N_I) < J_EE/root(N_E)")
@@ -101,22 +131,28 @@ class ConstraintChecker:
     
     def W_tot_condition(self):
         error = False
+
+        if self.feed_forward:
+            upper_bound = self.EF.W_tot / self.IF.W_tot
+        else:
+            upper_bound = 1
+
         if not ((self.EE.W_tot / self.IE.W_tot) < (self.EI.W_tot / self.II.W_tot)):
             if self.print_statement:
                 print("W_tot_condition, (W_tot_EE / W_tot_IE) < (W_tot_EI / W_tot_II)")
                 print((self.EE.W_tot / self.IE.W_tot), (self.EI.W_tot / self.II.W_tot), '\n')
             error = True
-        if not ((self.EI.W_tot / self.II.W_tot) < 1):
+        if not ((self.EI.W_tot / self.II.W_tot) < upper_bound):
             if self.print_statement:
-                print("W_tot_condition, (W_tot_EI / W_tot_II) < 1")
-                print((self.EI.W_tot / self.II.W_tot), 1, '\n')
+                print("W_tot_condition, (W_tot_EI / W_tot_II) < (W_tot_EF / W_tot_IF)")
+                print((self.EI.W_tot / self.II.W_tot), upper_bound, '\n')
             error = True
         return error
 
     def efficacy_condition(self):
         error = False
         for i, connection in enumerate(self.connections):
-            if (connection.J / connection.root_N) < 0.25:
+            if (connection.J / connection.root_N) < 0.2:
                 if self.print_statement:
                     print(f"efficacy_condition, {self.connection_names[i]} is too low")
                     print(connection.J / connection.root_N, '\n')
@@ -133,7 +169,7 @@ class ConstraintChecker:
     def get_connection_count(self):
         E_total = 0
         I_total = 0
-        weights, _ = self.wg.generate_weight_matrix()
+        weights = self.wg.generate_weight_matrix()
         for i in range(self.EE.N + self.II.N):
             row = np.array(weights[i].data)
             E_total += np.sum(self._normalise(row[:self.EE.N]))
@@ -168,6 +204,35 @@ class ConstraintChecker:
                     print(I_total / (self.EE.N + self.II.N), '\n')
                 error = True
 
+            if error:
+                return error
+        return error
+
+
+    def get_connection_count_FF(self):
+        connections_total = 0
+        weights = self.wg.generate_feed_forward_weight_matrix()
+        for i in range(0, self.EE.N + self.II.N):
+            row = np.array(weights[i].data)
+            connections_total += np.sum(self._normalise(row))
+        return connections_total
+
+
+    def connection_count_condition_FF(self):
+        error = False
+        for _ in range(self.test_trials):  # as weight matrix is random we will test it 10 times
+            connections_total = self.get_connection_count_FF()
+
+            if connections_total / (self.EE.N + self.II.N) > 120:
+                if self.print_statement:
+                    print("Too many feed-forward connections")
+                    print(connections_total / (self.EE.N + self.II.N), '\n')
+                error = True
+            elif connections_total / (self.EE.N + self.II.N) < 35:
+                if self.print_statement:
+                    print("Too little feed-forward connections")
+                    print(connections_total / (self.EE.N + self.II.N), '\n')
+                error = True
             if error:
                 return error
         return error
@@ -216,12 +281,45 @@ def get_random_valid_params(trials=100, n=10000):
     return None, None, None, None
 
 
+def print_values_in_code(EE: Connection, EI: Connection, IE: Connection, II: Connection, EF: Connection=None, IF:Connection=None):
+    print("\n\nValues in code:\n")
+
+    if EF is not None and IF is not None:
+        print([EE.J, EI.J, IE.J, II.J, EF.J, IF.J, EE.P ,EI.P ,IE.P , II.P, EF.P, IF.P, EE.w, EI.w, IE.w, II.w, EF.w, IF.w], '\n')
+        print("mean_list =", [J_to_params(EE.J), J_to_params(EI.J), J_to_params(IE.J), J_to_params(II.J), J_to_params(EF.J), J_to_params(IF.J),
+                            P_to_params(EE.P), P_to_params(EI.P), P_to_params(IE.P), P_to_params(II.P), P_to_params(EF.P), P_to_params(IF.P),
+                            w_to_params(EE.w), w_to_params(EI.w), w_to_params(IE.w), w_to_params(II.w), w_to_params(EF.w), w_to_params(IF.w),], '\n')
+        
+        J = [J_to_params(EE.J), J_to_params(EI.J), J_to_params(IE.J), J_to_params(II.J), J_to_params(EF.J), J_to_params(IF.J),]
+        P = [P_to_params(EE.P), P_to_params(EI.P), P_to_params(IE.P), P_to_params(II.P), P_to_params(EF.P), P_to_params(IF.P),]
+        w = [w_to_params(EE.w), w_to_params(EI.w), w_to_params(IE.w), w_to_params(II.w), w_to_params(EF.w), w_to_params(IF.w),]
+
+        print("J_array =", J)
+        print("P_array =", P)
+        print("w_array =", w, '\n')
+
+    else:
+        print([EE.J, EI.J, IE.J, II.J, EE.P ,EI.P ,IE.P , II.P, EE.w, EI.w, IE.w, II.w], '\n')
+        
+        print("mean_list =", [J_to_params(EE.J), J_to_params(EI.J), J_to_params(IE.J), J_to_params(II.J), 
+                            P_to_params(EE.P), P_to_params(EI.P), P_to_params(IE.P), P_to_params(II.P),  
+                            w_to_params(EE.w), w_to_params(EI.w), w_to_params(IE.w), w_to_params(II.w)], '\n')
+        
+        J = [J_to_params(EE.J), J_to_params(EI.J), J_to_params(IE.J), J_to_params(II.J)]
+        P = [P_to_params(EE.P), P_to_params(EI.P), P_to_params(IE.P), P_to_params(II.P)]
+        w = [w_to_params(EE.w), w_to_params(EI.w), w_to_params(IE.w), w_to_params(II.w)]
+
+        print("J_array =", J)
+        print("P_array =", P)
+        print("w_array =", w, '\n')
+
 if __name__ == "__main__":
 
     SEARCH_INIT = bool(input("Search Params? (default False): "))
 
     N_E = 800
     N_I = 200
+    N_F = 100
 
     if SEARCH_INIT:
         EE, EI, IE, II = get_random_valid_params(trials=1000, n=N_E + N_I)
@@ -234,35 +332,37 @@ if __name__ == "__main__":
         print("\nInitial: ", INITIAL, '\n')
 
         if INITIAL:
-            EE = Connection(10, 0.3, 110, N_E)
-            EI = Connection(8, 0.9, 105, N_I)
-            IE = Connection(35, 0.3, 125, N_E)
-            II = Connection(8, 0.9, 120, N_I)
+            EE = Connection(40, 0.1, 51, N_E)
+            EI = Connection(12, 0.65, 47, N_I)
+            IE = Connection(50, 0.2, 56, N_E)
+            II = Connection(23, 0.82, 51, N_I)
+            # EF = Connection(7.9, 0.2, 20, N_F)
+            # IF = Connection(8, 0.2, 20, N_F)
+            EF = None
+            IF = None
         else:
-            mean_list = [-14.1186, -24.8923,  -6.3335, -24.6895,  -2.9692,   6.5192,  -2.5976, 6.5347,  81.0852,  60.6460, 147.6750, 124.9975]
-            
-            EE = Connection(params_to_J(mean_list[0]), params_to_P(mean_list[4]), params_to_w(mean_list[8]), N_E)
-            EI = Connection(params_to_J(mean_list[1]), params_to_P(mean_list[5]), params_to_w(mean_list[9]), N_I)
-            IE = Connection(params_to_J(mean_list[2]), params_to_P(mean_list[6]), params_to_w(mean_list[10]), N_E)
-            II = Connection(params_to_J(mean_list[3]), params_to_P(mean_list[7]), params_to_w(mean_list[11]), N_I)
+            # mean_list = [-14.1186, -24.8923,  -6.3335, -24.6895,  -2.9692,   6.5192,  -2.5976, 6.5347,  81.0852,  60.6460, 147.6750, 124.9975]
+            # mean_list = [-10.2643, -26.1281,  -6.1062, -27.1854,   3.4119,   4.0403,   1.6751, 7.2852,  83.7292,  58.5569, 148.9278, 124.3186]
+            mean_list = [  -4.3780,  -17.6118,   -1.6726,  -12.3541,   -6.1590,    1.9147, -3.8297,    4.1561, -169.2730, -185.4463, -142.8051, -166.5040]
 
-    cc = ConstraintChecker(EE, EI, IE, II)
+            if len(mean_list) == 18:
+                EE = Connection(params_to_J(mean_list[0]), params_to_P(mean_list[6]), params_to_w(mean_list[12]), N_E)
+                EI = Connection(params_to_J(mean_list[1]), params_to_P(mean_list[7]), params_to_w(mean_list[13]), N_I)
+                IE = Connection(params_to_J(mean_list[2]), params_to_P(mean_list[8]), params_to_w(mean_list[14]), N_E)
+                II = Connection(params_to_J(mean_list[3]), params_to_P(mean_list[9]), params_to_w(mean_list[15]), N_I)
+                EF = Connection(params_to_J(mean_list[4]), params_to_P(mean_list[10]), params_to_w(mean_list[16]), N_F)
+                IF = Connection(params_to_J(mean_list[5]), params_to_P(mean_list[11]), params_to_w(mean_list[17]), N_F)
+
+            elif len(mean_list) == 12:
+                EE = Connection(params_to_J(mean_list[0]), params_to_P(mean_list[4]), params_to_w(mean_list[8]), N_E)
+                EI = Connection(params_to_J(mean_list[1]), params_to_P(mean_list[5]), params_to_w(mean_list[9]), N_I)
+                IE = Connection(params_to_J(mean_list[2]), params_to_P(mean_list[6]), params_to_w(mean_list[10]), N_E)
+                II = Connection(params_to_J(mean_list[3]), params_to_P(mean_list[7]), params_to_w(mean_list[11]), N_I)
+                EF = None
+                IF = None
+            else:
+                raise ValueError(f"Expected an array of lenth 12 of 18 but found {len(mean_list)}.")
+
+    cc = ConstraintChecker(EE, EI, IE, II, EF, IF)
     cc.check_bounds()
-
-    print("Values in code:\n")
-
-    print([EE.J, EI.J, IE.J, II.J, EE.P ,EI.P ,IE.P , II.P, EE.w, EI.w, IE.w, II.w], '\n')
-    print("mean_list =", [J_to_params(EE.J), J_to_params(EI.J), J_to_params(IE.J), J_to_params(II.J), 
-            P_to_params(EE.P), P_to_params(EI.P), P_to_params(IE.P), P_to_params(II.P),  
-            w_to_params(EE.w), w_to_params(EI.w), w_to_params(IE.w), w_to_params(II.w)], '\n')
-    
-    J = [J_to_params(EE.J), J_to_params(EI.J), J_to_params(IE.J), J_to_params(II.J)]
-    P = [P_to_params(EE.P), P_to_params(EI.P), P_to_params(IE.P), P_to_params(II.P)]
-    w = [w_to_params(EE.w), w_to_params(EI.w), w_to_params(IE.w), w_to_params(II.w)]
-
-    print("J_array =", J)
-    print("P_array =", P)
-    print("w_array =", w, '\n')
-
-    wg = WeightsGenerator(J, P, w, N_E + N_I)
-    plot_weights(wg.generate_weight_matrix()[0])
+    print_values_in_code(EE, EI, IE, II, EF, IF)
