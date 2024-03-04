@@ -248,7 +248,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             f.write(f"Avg loss {avg_loss}\n")
             f.write(f"Min loss {min_loss}\n")
             f.write(f"Max loss {max_loss}\n")
-            f.write(f"Avg_accepted loss {torch.mean(accepted_loss_tensor)}\n")
+            f.write(f"Avg_accepted loss {torch.mean(accepted_loss_tensor)}\n")  # TODO: This is buggy because accepted_loss_tensor could be empty but we assume it wont be
             f.write(f"Min_accepted loss {torch.min(accepted_loss_tensor)}\n")
             f.write(f"Max_accepted loss {torch.max(accepted_loss_tensor)}\n")
             f.write(f"Rejected {rejected}\n")
@@ -297,10 +297,10 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 
 if __name__ == "__main__":
-    desc = "As bugs are now free (fingers crossed), lets bring back our important mixing!"
+    desc = "Test with 1 trial to investigate effect of randomness in connectivity."
 
     if torch.cuda.is_available():
-        device = "cuda:1"
+        device = "cuda:0"
         print("Model will be created on GPU")
     else:
         device = "cpu"
@@ -318,4 +318,4 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=2, alpha=0.1, eta_delta=1, avg_step_weighting=0.1))
+    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1))
