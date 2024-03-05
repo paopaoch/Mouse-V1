@@ -31,11 +31,9 @@ class MouseDataPoint:
 
 
 def make_torch_params(mean_list, var_list, device="cpu"):
-    """Return a tensor with mean and a diagonal covariance matrix, TODO: add shape checking, positive definite check"""
-    # Mean
-    # d = len(var_list)
+    """Return a tensor with mean and a diagonal covariance matrix, TODO: add positive definite check"""
     mean_tensor = torch.tensor(mean_list, device=device, dtype=torch.float32)
-    var_tensor = torch.diag(torch.tensor(var_list, device=device, dtype=torch.float32))  # + torch.ones((d, d), device=device) * 0.001
+    var_tensor = torch.diag(torch.tensor(var_list, device=device, dtype=torch.float32))
     return mean_tensor, var_tensor
 
 
@@ -92,7 +90,7 @@ def calc_loss(trials,
 def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int, samples_per_iter: int, y_E, y_I,
                             neuron_num=10000, feed_forward_num=100, eta_delta=1, eta_sigma=0.08, eta_B=0.08, 
                             device="cpu", avg_step_weighting=0.002, desc="", alpha=0.6, trials=1, weights_valid_weighting=1e5,
-                            min_iter=20, stopping_criterion_step=1e-5, stopping_criterion_tolerance=2):
+                            min_iter=20, stopping_criterion_step=1e-5, stopping_criterion_tolerance=2, file_name=None):
     
     # local variable setup
     alpha = torch.tensor(alpha, device=device)
@@ -108,11 +106,13 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
     weights_generator = WeightsGenerator(J, P, w, neuron_num, feed_forward_num=feed_forward_num, device=device)
     weights_valid = weights_generator.validate_weight_matrix()
 
-    if weights_valid != torch.tensor(0, device=device):
-        print("ERROR WEIGHT IS NOT VALID")
-        return
-
-    with open(f"log_nes_run_{time.time()}.log", "w") as f:
+    # if weights_valid != torch.tensor(0, device=device):
+    #     print("ERROR WEIGHT IS NOT VALID")
+    #     return
+    if file_name is None:
+        file_name = f"log_nes_run_{time.time()}.log"
+        
+    with open(file_name, "w") as f:
         # write the metadata to log file
         f.write("#### Mouse V1 Project log file ####\n\n")
         f.write(f"Code ran on the {datetime.now()}\n\n")
@@ -246,7 +246,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                     current_samples.append(data_point)
 
             if len(accepted_loss) == 0:
-                accepted_loss.append(torch.tensor(0, device=device))
+                accepted_loss.append(torch.tensor(0, device=device, dtype=torch.float32))
 
             loss_sorted, samples_sorted = sort_two_arrays(losses, samples, device=device)
             accepted_loss_tensor = torch.tensor(accepted_loss, device=device)
@@ -317,7 +317,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         f.write("\n\n")
         f.flush()
 
-    return mean, cov_optimised
+    return mean, cov_optimised, i
 
 
 if __name__ == "__main__":
