@@ -244,11 +244,11 @@ class ConstraintChecker:
 
 
 def _sigmoid(value, steepness=1, scaling=1):
-    return scaling / (1 + math.exp(-steepness * value))
+    return scaling / (1 + np.exp(-steepness * value))
 
 
 def _inverse_sigmoid(value, steepness=1, scaling=1):
-    return - (1 / steepness) * math.log((scaling / value) - 1)
+    return - (1 / steepness) * np.log((scaling / value) - 1)
 
 
 J_to_params = lambda x: _inverse_sigmoid(x, J_steep, J_scale)

@@ -343,7 +343,6 @@ class NetworkExecuter(Rodents):
             print(f"ERROR: the object was initialised for {self.neuron_num} neurons but got {len(weights)}")
             return
         else:
-            print("Updated Weight matrix")
             self.update_weight_matrix(weights, weights_FF)
         
         all_rates = []
@@ -359,7 +358,6 @@ class NetworkExecuter(Rodents):
                 count += 1
             all_rates.append(torch.stack(steady_states))
         output  = torch.stack(all_rates).permute(2, 0, 1)
-        print("finished all orientations and contrasts", output.shape)
         return output, avg_step_sum / count
 
 

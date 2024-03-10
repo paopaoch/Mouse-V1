@@ -167,3 +167,5 @@ response.*
 ignore_plots_*
 
 nohup*
+
+log_*
