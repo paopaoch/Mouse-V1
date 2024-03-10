@@ -332,10 +332,10 @@ if __name__ == "__main__":
         print("\nInitial: ", INITIAL, '\n')
 
         if INITIAL:
-            EE = Connection(40, 0.1, 51, N_E)
-            EI = Connection(12, 0.65, 47, N_I)
-            IE = Connection(50, 0.2, 56, N_E)
-            II = Connection(23, 0.82, 51, N_I)
+            EE = Connection(36, 0.3, 57, N_E)
+            EI = Connection(14, 0.9, 57, N_I)
+            IE = Connection(54, 0.3, 57, N_E)
+            II = Connection(18, 0.9, 57, N_I)
             # EF = Connection(7.9, 0.2, 20, N_F)
             # IF = Connection(8, 0.2, 20, N_F)
             EF = None

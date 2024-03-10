@@ -259,6 +259,12 @@ class WeightsGenerator(Rodents):
                                         - torch.rand(len(diff), len(diff[0]), device=self.device, requires_grad=False), 32)
 
 
+class WeightsGeneratorExact(WeightsGenerator):
+    def _get_sub_weight_matrix(self, diff: torch.Tensor, index: int):
+        J_single = self._sigmoid(self.J_parameters[index], self.J_steep, self.J_scale) / torch.sqrt(torch.tensor(diff.shape[1]))
+        return J_single * torch.bernoulli()
+
+
 class NetworkExecuter(Rodents):
     def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=1, w_ff=15, sig_ext=5, device="cpu"):
         super().__init__(neuron_num, ratio, device, feed_forward_num)
