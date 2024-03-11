@@ -19,7 +19,8 @@ else:
     FOLDER_NAME = None
 
 
-def plot_weights(W):
+def plot_weights(W: torch.Tensor):
+    W = W.clone().detach().cpu()
     plt.imshow(W, cmap="seismic", vmin=-np.max(np.abs(np.array(W))), vmax=np.max(np.abs(np.array(W))), interpolation='nearest', aspect='auto')
     plt.colorbar()
     plt.title(f"Connection weight matrix for {len(W)} by {len(W[0])} neurons")
@@ -62,7 +63,9 @@ def print_tuning_curve(tuning_curve, title=""):
 
 def print_feed_forward_input(executer: NetworkExecuter, W, W_FF):
     executer.update_weight_matrix(W, W_FF)
-    mean, sigma = executer._stim_to_inputs_with_ff(0.1, 45)
+    mean, sigma = executer._stim_to_inputs_with_ff(1, 45)
+    mean = mean.cpu()
+    sigma = sigma.cpu()
     plt.plot(mean)
     plt.title("Mean feed forward activity")
     plt.xlabel("Neuron Index")
@@ -223,11 +226,10 @@ if __name__ == "__main__":
 
             # Get the network response
 
-            J_array = [-3.5021000000000013, -18.6316, 8.6772, -16.4469]
-            P_array = [-9.2541, -3.9613000000000005, -8.3574, -1.6586000000000003]
-            w_array = [-255.27640000000002, -304.7763, -213.4516, -256.0815]
-
-            generator = WeightsGenerator(J_array, P_array, w_array, neuron_num, feed_forward_num)
+            J_array = [2.0067069546215124, -4.054651081081644, 6.190392084062233, -8.472978603872036, -25.866893440979428, -24.423470353692043]
+            P_array = [-5.203803166164319, -1.2163953243244932, -2.5418935811616112, 1.216395324324493, 4.1588830833596715, 4.1588830833596715]
+            w_array = [-255.84942256760897, -289.69882423813806, -225.49733432916625, -255.84942256760897, -289.69882423813806, -289.69882423813806]
+            generator = WeightsGenerator(J_array, P_array, w_array, neuron_num, feed_forward_num, device="cuda")
             W = generator.generate_weight_matrix()
             plot_weights(W)
             if len(J_array) == 6:
@@ -236,7 +238,7 @@ if __name__ == "__main__":
             else:
                 W_FF = None
 
-            executer = NetworkExecuter(neuron_num, feed_forward_num)
+            executer = NetworkExecuter(neuron_num, feed_forward_num, scaling_g=1, device="cuda")
             if len(J_array) == 6:
                 print_feed_forward_input(executer, W, W_FF)
 
@@ -257,6 +259,8 @@ if __name__ == "__main__":
             
             if type(responses) != torch.Tensor:
                 responses = torch.tensor(responses)
+        
+        responses = responses.cpu()
 
         data_E = centralise_all_curves(np.array(responses[0:800].data))
         data_I = centralise_all_curves(np.array(responses[800:].data))

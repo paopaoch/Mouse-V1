@@ -495,11 +495,11 @@ class NetworkExecuter(Rodents):
 if __name__ == "__main__":
     from rodents_plotter import plot_weights
 
-    J_array = [-9.444616088408516, -19.924301646902062, -0.0, -17.346010553881065, -24.560121837882853, -24.423470353692043]
-    P_array = [-4.1588830833596715, 1.8571176252186712, -3.796999119993828, 4.549042468104266, -1.2163953243244932, -1.2163953243244932]
-    w_array = [-364.38871760942556, -406.8966342150983, -320.1940915905865, -364.38871760942556, -509.97840193011893, -509.97840193011893]
+    J_array = [-25.866893440979428, -29.444389791664403, -19.00958761193047, -23.136349291806305, -25.866893440979428, -24.423470353692043]
+    P_array = [-4.1588830833596715, -4.1588830833596715, -4.1588830833596715, -4.1588830833596715, 4.1588830833596715, 4.1588830833596715]
+    w_array = [-289.69882423813806, -124.76649250079015, -289.69882423813806, -124.76649250079015, -509.97840193011893, -509.97840193011893]
 
-    keen = WeightsGenerator(J_array, P_array, w_array, 10000, 1000)
+    keen = WeightsGenerator(J_array, P_array, w_array, 1000, 100)
     print(keen.validate_weight_matrix())
     W = keen.generate_weight_matrix()
     W_FF = keen.generate_feed_forward_weight_matrix()
@@ -508,16 +508,16 @@ if __name__ == "__main__":
 
     plot_weights(W_FF)
 
-    executer = NetworkExecuter(10000, 1000)
+    executer = NetworkExecuter(1000, 100)
     executer.update_weight_matrix(W, W_FF)
-    mean, sigma = executer._stim_to_inputs_with_ff(0.1, 45)
+    mean, sigma = executer._stim_to_inputs_with_ff(1, 45)
     plt.plot(mean)
     plt.show()
 
     plt.plot(sigma)
     plt.show()
 
-    mean, sigma = executer._stim_to_inputs(0.1, 45)
+    mean, sigma = executer._stim_to_inputs(1, 45)
     plt.plot(mean)
     plt.show()
     print(sigma)
