@@ -244,11 +244,11 @@ class ConstraintChecker:
 
 
 def _sigmoid(value, steepness=1, scaling=1):
-    return scaling / (1 + math.exp(-steepness * value))
+    return scaling / (1 + np.exp(-steepness * value))
 
 
 def _inverse_sigmoid(value, steepness=1, scaling=1):
-    return - (1 / steepness) * math.log((scaling / value) - 1)
+    return - (1 / steepness) * np.log((scaling / value) - 1)
 
 
 J_to_params = lambda x: _inverse_sigmoid(x, J_steep, J_scale)
@@ -332,14 +332,14 @@ if __name__ == "__main__":
         print("\nInitial: ", INITIAL, '\n')
 
         if INITIAL:
-            EE = Connection(55, 0.15, 35, N_E)
-            EI = Connection(40, 0.4, 30, N_I)
-            IE = Connection(65, 0.3, 40, N_E)
-            II = Connection(30, 0.6, 35, N_I)
-            EF = Connection(7, 0.9, 20, N_F)
-            IF = Connection(8, 0.9, 20, N_F)
-            # EF = None
-            # IF = None
+            EE = Connection(36, 0.3, 57, N_E)
+            EI = Connection(14, 0.9, 57, N_I)
+            IE = Connection(54, 0.3, 57, N_E)
+            II = Connection(18, 0.9, 57, N_I)
+            # EF = Connection(7.9, 0.2, 20, N_F)
+            # IF = Connection(8, 0.2, 20, N_F)
+            EF = None
+            IF = None
         else:
             # mean_list = [-14.1186, -24.8923,  -6.3335, -24.6895,  -2.9692,   6.5192,  -2.5976, 6.5347,  81.0852,  60.6460, 147.6750, 124.9975]
             # mean_list = [-10.2643, -26.1281,  -6.1062, -27.1854,   3.4119,   4.0403,   1.6751, 7.2852,  83.7292,  58.5569, 148.9278, 124.3186]

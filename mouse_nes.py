@@ -128,8 +128,8 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         f.write(f"Record average step after {network_executer.Navg} steps\n")
         f.write(f"Average step weighting: {avg_step_weighting}\n")
         f.write(f"Valid weight weighting: {weights_valid_weighting}\n\n")
-        f.write(f"Max number of xNES optimisation step: {max_iter}\n")
-        f.write(f"Min number of xNES optimisation step: {min_iter}\n")
+        f.write(f"Max_number of xNES optimisation step: {max_iter}\n")
+        f.write(f"Min_number of xNES optimisation step: {min_iter}\n")
         f.write(f"Stopping criterion step condition for xNES optimisation: {stopping_criterion_step}\n")
         f.write(f"Stopping criterion step tolerance: {stopping_criterion_tolerance}\n")
         f.write(f"Number of samples per optimisation step: {samples_per_iter}\n")
@@ -175,6 +175,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         avg_nes_step = 0
         nes_loss = []
         stopping_reached_count = 0
+        prev_avg_nes_step = torch.tensor(10000, dtype=torch.float32, device=device)  # Set to be a very large number for stopping criterion
         for i in tqdm(range(max_iter)):
             f.write(f"ITERATION: {i}\n")
 
@@ -283,9 +284,9 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             prev_samples = current_samples.copy()
 
             # Stopping criterion
-            nes_loss.append(torch.mean(accepted_loss_tensor))
-            avg_nes_step = torch.sum(torch.tensor(nes_loss, device=device)) / (i + 1)
-            if i > min_iter and (prev_avg_nes_step - avg_nes_step) < stopping_criterion_step:
+            nes_loss.append(mean_loss)
+            avg_nes_step = torch.sum(torch.tensor(nes_loss[-10:], device=device)) / len(nes_loss[-10:])
+            if i > min_iter and (prev_avg_nes_step - avg_nes_step) < stopping_criterion_step and rejected == 0:
                 stopping_reached_count += 1
                 if stopping_reached_count == stopping_criterion_tolerance:
                     f.write(f"\n\nEarly stopping {avg_nes_step}\n\n")
@@ -342,4 +343,4 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=2, alpha=0.1, eta_delta=1, avg_step_weighting=0.1))
+    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=2, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.0001))
