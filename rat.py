@@ -190,6 +190,8 @@ class WeightsGenerator(Rodents):
 
     
     def generate_feed_forward_weight_matrix(self):
+        if len(self.J_parameters) == 4:
+            return None
         prob_EF = self._get_sub_weight_matrix(self._pref_diff(self.pref_E, self.pref_F), 4)
         prob_IF = self._get_sub_weight_matrix(self._pref_diff(self.pref_I, self.pref_F), 5)
         weights = torch.cat((prob_EF, prob_IF), dim=0)
@@ -270,8 +272,8 @@ class NetworkExecuter(Rodents):
     def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=1, w_ff=15, sig_ext=5, device="cpu"):
         super().__init__(neuron_num, ratio, device, feed_forward_num)
 
-        self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
-        self.contrasts = [0, 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]
+        self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]  # 12
+        self.contrasts = [0, 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]  # 8
 
         self.weights = None
         self.weights2 = None
@@ -296,7 +298,8 @@ class NetworkExecuter(Rodents):
         tau_I = 0.01 * tau_alpha
 
         # Membrane time constant vector for all cells
-        self.tau = torch.cat([tau_E * torch.ones(self.neuron_num_e, device=device, requires_grad=False), tau_I * torch.ones(self.neuron_num_i, device=device, requires_grad=False)])
+        self.tau = torch.cat([tau_E * torch.ones(self.neuron_num_e, device=device, requires_grad=False),
+                              tau_I * torch.ones(self.neuron_num_i, device=device, requires_grad=False)])
         self.hardness = 0.01  # So confused
         self.Vt = 20
         self.Vr = 0
@@ -304,7 +307,8 @@ class NetworkExecuter(Rodents):
         # Refractory periods for exitatory and inhibitory
         tau_ref_E = 0.005
         tau_ref_I = 0.001
-        self.tau_ref = torch.cat([tau_ref_E * torch.ones(self.neuron_num_e, device=device, requires_grad=False), tau_ref_I * torch.ones(self.neuron_num_i, device=device, requires_grad=False)])
+        self.tau_ref = torch.cat([tau_ref_E * torch.ones(self.neuron_num_e, device=device, requires_grad=False), 
+                                  tau_ref_I * torch.ones(self.neuron_num_i, device=device, requires_grad=False)])
 
         # Constants for euler
         self.Nmax=300
@@ -423,12 +427,11 @@ class NetworkExecuter(Rodents):
         return torch.log(1 + torch.exp(b * x)) / b
     
 
-    def _euler2fixedpt(self, x_initial):
+    def _euler2fixedpt(self, xvec):
         xmin = torch.tensor(self.xmin, device=self.device, requires_grad=False)
 
         avgStart = self.Nmax - self.Navg
         avg_sum = 0
-        xvec = x_initial
 
         for _ in range(avgStart):  # Loop without taking average step size
             self._update_mu_sigma(xvec)
@@ -493,36 +496,122 @@ class NetworkExecuter(Rodents):
                 + 277.18420330693891 * z**7 - 16.445022798669722 * z**8)
         
         return enum / denom
+    
+
+class NetworkExecuterParallel(NetworkExecuter):
+
+    def run_all_orientation_and_contrast(self, weights, weights_FF=None):
+        if len(weights) != self.neuron_num:
+            print(f"ERROR: the object was initialised for {self.neuron_num} neurons but got {len(weights)}")
+            return
+        else:
+            self.update_weight_matrix(weights, weights_FF)
+
+        self.tau = self.tau.unsqueeze(0)  # TODO: Put this into the __init__ function
+        self.tau = self.tau.repeat(len(self.orientations) * len(self.contrasts), 1).T
+
+        self.tau_ref = self.tau_ref.unsqueeze(0)
+        self.tau_ref = self.tau_ref.repeat(len(self.orientations) * len(self.contrasts), 1).T
+
+        self.T_inv = self.T_inv.unsqueeze(0)
+        self.T_inv = self.T_inv.repeat(len(self.orientations) * len(self.contrasts), 1).T
+
+        rate, avg_step = self._get_steady_state_output()
+        rate = rate.view(self.neuron_num, 8, 12)
+        return self._add_noise_to_rate(rate), avg_step
+    
+
+    def _stim_to_inputs(self):
+        '''Set the inputs based on the contrast and orientation of the stimulus'''
+        input_mean = []
+        for contrast in self.contrasts:
+            for orientation in self.orientations:
+                input_mean.append(contrast * 20 * self.scaling_g * self._cric_gauss(orientation - self.pref, self.w_ff))
+        self.input_mean = torch.stack(input_mean).T  # Dont forget to transpose back to get input for each constrast and orientation
+        self.input_sd = self.sig_ext
+        return self.input_mean, self.input_sd
 
 
+    def _stim_to_inputs_with_ff(self):
+        '''Set the inputs based on the contrast and orientation of the stimulus'''
+        input_mean = []
+        for contrast in self.contrasts:
+            for orientation in self.orientations:
+                input_mean.append(contrast * self.scaling_g * self._cric_gauss(orientation - self.pref_F, self.w_ff))
+        ff_output = torch.stack(input_mean).T
+        self.input_mean = self.weights_FF @ ff_output
+        self.input_sd = self.weights_FF2 @ ff_output + torch.tensor(0.01, device=self.device)   # Adding a small DC offset here to prevent division by 0 error
+
+        return self.input_mean, self.input_sd
+    
+
+    def _get_steady_state_output(self):
+        if self.weights_FF is None:
+            self._stim_to_inputs()
+        else:
+            self._stim_to_inputs_with_ff()
+        r_fp, avg_step = self._solve_fixed_point()
+        return r_fp, avg_step
+
+
+    def _solve_fixed_point(self):
+        r_init = torch.zeros_like(self.input_mean, device=self.device)
+        r_fp, avg_step = self._euler2fixedpt(r_init)
+        return r_fp, avg_step
+    
+
+    def _update_mu_sigma(self, rate):
+        # Find net input mean and variance given inputs
+        self.mu = self.tau * (self.weights @ rate) + self.input_mean  # TODO: Check why tau is there mathematically
+        self.sigma = torch.sqrt(self.tau * (self.weights2 @ rate) + torch.square(self.input_sd))
+        return self.mu, self.sigma
 
 
 if __name__ == "__main__":
-    from rodents_plotter import plot_weights
+    from rodents_plotter import plot_weights, print_tuning_curve, centralise_all_curves, print_activity
+    from time import time
 
-    J_array = [-25.866893440979428, -29.444389791664403, -19.00958761193047, -23.136349291806305, -25.866893440979428, -24.423470353692043]
-    P_array = [-4.1588830833596715, -4.1588830833596715, -4.1588830833596715, -4.1588830833596715, 4.1588830833596715, 4.1588830833596715]
-    w_array = [-289.69882423813806, -124.76649250079015, -289.69882423813806, -124.76649250079015, -509.97840193011893, -509.97840193011893]
+    J_array = [-4.054651081081644, -19.924301646902062, -0.0, -12.083112059245341]
+    P_array = [-6.591673732008658, 1.8571176252186712, -4.1588830833596715, 4.549042468104266]
+    w_array = [-167.03761889472233, -187.23627477210516, -143.08737747657977, -167.03761889472233]
 
-    keen = WeightsGenerator(J_array, P_array, w_array, 1000, 100)
-    print(keen.validate_weight_matrix())
+    n = 10000
+
+    keen = WeightsGenerator(J_array, P_array, w_array, n, 100, device="cuda:0")
     W = keen.generate_weight_matrix()
     W_FF = keen.generate_feed_forward_weight_matrix()
 
-    plot_weights(W)
+    # plot_weights(W)
 
-    plot_weights(W_FF)
+    # plot_weights(W_FF)
 
-    executer = NetworkExecuter(1000, 100)
-    executer.update_weight_matrix(W, W_FF)
-    mean, sigma = executer._stim_to_inputs_with_ff(1, 45)
-    plt.plot(mean)
-    plt.show()
+    # executer = NetworkExecuter(1000, 100)
+    # executer.update_weight_matrix(W, W_FF)
+    # mean, sigma = executer._stim_to_inputs_with_ff(1, 45)
+    # plt.plot(mean)
+    # plt.show()
 
-    plt.plot(sigma)
-    plt.show()
+    # plt.plot(sigma)
+    # plt.show()
 
-    mean, sigma = executer._stim_to_inputs(1, 45)
-    plt.plot(mean)
-    plt.show()
-    print(sigma)
+    # mean, sigma = executer._stim_to_inputs(1, 45)
+    # plt.plot(mean)
+    # plt.show()
+    # print(sigma)
+    start = time()
+    executer = NetworkExecuterParallel(n, 100, device="cuda:0")
+    print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
+    print(time() - start)
+
+    start = time()
+    executer = NetworkExecuter(n, 100, device="cuda:0")
+    print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
+    print(time() - start)
+    # executer.update_weight_matrix(W, W_FF)
+
+    # inputs, _ = executer._stim_to_inputs()
+    # inputs2, std2 = executer._stim_to_inputs_with_ff()
+
+    # plot_weights(inputs.T)
+    # plot_weights(inputs2.T)
+    # plot_weights(std2.T)
