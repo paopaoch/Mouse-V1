@@ -11,7 +11,7 @@ def get_deviated_mean(mean, cov, device="cpu"):
     mean = torch.tensor(mean, device=device)
     covariance_matrix = torch.tensor(cov, device=device)
     mvn = torch.distributions.MultivariateNormal(mean, covariance_matrix)
-    num_samples = 20
+    num_samples = 10
     samples = mvn.sample((num_samples,))
     return samples
 
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     
     mean, cov_nes = make_torch_params(mean_list, end_var_list, device=device)
 
-    var_lists = generate_varying_lists(start_var_list, end_var_list, 30)
+    var_lists = generate_varying_lists(start_var_list, end_var_list, 20)
 
     desc = "Investigating deviation from mean"
 
@@ -73,7 +73,7 @@ if __name__ == "__main__":
                                                                                 device=device, neuron_num=1000, 
                                                                                 desc=desc, trials=1, alpha=0.05, 
                                                                                 avg_step_weighting=0.1, 
-                                                                                stopping_criterion_step=0.000005,
+                                                                                stopping_criterion_step=0.00001,
                                                                                 file_name=f"./{current_dir}/run_{i}_{j}.log")
 
                 diff = torch.abs(mean - mean_optimised)
