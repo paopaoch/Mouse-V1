@@ -34,7 +34,7 @@ if __name__ == "__main__":
         device = "cpu"
         print("GPU not available. Model will be created on CPU.")
 
-    with open("data/data_1000_neurons3/responses.pkl", 'rb') as f:
+    with open("./data/data_1000_neurons3/responses.pkl", 'rb') as f:
         responses: torch.Tensor = pickle.load(f)
         y_E, y_I = responses[:800], responses[800:]
         responses = 0
