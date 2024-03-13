@@ -577,7 +577,7 @@ if __name__ == "__main__":
     P_array = [-6.591673732008658, 1.8571176252186712, -4.1588830833596715, 4.549042468104266]
     w_array = [-167.03761889472233, -187.23627477210516, -143.08737747657977, -167.03761889472233]
 
-    n = 1000
+    n = 10000
 
     keen = WeightsGenerator(J_array, P_array, w_array, n, 100, device="cpu")
     W = keen.generate_weight_matrix()
@@ -605,10 +605,10 @@ if __name__ == "__main__":
     print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
     print(time() - start)
 
-    start = time()
-    executer = NetworkExecuter(n, 100, device="cpu")
-    print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
-    print(time() - start)
+    # start = time()
+    # executer = NetworkExecuter(n, 100, device="cpu")
+    # print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
+    # print(time() - start)
     # executer.update_weight_matrix(W, W_FF)
 
     # inputs, _ = executer._stim_to_inputs()

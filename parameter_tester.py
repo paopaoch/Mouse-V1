@@ -1,6 +1,6 @@
 from scipy.special import i0
 import math
-from rat import WeightsGenerator
+from rat import WeightsGeneratorExact
 import numpy as np
 from tqdm import tqdm
 
@@ -58,9 +58,9 @@ class ConstraintChecker:
             P.append(P_to_params(IF.P))
             w.append(w_to_params(IF.w))
             
-            self.wg = WeightsGenerator(J, P, w, EE.N + II.N, EF.N)
+            self.wg = WeightsGeneratorExact(J, P, w, EE.N + II.N, EF.N)
         else:
-            self.wg = WeightsGenerator(J, P, w, EE.N + II.N)
+            self.wg = WeightsGeneratorExact(J, P, w, EE.N + II.N)
             self.feed_forward = False
         
 
@@ -317,8 +317,8 @@ if __name__ == "__main__":
 
     SEARCH_INIT = bool(input("Search Params? (default False): "))
 
-    N_E = 8000
-    N_I = 2000
+    N_E = 800
+    N_I = 200
     N_F = 100
 
     if SEARCH_INIT:
@@ -332,10 +332,10 @@ if __name__ == "__main__":
         print("\nInitial: ", INITIAL, '\n')
 
         if INITIAL:
-            EE = Connection(36, 0.3, 57, N_E)
-            EI = Connection(14, 0.9, 57, N_I)
-            IE = Connection(54, 0.3, 57, N_E)
-            II = Connection(18, 0.9, 57, N_I)
+            EE = Connection(11, 0.4, 57, N_E)
+            EI = Connection(4.5, 0.95, 57, N_I)
+            IE = Connection(17, 0.4, 57, N_E)
+            II = Connection(5.7, 0.95, 57, N_I)
             # EF = Connection(7.9, 0.2, 20, N_F)
             # IF = Connection(8, 0.2, 20, N_F)
             EF = None

@@ -4,7 +4,7 @@ import numpy as np
 import time
 from datetime import datetime
 from tqdm import tqdm
-from rat import get_data, WeightsGenerator, NetworkExecuter
+from rat import get_data, WeightsGeneratorExact, NetworkExecuterParallel
 from scipy.stats import circvar
 import os
 import pickle
@@ -61,7 +61,7 @@ def print_tuning_curve(tuning_curve, title=""):
         plt.close()
 
 
-def print_feed_forward_input(executer: NetworkExecuter, W, W_FF):
+def print_feed_forward_input(executer: NetworkExecuterParallel, W, W_FF):
     executer.update_weight_matrix(W, W_FF)
     mean, sigma = executer._stim_to_inputs_with_ff(1, 45)
     mean = mean.cpu()
@@ -221,16 +221,22 @@ if __name__ == "__main__":
     if not_data:
         responses_path = input("Path to response file: ")
         if responses_path == "":
-            neuron_num = 10000
+            neuron_num = 1000
+            ratio = 0.8
+            E_index = int(ratio * neuron_num)
             feed_forward_num = 100
 
             # Get the network response
 
-            J_array = [2.533464330441002, -18.152899666382492, 1.4827104042263084, -20.907410969337693]
-            P_array = [-2.5418935811616112, 6.591673732008657, -2.5418935811616112, 6.591673732008657]
+            # J_array = [2.533464330441002, -18.152899666382492, 1.4827104042263084, -20.907410969337693]
+            # P_array = [-2.5418935811616112, 6.591673732008657, -2.5418935811616112, 6.591673732008657]
+            # w_array = [-138.44395575681614, -138.44395575681614, -138.44395575681614, -138.44395575681614]
+
+            J_array = [-20.907410969337693, -30.550488507104102, -15.85627263740382, -28.060150147989074]
+            P_array = [-1.2163953243244932, 8.833316937499324, -1.2163953243244932, 8.833316937499324]
             w_array = [-138.44395575681614, -138.44395575681614, -138.44395575681614, -138.44395575681614] 
 
-            generator = WeightsGenerator(J_array, P_array, w_array, neuron_num, feed_forward_num)
+            generator = WeightsGeneratorExact(J_array, P_array, w_array, neuron_num, feed_forward_num)
             W = generator.generate_weight_matrix()
             plot_weights(W)
             if len(J_array) == 6:
@@ -239,7 +245,7 @@ if __name__ == "__main__":
             else:
                 W_FF = None
 
-            executer = NetworkExecuter(neuron_num, feed_forward_num, scaling_g=1, device="cuda")
+            executer = NetworkExecuterParallel(neuron_num, feed_forward_num, scaling_g=1, device="cpu")
             if len(J_array) == 6:
                 print_feed_forward_input(executer, W, W_FF)
 
@@ -270,7 +276,8 @@ if __name__ == "__main__":
         print_tuning_curve(data[100], title="Example Excitatory Neuron Tuning Curve From Model")
         print_tuning_curve(data[-100], title="Example Inhibitory Neuron Tuning Curve From Model")
         
-        print_activity(responses, title="Example Response Plot for the Model")
+        print_activity(responses[:E_index], title="Example Response Plot for the Model - Excitatory")
+        print_activity(responses[E_index:], title="Example Response Plot for the Model - Inhibitory")
 
         print_tuning_curve(neuro_SVD(data[100])[0], title="Example SVD of Excitatory Neuron Tuning Curve From Model")
         print_tuning_curve(neuro_SVD(data[-100])[0], title="Example SVD of Inhibitory Neuron Tuning Curve From Model")
