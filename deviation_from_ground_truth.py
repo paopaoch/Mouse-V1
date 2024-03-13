@@ -44,8 +44,8 @@ if __name__ == "__main__":
                 -138.44395575681614, -138.44395575681614, -138.44395575681614, -138.44395575681614]
 
     start_var_list = [0.01, 0.01, 0.01, 0.01,
-                    0.01, 0.01, 0.01, 0.01,
-                    0.01, 0.01, 0.01, 0.01]
+                        0.01, 0.01, 0.01, 0.01,
+                        0.01, 0.01, 0.01, 0.01]
 
     end_var_list = [5, 5, 5, 5, 
                     1, 1, 1, 1, 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
             sum_diff = 0
             sum_num_iter = 0
             for j, mean in enumerate(mean_tensors):
-                mean_optimised, cov_optimised, num_iter = nes_multigaussian_optim(mean_tensors, cov_nes, 200, 12, y_E, y_I, 
+                mean_optimised, cov_optimised, num_iter = nes_multigaussian_optim(mean, cov_nes, 200, 12, y_E, y_I, 
                                                                                 device=device, neuron_num=1000, 
                                                                                 desc=desc, trials=1, alpha=0.05, 
                                                                                 avg_step_weighting=0.1, 
