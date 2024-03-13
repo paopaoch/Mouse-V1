@@ -499,14 +499,9 @@ class NetworkExecuter(Rodents):
 
 class NetworkExecuterParallel(NetworkExecuter):
 
-    def run_all_orientation_and_contrast(self, weights, weights_FF=None):
-        if len(weights) != self.neuron_num:
-            print(f"ERROR: the object was initialised for {self.neuron_num} neurons but got {len(weights)}")
-            return
-        else:
-            self.update_weight_matrix(weights, weights_FF)
-
-        self.tau = self.tau.unsqueeze(0)  # TODO: Put this into the __init__ function
+    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=1, w_ff=15, sig_ext=5, device="cpu"):
+        super().__init__(neuron_num, feed_forward_num, ratio, scaling_g, w_ff, sig_ext, device)
+        self.tau = self.tau.unsqueeze(0)
         self.tau = self.tau.repeat(len(self.orientations) * len(self.contrasts), 1).T
 
         self.tau_ref = self.tau_ref.unsqueeze(0)
@@ -514,6 +509,13 @@ class NetworkExecuterParallel(NetworkExecuter):
 
         self.T_inv = self.T_inv.unsqueeze(0)
         self.T_inv = self.T_inv.repeat(len(self.orientations) * len(self.contrasts), 1).T
+
+    def run_all_orientation_and_contrast(self, weights, weights_FF=None):
+        if len(weights) != self.neuron_num:
+            print(f"ERROR: the object was initialised for {self.neuron_num} neurons but got {len(weights)}")
+            return
+        else:
+            self.update_weight_matrix(weights, weights_FF)
 
         rate, avg_step = self._get_steady_state_output()
         rate = rate.view(self.neuron_num, 8, 12)
@@ -574,9 +576,9 @@ if __name__ == "__main__":
     P_array = [-6.591673732008658, 1.8571176252186712, -4.1588830833596715, 4.549042468104266]
     w_array = [-167.03761889472233, -187.23627477210516, -143.08737747657977, -167.03761889472233]
 
-    n = 10000
+    n = 1000
 
-    keen = WeightsGenerator(J_array, P_array, w_array, n, 100, device="cuda:0")
+    keen = WeightsGenerator(J_array, P_array, w_array, n, 100, device="cpu")
     W = keen.generate_weight_matrix()
     W_FF = keen.generate_feed_forward_weight_matrix()
 
@@ -598,12 +600,12 @@ if __name__ == "__main__":
     # plt.show()
     # print(sigma)
     start = time()
-    executer = NetworkExecuterParallel(n, 100, device="cuda:0")
+    executer = NetworkExecuterParallel(n, 100, device="cpu")
     print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
     print(time() - start)
 
     start = time()
-    executer = NetworkExecuter(n, 100, device="cuda:0")
+    executer = NetworkExecuter(n, 100, device="cpu")
     print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
     print(time() - start)
     # executer.update_weight_matrix(W, W_FF)
