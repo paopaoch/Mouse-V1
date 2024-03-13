@@ -7,9 +7,9 @@ import os
 from time import time
 
 
-def get_deviated_mean(mean, cov):
-    mean = torch.tensor(mean)
-    covariance_matrix = torch.tensor(cov)
+def get_deviated_mean(mean, cov, device="cpu"):
+    mean = torch.tensor(mean, device=device)
+    covariance_matrix = torch.tensor(cov, device=device)
     mvn = torch.distributions.MultivariateNormal(mean, covariance_matrix)
     num_samples = 20
     samples = mvn.sample((num_samples,))
@@ -51,7 +51,7 @@ if __name__ == "__main__":
                     1, 1, 1, 1, 
                     250, 250, 250, 250]
     
-    mean, cov_nes = make_torch_params(mean_list, end_var_list)
+    mean, cov_nes = make_torch_params(mean_list, end_var_list, device=device)
 
     var_lists = generate_varying_lists(start_var_list, end_var_list, 30)
 
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
         for i, var_list in enumerate(var_lists):
             _, cov = make_torch_params(mean_list, var_list)
-            mean_tensors = get_deviated_mean(mean, cov)
+            mean_tensors = get_deviated_mean(mean, cov, device=device)
             sum_diff = 0
             sum_num_iter = 0
             for j, mean in enumerate(mean_tensors):
