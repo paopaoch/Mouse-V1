@@ -506,7 +506,7 @@ class NetworkExecuterParallel(NetworkExecuter):
         else:
             self.update_weight_matrix(weights, weights_FF)
 
-        self.tau = self.tau.unsqueeze(0)
+        self.tau = self.tau.unsqueeze(0)  # TODO: Put this into the __init__ function
         self.tau = self.tau.repeat(len(self.orientations) * len(self.contrasts), 1).T
 
         self.tau_ref = self.tau_ref.unsqueeze(0)
@@ -574,7 +574,9 @@ if __name__ == "__main__":
     P_array = [-6.591673732008658, 1.8571176252186712, -4.1588830833596715, 4.549042468104266]
     w_array = [-167.03761889472233, -187.23627477210516, -143.08737747657977, -167.03761889472233]
 
-    keen = WeightsGenerator(J_array, P_array, w_array, 1000, 100, device="cuda")
+    n = 10000
+
+    keen = WeightsGenerator(J_array, P_array, w_array, n, 100, device="cuda:0")
     W = keen.generate_weight_matrix()
     W_FF = keen.generate_feed_forward_weight_matrix()
 
@@ -596,27 +598,14 @@ if __name__ == "__main__":
     # plt.show()
     # print(sigma)
     start = time()
-    executer = NetworkExecuterParallel(1000, 100, device="cuda")
-    tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W, W_FF)
+    executer = NetworkExecuterParallel(n, 100, device="cuda:0")
+    print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
     print(time() - start)
-    print(tuning_curves.shape)
-    print(avg_step)
-    # tuning_curves = centralise_all_curves(tuning_curves.cpu())
-    tuning_curves = tuning_curves.cpu()
-    print_activity(tuning_curves)
-    print_tuning_curve(tuning_curve=tuning_curves[500])
 
-    # start = time()
-    # executer = NetworkExecuter(1000, 100, device="cuda")
-    # tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W, W_FF)
-    # print(time() - start)
-    # print(tuning_curves.shape)
-    # print(avg_step)
-    # tuning_curves = centralise_all_curves(tuning_curves.cpu())
-    # print_activity(tuning_curves)
-    # print_tuning_curve(tuning_curve=tuning_curves[500])
-
-
+    start = time()
+    executer = NetworkExecuter(n, 100, device="cuda:0")
+    print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
+    print(time() - start)
     # executer.update_weight_matrix(W, W_FF)
 
     # inputs, _ = executer._stim_to_inputs()
