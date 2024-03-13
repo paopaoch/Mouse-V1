@@ -504,7 +504,7 @@ class NetworkExecuterParallel(NetworkExecuter):
         else:
             self.update_weight_matrix(weights, weights_FF)
 
-        self.tau = self.tau.unsqueeze(0)
+        self.tau = self.tau.unsqueeze(0)  # TODO: Put this into the __init__ function
         self.tau = self.tau.repeat(len(self.orientations) * len(self.contrasts), 1).T
 
         self.tau_ref = self.tau_ref.unsqueeze(0)
@@ -571,7 +571,9 @@ if __name__ == "__main__":
     P_array = [-4.1588830833596715, -4.1588830833596715, -4.1588830833596715, -4.1588830833596715, 4.1588830833596715, 4.1588830833596715]
     w_array = [-289.69882423813806, -124.76649250079015, -289.69882423813806, -124.76649250079015, -509.97840193011893, -509.97840193011893]
 
-    keen = WeightsGenerator(J_array, P_array, w_array, 10000, 100, device="cuda")
+    n = 1000
+
+    keen = WeightsGenerator(J_array, P_array, w_array, n, 100, device="cuda:0")
     W = keen.generate_weight_matrix()
     W_FF = keen.generate_feed_forward_weight_matrix()
 
@@ -593,14 +595,14 @@ if __name__ == "__main__":
     # plt.show()
     # print(sigma)
     start = time()
-    executer = NetworkExecuterParallel(10000, 100, device="cuda")
+    executer = NetworkExecuterParallel(n, 100, device="cuda:0")
     print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
     print(time() - start)
 
-    # start = time()
-    # executer = NetworkExecuter(1000, 100, device="cuda")
-    # print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
-    # print(time() - start)
+    start = time()
+    executer = NetworkExecuter(n, 100, device="cuda:0")
+    print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
+    print(time() - start)
     # executer.update_weight_matrix(W, W_FF)
 
     # inputs, _ = executer._stim_to_inputs()
