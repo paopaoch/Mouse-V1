@@ -325,7 +325,7 @@ if __name__ == "__main__":
     desc = "Some test"
 
     if torch.cuda.is_available():
-        device = "cuda:0"
+        device = "cuda:1"
         print("Model will be created on GPU")
     else:
         device = "cpu"
