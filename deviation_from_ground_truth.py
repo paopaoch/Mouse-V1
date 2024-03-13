@@ -36,6 +36,7 @@ if __name__ == "__main__":
 
     with open("./data/data_1000_neuron3/responses.pkl", 'rb') as f:
         responses: torch.Tensor = pickle.load(f)
+        responses = responses.to(device)
         y_E, y_I = responses[:800], responses[800:]
         responses = 0
 
