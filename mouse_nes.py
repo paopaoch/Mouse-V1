@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 import sys
 from tqdm import tqdm
-from rat import MouseLossFunction, WeightsGenerator, NetworkExecuterParallel, get_data
+from rat import MouseLossFunction, WeightsGeneratorExact, NetworkExecuterParallel, get_data
 import socket
 
 
@@ -66,7 +66,7 @@ def sort_two_arrays(losses: list, samples: list, device="cpu"):  # sort accordin
 
 
 def calc_loss(trials,
-             weights_generator: WeightsGenerator, 
+             weights_generator: WeightsGeneratorExact, 
              network_executer: NetworkExecuterParallel, 
              loss_function: MouseLossFunction,
              y_E, y_I, feed_forward=False):
@@ -103,7 +103,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
     # Init model and loss function
     loss_function = MouseLossFunction(device=device, avg_step_weighting=avg_step_weighting)
     network_executer = NetworkExecuterParallel(neuron_num, device=device, feed_forward_num=feed_forward_num)
-    weights_generator = WeightsGenerator(J, P, w, neuron_num, feed_forward_num=feed_forward_num, device=device)
+    weights_generator = WeightsGeneratorExact(J, P, w, neuron_num, feed_forward_num=feed_forward_num, device=device)
     weights_valid = weights_generator.validate_weight_matrix()
 
     # if weights_valid != torch.tensor(0, device=device):
