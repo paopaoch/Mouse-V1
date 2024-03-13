@@ -190,6 +190,8 @@ class WeightsGenerator(Rodents):
 
     
     def generate_feed_forward_weight_matrix(self):
+        if len(self.J_parameters) == 4:
+            return None
         prob_EF = self._get_sub_weight_matrix(self._pref_diff(self.pref_E, self.pref_F), 4)
         prob_IF = self._get_sub_weight_matrix(self._pref_diff(self.pref_I, self.pref_F), 5)
         weights = torch.cat((prob_EF, prob_IF), dim=0)
@@ -513,7 +515,8 @@ class NetworkExecuterParallel(NetworkExecuter):
         self.T_inv = self.T_inv.unsqueeze(0)
         self.T_inv = self.T_inv.repeat(len(self.orientations) * len(self.contrasts), 1).T
 
-        rate, avg_step = self._get_steady_state_output()  # TODO: Change the shape of the output from (n, 96) to (n, 8, 12)
+        rate, avg_step = self._get_steady_state_output()
+        rate = rate.view(self.neuron_num, 8, 12)
         return self._add_noise_to_rate(rate), avg_step
     
 
@@ -564,14 +567,14 @@ class NetworkExecuterParallel(NetworkExecuter):
 
 
 if __name__ == "__main__":
-    from rodents_plotter import plot_weights
+    from rodents_plotter import plot_weights, print_tuning_curve, centralise_all_curves, print_activity
     from time import time
 
-    J_array = [-25.866893440979428, -29.444389791664403, -19.00958761193047, -23.136349291806305, -25.866893440979428, -24.423470353692043]
-    P_array = [-4.1588830833596715, -4.1588830833596715, -4.1588830833596715, -4.1588830833596715, 4.1588830833596715, 4.1588830833596715]
-    w_array = [-289.69882423813806, -124.76649250079015, -289.69882423813806, -124.76649250079015, -509.97840193011893, -509.97840193011893]
+    J_array = [-4.054651081081644, -19.924301646902062, -0.0, -12.083112059245341]
+    P_array = [-6.591673732008658, 1.8571176252186712, -4.1588830833596715, 4.549042468104266]
+    w_array = [-167.03761889472233, -187.23627477210516, -143.08737747657977, -167.03761889472233]
 
-    keen = WeightsGenerator(J_array, P_array, w_array, 10000, 100, device="cuda")
+    keen = WeightsGenerator(J_array, P_array, w_array, 1000, 100, device="cuda")
     W = keen.generate_weight_matrix()
     W_FF = keen.generate_feed_forward_weight_matrix()
 
@@ -593,14 +596,27 @@ if __name__ == "__main__":
     # plt.show()
     # print(sigma)
     start = time()
-    executer = NetworkExecuterParallel(10000, 100, device="cuda")
-    print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
+    executer = NetworkExecuterParallel(1000, 100, device="cuda")
+    tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W, W_FF)
     print(time() - start)
+    print(tuning_curves.shape)
+    print(avg_step)
+    # tuning_curves = centralise_all_curves(tuning_curves.cpu())
+    tuning_curves = tuning_curves.cpu()
+    print_activity(tuning_curves)
+    print_tuning_curve(tuning_curve=tuning_curves[500])
 
     # start = time()
     # executer = NetworkExecuter(1000, 100, device="cuda")
-    # print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
+    # tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W, W_FF)
     # print(time() - start)
+    # print(tuning_curves.shape)
+    # print(avg_step)
+    # tuning_curves = centralise_all_curves(tuning_curves.cpu())
+    # print_activity(tuning_curves)
+    # print_tuning_curve(tuning_curve=tuning_curves[500])
+
+
     # executer.update_weight_matrix(W, W_FF)
 
     # inputs, _ = executer._stim_to_inputs()
