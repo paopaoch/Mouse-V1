@@ -322,7 +322,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 
 if __name__ == "__main__":
-    desc = "Some test"
+    desc = "Increase the number of samples"
 
     if torch.cuda.is_available():
         device = "cuda:1"
@@ -341,4 +341,4 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.000001))
+    print(nes_multigaussian_optim(mean, cov, 200, 48, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.000001))
