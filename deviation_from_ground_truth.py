@@ -5,6 +5,7 @@ import numpy as np
 import pickle
 import os
 from time import time
+from parameter_tester import mean_list_to_values
 
 
 def get_deviated_mean(mean, cov, device="cpu"):
@@ -44,6 +45,9 @@ if __name__ == "__main__":
                 -1.2163953243244932, 8.833316937499324, -1.2163953243244932, 8.833316937499324, 
                 -138.44395575681614, -138.44395575681614, -138.44395575681614, -138.44395575681614]
 
+    ground_truth_vals = torch.tensor([11, 4.5, 17, 5.7, 0.4, 0.95, 0.4, 0.95, 57, 57, 57, 57]
+                                     , device=device, dtype=torch.float32)
+
     start_var_list = [0.01, 0.01, 0.01, 0.01,
                         0.01, 0.01, 0.01, 0.01,
                         0.01, 0.01, 0.01, 0.01]
@@ -66,7 +70,8 @@ if __name__ == "__main__":
         for i, var_list in enumerate(var_lists):
             _, cov = make_torch_params(mean_list, var_list)
             mean_tensors = get_deviated_mean(mean, cov, device=device)
-            sum_diff = 0
+            sum_diff_from_truth = 0
+            sum_diff_from_start = 0
             sum_num_iter = 0
             for j, mean in enumerate(mean_tensors):
                 mean_optimised, cov_optimised, num_iter = nes_multigaussian_optim(mean, cov_nes, 200, 12, y_E, y_I, 
@@ -76,16 +81,23 @@ if __name__ == "__main__":
                                                                                 stopping_criterion_step=0.00001,
                                                                                 file_name=f"./{current_dir}/run_{i}_{j}.log")
 
-                diff = torch.abs(mean - mean_optimised)
-                sum_diff += diff
+                start_mean_vals = torch.tensor(mean_list_to_values(mean), device=device, dtype=torch.float32)
+                mean_optimised_vals = torch.tensor(mean_list_to_values(mean_optimised), device=device, dtype=torch.float32)
+                diff_from_truth = torch.abs(ground_truth_vals - mean_optimised_vals)
+                diff_from_start = torch.abs(start_mean_vals-mean_optimised_vals)
+
+                sum_diff_from_truth += diff_from_truth
+                sum_diff_from_start += diff_from_start
                 sum_num_iter += num_iter
 
-            avg_diff = sum_diff / len(mean_tensors)
+            avg_diff_from_truth = sum_diff_from_truth / len(mean_tensors)
+            avg_diff_from_start = sum_diff_from_start / len(mean_tensors)
             avg_num_iter = sum_num_iter / len(mean_tensors)
 
             f.write(f"Iteration {i}\n")
             f.write(f"Variance: {var_list}\n")
             f.write(f"avg_num_iter: {avg_num_iter}\n")
-            f.write(f"avg_diff: {avg_diff}\n")
+            f.write(f"avg_diff_from_truth: {avg_diff_from_truth}\n")  # Expect this to stay somewhat the same and low if the model is good
+            f.write(f"avg_diff_from_start: {avg_diff_from_start}\n")  # Expect this to be higher
             f.write(f"\n\n")
             f.flush()

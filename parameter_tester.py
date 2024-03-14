@@ -260,6 +260,13 @@ params_to_J = lambda x: _sigmoid(x, J_steep, J_scale)
 params_to_P = lambda x: _sigmoid(x, P_steep, P_scale)
 params_to_w = lambda x: _sigmoid(x, w_steep, w_scale)
 
+
+def mean_list_to_values(mean_list):
+    return [params_to_J(mean_list[0]), params_to_J(mean_list[1]), params_to_J(mean_list[2]), params_to_J(mean_list[3]), 
+            params_to_P(mean_list[4]), params_to_P(mean_list[5]), params_to_P(mean_list[6]), params_to_P(mean_list[7]),  
+            params_to_w(mean_list[8]), params_to_w(mean_list[9]), params_to_w(mean_list[10]), params_to_w(mean_list[11])]
+
+
 def _get_random_params(std_vec):  # TODO: This function should draw valid parameters from constraint conditions
     return std_vec
 
