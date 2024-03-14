@@ -78,11 +78,11 @@ if __name__ == "__main__":
                                                                                 device=device, neuron_num=1000, 
                                                                                 desc=desc, trials=1, alpha=0.05, 
                                                                                 avg_step_weighting=0.1, 
-                                                                                stopping_criterion_step=0.00001,
+                                                                                stopping_criterion_step=5e-06,
                                                                                 file_name=f"./{current_dir}/run_{i}_{j}.log")
 
-                start_mean_vals = torch.tensor(mean_list_to_values(mean), device=device, dtype=torch.float32)
-                mean_optimised_vals = torch.tensor(mean_list_to_values(mean_optimised), device=device, dtype=torch.float32)
+                start_mean_vals = torch.tensor(mean_list_to_values(mean.cpu()), device=device, dtype=torch.float32)
+                mean_optimised_vals = torch.tensor(mean_list_to_values(mean_optimised.cpu()), device=device, dtype=torch.float32)
                 diff_from_truth = torch.abs(ground_truth_vals - mean_optimised_vals)
                 diff_from_start = torch.abs(start_mean_vals-mean_optimised_vals)
 
