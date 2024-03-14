@@ -29,7 +29,7 @@ if __name__ == "__main__":
     os.makedirs(f"./{current_dir}")
 
     if torch.cuda.is_available():
-        device = "cuda:1"
+        device = "cuda:0"
         print("Model will be created on GPU")
     else:
         device = "cpu"
