@@ -63,12 +63,31 @@ def MMD2(x: torch.Tensor, y: torch.Tensor, device="cpu"):
     return XX + YY - 2 * XY
 
 
+def optimised_kernel(U, V, W, sigma=0.5):
+    return torch.exp(-sigma * (torch.diag(U)[:, None]
+                               + torch.diag(V)[None, :]
+                               - 2* W))
+     
+
+def optimised_MMD2(x: torch.Tensor, y: torch.Tensor, device=None):  # only work with x and y with the same shape
+    G_x = x @ x.T
+    G_y = y @ y.T
+    G_xy = x @ y.T
+    return torch.mean(optimised_kernel(G_x, G_x, G_x) + optimised_kernel(G_y, G_y, G_y) - 2*optimised_kernel(G_x, G_y, G_xy))
+
+
+def reshape_for_optimised(x: torch.Tensor):
+    batch_size, dim1, dim2 = x.size()
+    return torch.reshape(x, (batch_size, dim1 * dim2))
+
+
 if torch.cuda.is_available():
     device = "cuda"
     print("GPU available! Using GPU")
 else:
     device = "cpu"
     print("GPU not available. Using CPU.")
+
 
 def time_it(func, desc, x, y):
     print(desc)
@@ -98,8 +117,15 @@ if __name__ == "__main__":
     time_it(MMD2, "MMD between two exact same distributions : ", tensor1, tensor1)
     time_it(MMD2, "compare MMD2 and broadcasting, MMD2: ", tensor4, tensor5)
     
-    # this might not run on some machine due to high memory, reduce the size of the tensor then re run
-    time_it(broadcasted_MMD2, "compare MMD2 and broadcasting, broadcasting: ", tensor4, tensor5)
+    # # this might not run on some machine due to high memory, reduce the size of the tensor then re run
+    # time_it(broadcasted_MMD2, "compare MMD2 and broadcasting, broadcasting: ", tensor4, tensor5)
 
-    time_it(MMD2, "MMD of actual V1 project shape: ", tensor3, tensor4)
-    time_it(MMD2, "MMD of actual V1 project shape swaped: ", tensor4, tensor3)
+    # time_it(MMD2, "MMD of actual V1 project shape: ", tensor3, tensor4)
+    # time_it(MMD2, "MMD of actual V1 project shape swaped: ", tensor4, tensor3)
+
+
+    # time_it(optimised_MMD2, "MMD using the optimised method: ", reshape_for_optimised(tensor4), reshape_for_optimised(tensor5))
+    time_it(optimised_MMD2, "MMD using the optimised method: ", reshape_for_optimised(tensor1), reshape_for_optimised(tensor2))
+    time_it(optimised_MMD2, "MMD using the optimised method: ", reshape_for_optimised(tensor2), reshape_for_optimised(tensor3))
+    time_it(optimised_MMD2, "MMD using the optimised method: ", reshape_for_optimised(tensor1), reshape_for_optimised(tensor3))
+    time_it(optimised_MMD2, "MMD using the optimised method: ", reshape_for_optimised(tensor1), reshape_for_optimised(tensor1))
