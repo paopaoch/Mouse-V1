@@ -28,8 +28,8 @@ if __name__ == "__main__":
     
     # lambdas = [12, 66]
     # lambdas = [30, 42, 48]
-    lambdas = [18, 60]
-    # lambdas = [24, 36, 54]
+    # lambdas = [18, 60]
+    lambdas = [24, 36, 54]
     
     for lambda_ in lambdas:
         for _ in range(4):
