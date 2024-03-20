@@ -26,7 +26,8 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
     
-    lambdas = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+    lambdas = [12, 24, 36, 48, 60]
+    # lambdas = [18, 30, 42, 54, 66]
     
     for lambda_ in lambdas:
         for _ in range(4):
