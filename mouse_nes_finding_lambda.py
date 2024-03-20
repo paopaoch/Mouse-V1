@@ -6,7 +6,7 @@ if __name__ == "__main__":
     desc = "For finding lambda"
 
     if torch.cuda.is_available():
-        device = "cuda:1"
+        device = "cuda:0"
         print("Model will be created on GPU")
     else:
         device = "cpu"
@@ -26,8 +26,10 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
     
-    # lambdas = [12, 24, 36, 48, 60]
-    lambdas = [18, 30, 42, 54, 66]
+    lambdas = [12, 66]
+    # lambdas = [18, 60]
+    # lambdas = [24, 36, 54]
+    # lambdas = [30, 42, 48]
     
     for lambda_ in lambdas:
         for _ in range(4):
