@@ -135,7 +135,7 @@ class MouseLossFunction:
         return torch.stack(tuning_curves)
 
 
-class MouseLossFunctionOptimised(MouseLossFunction):
+class MouseLossFunctionOptimised(MouseLossFunction):  # TODO: NOTE: include the weights valid into loss for gradient based optim
 
 
     def MMD(self, x: torch.Tensor, y: torch.Tensor):
