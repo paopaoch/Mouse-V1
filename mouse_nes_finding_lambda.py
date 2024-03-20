@@ -26,11 +26,11 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
     
-    # lambdas = [12, 66]
-    lambdas = [30, 42, 48]
+    lambdas = [12, 66]
+    # lambdas = [30, 42, 48]
     # lambdas = [18, 60]
     # lambdas = [24, 36, 54]
     
     for lambda_ in lambdas:
         for _ in range(4):
-            nes_multigaussian_optim(mean, cov, lambda_, 48, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.000005)
+            nes_multigaussian_optim(mean, cov, 200, lambda_, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.000005)
