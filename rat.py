@@ -135,6 +135,34 @@ class MouseLossFunction:
         return torch.stack(tuning_curves)
 
 
+class MouseLossFunctionOptimised(MouseLossFunction):
+
+
+    def MMD(self, x: torch.Tensor, y: torch.Tensor):
+        x = self.reshape_for_optimised(x)  # TODO: When we use this MMD implementation fully, reshape this outside
+        y = self.reshape_for_optimised(y)
+
+        G_x = x @ x.T
+        G_y = y @ y.T
+        G_xy = x @ y.T
+        return torch.mean(self._optimised_kernel(G_x, G_x, G_x) 
+                          + self._optimised_kernel(G_y, G_y, G_y) 
+                          - 2*self._optimised_kernel(G_x, G_y, G_xy))
+
+
+    @staticmethod
+    def _optimised_kernel(U, V, W, sigma=0.5):
+        return torch.exp(-sigma * (torch.diag(U)[:, None]
+                               + torch.diag(V)[None, :]
+                               - 2* W))
+
+    
+    @staticmethod
+    def reshape_for_optimised(x: torch.Tensor):
+        batch_size, dim1, dim2 = x.size()
+        return torch.reshape(x, (batch_size, dim1 * dim2))
+    
+
 class Rodents:
     def __init__(self, neuron_num, ratio=0.8, device="cpu", feed_forward_num=100):
         self.neuron_num = neuron_num
@@ -166,7 +194,7 @@ class Rodents:
 
 
 class WeightsGenerator(Rodents):
-    def __init__(self, J_array: list, P_array: list, w_array: list, neuron_num: int, feed_forward_num=100, ratio=0.8, device="cpu"):
+    def __init__(self, J_array: list, P_array: list, w_array: list, neuron_num: int, feed_forward_num=100, ratio=0.8, device="cpu", requires_grad=False):
         super().__init__(neuron_num, ratio, device, feed_forward_num)
 
         if len(J_array) != len(P_array) or len(P_array) != len(w_array):
@@ -174,9 +202,9 @@ class WeightsGenerator(Rodents):
         if len(J_array) != 4 and len(J_array) != 6:
             raise IndexError(f"Expect length of parameter arrays to be 4 or 6 but received {len(J_array)}.")
 
-        self.J_parameters = torch.tensor(J_array, device=device)
-        self.P_parameters = torch.tensor(P_array, device=device)
-        self.w_parameters = torch.tensor(w_array, device=device)
+        self.J_parameters = torch.tensor(J_array, device=device, requires_grad=requires_grad)
+        self.P_parameters = torch.tensor(P_array, device=device, requires_grad=requires_grad)
+        self.w_parameters = torch.tensor(w_array, device=device, requires_grad=requires_grad)
 
         # Sigmoid values for parameters
         self.J_steep = 1/10
@@ -413,7 +441,7 @@ class NetworkExecuter(Rodents):
         return r_fp, avg_step
     
     
-    def _add_noise_to_rate(self, rate_fp):
+    def _add_noise_to_rate(self, rate_fp: torch.Tensor):
         sigma = torch.sqrt(rate_fp / self.N_trial / self.recorded_spike_T)
         rand = torch.randn(size=rate_fp.shape, device=self.device)
         return rate_fp + sigma * rand
