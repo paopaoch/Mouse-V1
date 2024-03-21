@@ -87,10 +87,10 @@ def print_feed_forward_input(executer: NetworkExecuterParallel, W, W_FF):
         plt.close()
 
 
-def print_activity(responses, title=""):
+def print_activity(responses, title="", contrast_index=7):
     one_res = []
     for tuning_curve in responses:
-        one_res.append(tuning_curve[7][4])
+        one_res.append(tuning_curve[contrast_index][4])
 
     plt.plot(one_res)
     plt.title(title)
@@ -199,6 +199,63 @@ def get_max_index(tuning_curve):
     return max_index
 
 
+def normalise_array(arr, scale=1):
+    max_value = max(arr)
+    if max_value == 0:
+        return arr
+    else:
+        normalised_arr = arr / max_value
+        return normalised_arr * scale
+
+
+def print_normalise_orientation_curve(tuning_curve):
+    max_rate = max(tuning_curve[7])
+    for i, orientation_tuning in enumerate(tuning_curve):
+        orientation_tuning_normalised = normalise_array(orientation_tuning, max_rate)
+        plt.plot(orientation_tuning_normalised, label=f"contrast index {i}")
+    
+    plt.title("Normalised orientation tuning curves at various contrast of the same neuron")
+    plt.xlabel("orientation index")
+    plt.ylabel("rate/Hz")
+    plt.legend()
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(f"{FOLDER_NAME}/normalise_orientation_curve_{time.time()}.png")
+        plt.close()
+
+
+def print_normalise_orientation_curve_multi_neuron(tuning_curves, contrast_index=7, title=""):
+    max_rate = np.max(tuning_curves)
+    for tuning_curve in tuning_curves:
+        orientation_tuning_normalised = normalise_array(tuning_curve[contrast_index], max_rate)
+        plt.plot(orientation_tuning_normalised)
+    
+    plt.title(title)
+    plt.xlabel("orientation index")
+    plt.ylabel("rate/Hz")
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(f"{FOLDER_NAME}/normalise_orientation_curve_multi_neuron{time.time()}.png")
+        plt.close()
+
+
+def print_contrast_curve(tuning_curves: list[np.ndarray], title=""):
+    for tuning_curve in tuning_curves:
+        tuning_curve.transpose(1, 0)
+        plt.plot(tuning_curve.transpose(1, 0)[6])
+    
+    plt.title(title)
+    plt.xlabel("orientation index")
+    plt.ylabel("rate/Hz")
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(f"{FOLDER_NAME}/contrast_tuning_curve{time.time()}.png")
+        plt.close()
+
+
 def centralise_curve(tuning_curve):
     max_index = get_max_index(tuning_curve)  # instead of max index, taking the mean might be better?
     shift_index = 6 - max_index  # 6 is used here as there are 13 orientations
@@ -232,9 +289,13 @@ if __name__ == "__main__":
             # P_array = [-2.5418935811616112, 6.591673732008657, -2.5418935811616112, 6.591673732008657]
             # w_array = [-138.44395575681614, -138.44395575681614, -138.44395575681614, -138.44395575681614]
 
-            J_array = [-3.306200000000002, -19.296, 4.323699999999999, -17.0743]
-            P_array = [-2.2294000000000005, 2.9917, -1.0708, 6.298999999999998]
-            w_array = [-133.0274, -114.53790000000001, -132.3619, -163.1275] 
+            # J_array = [-3.306200000000002, -19.296, 4.323699999999999, -17.0743]
+            # P_array = [-2.2294000000000005, 2.9917, -1.0708, 6.298999999999998]
+            # w_array = [-133.0274, -114.53790000000001, -132.3619, -163.1275] 
+
+            J_array = [-5.753641449035618, -18.152899666382492, 1.6034265007517936, -15.163474893680885]
+            P_array = [-2.5418935811616112, 6.591673732008657, -2.5418935811616112, 6.591673732008657] 
+            w_array = [-138.44395575681614, -138.44395575681614, -138.44395575681614, -138.44395575681614]
 
 
             generator = WeightsGeneratorExact(J_array, P_array, w_array, neuron_num, feed_forward_num)
@@ -274,11 +335,34 @@ if __name__ == "__main__":
         data_I = centralise_all_curves(np.array(responses[800:].data))
         data = np.concatenate((data_E, data_I), axis=0)
 
+        # print_normalise_orientation_curve(data[100])
+        print_normalise_orientation_curve_multi_neuron([data[100], data[150], data[200], data[250]]
+                                                       , 7, f"Normalised excitatory orientation tuning curves \n at constant contrast index 7 for multiple neurons")
+        print_normalise_orientation_curve_multi_neuron([data[100], data[150], data[200], data[250]]
+                                                       , 5, f"Normalised excitatory orientation tuning curves \n at constant contrast index 5 for multiple neurons")
+        print_normalise_orientation_curve_multi_neuron([data[100], data[150], data[200], data[250]]
+                                                       , 3, f"Normalised excitatory orientation tuning curves \n at constant contrast index 3 for multiple neurons")
+        print_contrast_curve([data[100], data[150], data[200], data[250]], "Normalised excitatory contrast tuning curves at preferred orientation")
+
+        print_normalise_orientation_curve_multi_neuron([data[800], data[850], data[900], data[950]]
+                                                       , 7, f"Normalised inhibitory orientation tuning curves \n at constant contrast index 7 for multiple neurons")
+        print_normalise_orientation_curve_multi_neuron([data[800], data[850], data[900], data[950]]
+                                                       , 5, f"Normalised inhibitory orientation tuning curves \n at constant contrast index 5 for multiple neurons")
+        print_normalise_orientation_curve_multi_neuron([data[800], data[850], data[900], data[950]]
+                                                       , 3, f"Normalised inhibitory orientation tuning curves \n at constant contrast index 3 for multiple neurons")
+        print_contrast_curve([data[800], data[850], data[900], data[950]], "Normalised inhibitory contrast tuning curves at preferred orientation")
+
         print_tuning_curve(data[100], title="Example Excitatory Neuron Tuning Curve From Model")
         print_tuning_curve(data[-100], title="Example Inhibitory Neuron Tuning Curve From Model")
         
-        print_activity(responses[:E_index], title="Example Response Plot for the Model - Excitatory")
-        print_activity(responses[E_index:], title="Example Response Plot for the Model - Inhibitory")
+        print_activity(responses[:E_index], title="Example Response Plot for the Model \n Excitatory (High contrast)", contrast_index=7)
+        print_activity(responses[E_index:], title="Example Response Plot for the Model \n Inhibitory (High contrast)", contrast_index=7)
+
+        print_activity(responses[:E_index], title="Example Response Plot for the Model \n Excitatory (Mid contrast)", contrast_index=5)
+        print_activity(responses[E_index:], title="Example Response Plot for the Model \n Inhibitory (Mid contrast)", contrast_index=5)
+
+        print_activity(responses[:E_index], title="Example Response Plot for the Model \n Excitatory (Low contrast)", contrast_index=3)
+        print_activity(responses[E_index:], title="Example Response Plot for the Model \n Inhibitory (Low contrast)", contrast_index=3)
 
         print_tuning_curve(neuro_SVD(data[100])[0], title="Example SVD of Excitatory Neuron Tuning Curve From Model")
         print_tuning_curve(neuro_SVD(data[-100])[0], title="Example SVD of Inhibitory Neuron Tuning Curve From Model")

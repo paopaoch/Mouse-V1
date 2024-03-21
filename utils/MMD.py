@@ -97,6 +97,7 @@ def time_it(func, desc, x, y):
     print("MMD value: ", func(x, y, device=device))
     print("Time taken: ", time() - start, 'seconds\n')
 
+
 if __name__ == "__main__":
     tensor1 = (torch.rand(10000, 8, 12, device=device) * 4 + 1000) * 5
 
