@@ -313,7 +313,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
                 new_cov = (sigma ** 2) * B.T @ B
                 normalised_new_cov = inv_sqrt_cov @ (new_cov @ inv_sqrt_cov)
-                pS = (1 - beta) * pS + torch.sqrt(beta * (2 - beta)) / torch.sqrt(approx) * (normalised_new_cov - torch.eye(d))
+                pS = (1 - beta) * pS + torch.sqrt(beta * (2 - beta)) / torch.sqrt(approx) * (normalised_new_cov - torch.eye(d, device=device))
                 square_ptheta_norm = torch.trace(pS @ pS) / 2
 
                 gamma_theta = (1 - beta)**2 * gamma_theta + beta * (2 - beta)
