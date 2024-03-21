@@ -363,10 +363,10 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 
 if __name__ == "__main__":
-    desc = "Increase the number of samples"
+    desc = "Test new adaptive learning"
 
     if torch.cuda.is_available():
-        device = "cuda:0"
+        device = "cuda:1"
         print("Model will be created on GPU")
     else:
         device = "cpu"
@@ -374,9 +374,13 @@ if __name__ == "__main__":
 
     mean_list = [-5.753641449035618, -18.152899666382492, 1.6034265007517936, -15.163474893680885, -2.5418935811616112, 6.591673732008657, -2.5418935811616112, 6.591673732008657, -138.44395575681614, -138.44395575681614, -138.44395575681614, -138.44395575681614]  # Config 13
      
-    var_list = [5, 5, 5, 5, 
-                1, 1, 1, 1, 
-                250, 250, 250, 250]  # This is from the experiment with 1000 neurons and with simulated data
+    # var_list = [5, 5, 5, 5, 
+    #             1, 1, 1, 1, 
+    #             250, 250, 250, 250]  # This is from the experiment with 1000 neurons and with simulated data
+
+    var_list = [2.5, 2.5, 2.5, 2.5, 
+            0.5, 0.5, 0.5, 0.5, 
+            125, 125, 125, 125]  # This is from the experiment with 1000 neurons and with simulated data
     
     mean, cov = make_torch_params(mean_list, var_list, device=device)
 
