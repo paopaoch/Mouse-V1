@@ -89,11 +89,14 @@ def calc_loss(trials,
 
 def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int, samples_per_iter: int, y_E, y_I,
                             neuron_num=10000, feed_forward_num=100, eta_delta=1, eta_sigma=0.08, eta_B=0.08, 
+                            eta_sigma_min=0.08, eta_sigma_max=1, eta_B_min=0.08, eta_B_max=1,
                             device="cpu", avg_step_weighting=0.002, desc="", alpha=0.6, trials=1, weights_valid_weighting=1e5,
-                            min_iter=20, stopping_criterion_step=1e-5, stopping_criterion_tolerance=2, file_name=None):
+                            min_iter=20, stopping_criterion_step=1e-5, stopping_criterion_tolerance=2, file_name=None, 
+                            beta=0.2, adaptive_lr=False):
     
     # local variable setup
     alpha = torch.tensor(alpha, device=device)
+    beta = torch.tensor(beta, device=device)
     J, P, w = mean_to_params(mean)
     if len(mean) == 18:
         feed_forward = True
@@ -136,6 +139,8 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         f.write(f"Number of trials per full simulation: {trials}\n")
         f.write(f"Alpha for important mixing: {alpha}\n")
         f.write(f"Learning Rates: eta_delta={eta_delta}, eta_sigma={eta_sigma}, eta_B={eta_B}\n")
+        f.write(f"adaptive_lr: {adaptive_lr}\n")
+        f.write(f"beta: {beta}\n")
         f.write(f"---------------------------------------------------\n\n")
         f.write(f"Initial parameters\n")
         f.write(f"J\n")
@@ -167,6 +172,9 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         cov_iden = torch.eye(d, device=device)
         multivariate_normal = torch.distributions.MultivariateNormal(mean_zeros, cov_iden)
         utilities = get_utilities(samples_per_iter, device=device)  # Utilities do not depend on the samples but depend on the number of samples, so is the same throughout
+        mu_w = torch.sum(1/(utilities ** 2))
+        pS = torch.zeros_like(B, device=device, dtype=torch.float32)
+        gamma_theta = torch.tensor(0., device=device)
         prev_samples: list[MouseDataPoint] = []
         prev_mean = mean.clone().detach()
         prev_sigma = sigma.clone().detach()
@@ -264,7 +272,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             f.write(f"Min_accepted loss {torch.min(accepted_loss_tensor)}\n")
             f.write(f"Max_accepted loss {torch.max(accepted_loss_tensor)}\n")
             f.write(f"Rejected {rejected}\n")
-            f.write("\n\n\n")
+            f.write("\n\n")
 
             # Compute natural gradients
             grad_delta = (samples_sorted.permute(1, 0) * utilities).permute(1, 0).sum(dim=(0))
@@ -274,6 +282,15 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
             grad_sigma = torch.trace(grad_M) / d
             grad_B = torch.trace(grad_M) - grad_sigma * torch.eye(len(grad_M), device=device)
+            
+            # initialise and calc delta for learning rate adaptation
+            if adaptive_lr:  # check all of the 
+                delta_m = - mean.clone().detach()
+                delta_cov = - (sigma ** 2) * B.T @ B
+                cov = (sigma ** 2) * B.T @ B
+                e, v = torch.linalg.eigh(cov)
+                diag_sqrt_eig = torch.diag(torch.sqrt(e))
+                inv_sqrt_cov: torch.Tensor = v.T @ torch.linalg.inv(diag_sqrt_eig) @ v
 
             # Gradient descent step
             mean = mean + eta_delta * sigma * B @ grad_delta
@@ -282,6 +299,30 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             f.flush()
 
             prev_samples = current_samples.copy()
+            
+            # adaptive learning rate
+            if adaptive_lr:
+                f.write(f"eta_sigma: {eta_sigma}\n")
+                f.write(f"eta_B: {eta_B}\n")
+                f.write("\n\n")
+                f.flush()
+
+                delta_m += mean
+                delta_cov += (sigma ** 2) * B.T @ B
+                approx = (1 / mu_w) * (eta_B**2 / 2) * (1 + 4*eta_sigma**2/(d*mu_w)) * (d**2 + d - 2) + eta_sigma  # equation 9 in the paper
+
+                new_cov = (sigma ** 2) * B.T @ B
+                normalised_new_cov = inv_sqrt_cov @ (new_cov @ inv_sqrt_cov)
+                pS = (1 - beta) * pS + torch.sqrt(beta * (2 - beta)) / torch.sqrt(approx) * (normalised_new_cov - torch.eye(d))
+                square_ptheta_norm = torch.trace(pS @ pS) / 2
+
+                gamma_theta = (1 - beta)**2 * gamma_theta + beta * (2 - beta)
+
+                eta_sigma = eta_sigma * torch.exp(beta * (square_ptheta_norm / alpha - gamma_theta))
+                eta_sigma = min(max(eta_sigma, eta_sigma_min), eta_sigma_max)
+
+                eta_B = eta_B * torch.exp(beta * (square_ptheta_norm / alpha - gamma_theta))
+                eta_B = min(max(eta_B, eta_B_min), eta_B_max)
 
             # Stopping criterion
             nes_loss.append(mean_loss)
@@ -341,4 +382,4 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 200, 48, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.000001))
+    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=1000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.000001, adaptive_lr=True))
