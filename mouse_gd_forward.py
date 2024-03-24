@@ -2,6 +2,11 @@ import torch
 from rat import MouseLossFunction, WeightsGenerator, NetworkExecuterParallel, get_data
 from utils.forward_differentiator import forward_diff
 
+import time
+from datetime import datetime
+import sys
+import socket
+
 
 def mouse_get_loss(weights_generator: WeightsGenerator, 
                 network_executer: NetworkExecuterParallel, 
@@ -50,31 +55,47 @@ if __name__ == __name__:
         device = "cpu"
         print("GPU not available. Model will be created on CPU.")
 
-    params = [  torch.tensor(-5.753641449035618, device=device),
-                torch.tensor(-18.152899666382492, device=device),
-                torch.tensor(1.6034265007517936, device=device),
-                torch.tensor(-15.163474893680885, device=device), 
-                torch.tensor(-2.5418935811616112, device=device),
-                torch.tensor(6.591673732008657, device=device),
-                torch.tensor(-2.5418935811616112, device=device),
-                torch.tensor(6.591673732008657, device=device),
-                torch.tensor(-138.44395575681614, device=device),
-                torch.tensor(-138.44395575681614, device=device),
-                torch.tensor(-138.44395575681614, device=device),
-                torch.tensor(-138.44395575681614, device=device)]
+    params = [torch.tensor(-5.753641449035618, device=device),
+              torch.tensor(-18.152899666382492, device=device),
+              torch.tensor(1.6034265007517936, device=device),
+              torch.tensor(-15.163474893680885, device=device),
+              torch.tensor(-2.5418935811616112, device=device),
+              torch.tensor(6.591673732008657, device=device),
+              torch.tensor(-2.5418935811616112, device=device),
+              torch.tensor(6.591673732008657, device=device),
+              torch.tensor(-138.44395575681614, device=device),
+              torch.tensor(-138.44395575681614, device=device),
+              torch.tensor(-138.44395575681614, device=device),
+              torch.tensor(-138.44395575681614, device=device)]
 
     data = get_data(device=device)
-
     
     # lr = 1000  # Vary this learning rate according to each dimension
-    lr = [1000, 1000, 1000, 1000,
+    lr = [10000, 10000, 10000, 10000,
           1000, 1000, 1000, 1000,
-          10000, 10000, 10000, 10000,]
-    for i in range(100):
-        grad, loss = forward_diff(mouse_func, params, data, device=device)
-        print(loss)
-        print(grad)
-        for j in range(len(params)):
-            params[j] = params[j] - lr[j] * grad[j]
-        print(params)
-        print("---------")
+          1000000, 1000000, 1000000, 1000000,]
+    
+    file_name = f"log_forward_diff_{time.time()}.log"
+
+    with open(file_name, "w") as f:
+        f.write("#####Forward mode mouse v1 log file#####\n\n\n")
+        f.write(f"Code ran on the {datetime.now()}\n\n")
+        f.write(f"Device: {device}\n")
+        f.write(f"OS: {sys.platform}\n")
+        f.write(f"Machine: {socket.gethostname()}\n")
+        f.write(f"\n\n")
+        f.write("Metadata:\n")
+        f.write(f"learning rates: {lr}\n\n")
+        f.write(f"initial params: {params}\n\n")
+        f.write("----------------------------\n")
+        f.flush()
+
+        for i in range(100):
+            grad, loss = forward_diff(mouse_func, params, data, device=device)
+            print(loss)
+            for j in range(len(params)):
+                params[j] = params[j] - lr[j] * grad[j]
+            f.write(f"loss: {loss}\n")
+            f.write(f"params: {params}\n")
+            f.write("----------------------------\n\n\n")
+            f.flush()
