@@ -68,7 +68,7 @@ if __name__ == __name__:
     
     lr = 1000  # Vary this learning rate according to each dimension
     for i in range(100):
-        grad, loss = forward_diff(mouse_func, params, data)
+        grad, loss = forward_diff(mouse_func, params, data, device=device)
         print(loss)
         for j in range(len(params)):
             params[i] = params[i] - lr * grad[i]
