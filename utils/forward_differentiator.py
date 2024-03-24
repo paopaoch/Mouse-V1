@@ -3,7 +3,7 @@ import torch.autograd.forward_ad as fwAD
 from tqdm import tqdm
 
 
-def forward_diff(func, parameters: list[torch.Tensor], hyperparameters=None, device="cpu"):
+def forward_diff(func, parameters: list, hyperparameters=None, device="cpu"):
     """A forward differentiation wrapper.
     Func: Must be a function that takes in list of tensor parameters and a hyperparameters.
 
