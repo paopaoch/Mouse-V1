@@ -267,6 +267,12 @@ def mean_list_to_values(mean_list):
             params_to_w(mean_list[8]), params_to_w(mean_list[9]), params_to_w(mean_list[10]), params_to_w(mean_list[11])]
 
 
+def noramalise_params_array(params_array):
+    return [params_array[0]/J_scale, params_array[1]/J_scale, params_array[2]/J_scale, params_array[3]/J_scale, 
+            params_array[4]/P_scale, params_array[5]/P_scale, params_array[6]/P_scale, params_array[7]/P_scale,  
+            params_array[8]/w_scale, params_array[9]/w_scale, params_array[10]/w_scale, params_array[11]/w_scale]
+
+
 def _get_random_params(std_vec):  # TODO: This function should draw valid parameters from constraint conditions
     return std_vec
 

@@ -205,7 +205,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                     prev_sample.update_prob(p)
                     current_samples.append(prev_sample)
                     if prev_sample.accepted:
-                        accepted_loss.append(prev_sample.get_loss())
+                        accepted_loss.append(prev_sample.get_loss())  # TODO: Seems to be a minor bug as when an invalid sample is selected, rejected does not increase
 
             print(f"Number of samples reused: {len(samples)}")
             f.write(f"Number of samples reused: {len(samples)}\n")

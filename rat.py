@@ -194,7 +194,7 @@ class Rodents:
 
 
 class WeightsGenerator(Rodents):
-    def __init__(self, J_array: list, P_array: list, w_array: list, neuron_num: int, feed_forward_num=100, ratio=0.8, device="cpu", requires_grad=False):
+    def __init__(self, J_array: list, P_array: list, w_array: list, neuron_num: int, feed_forward_num=100, ratio=0.8, device="cpu", requires_grad=False, forward_mode=False):
         super().__init__(neuron_num, ratio, device, feed_forward_num)
 
         if len(J_array) != len(P_array) or len(P_array) != len(w_array):
@@ -202,9 +202,14 @@ class WeightsGenerator(Rodents):
         if len(J_array) != 4 and len(J_array) != 6:
             raise IndexError(f"Expect length of parameter arrays to be 4 or 6 but received {len(J_array)}.")
 
-        self.J_parameters = torch.tensor(J_array, device=device, requires_grad=requires_grad)
-        self.P_parameters = torch.tensor(P_array, device=device, requires_grad=requires_grad)
-        self.w_parameters = torch.tensor(w_array, device=device, requires_grad=requires_grad)
+        if forward_mode:
+            self.J_parameters = J_array
+            self.P_parameters = P_array
+            self.w_parameters = w_array
+        else:
+            self.J_parameters = torch.tensor(J_array, device=device, requires_grad=requires_grad)
+            self.P_parameters = torch.tensor(P_array, device=device, requires_grad=requires_grad)
+            self.w_parameters = torch.tensor(w_array, device=device, requires_grad=requires_grad)
 
         # Sigmoid values for parameters
         self.J_steep = 1/10
@@ -300,7 +305,7 @@ class NetworkExecuter(Rodents):
     def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=1, w_ff=15, sig_ext=5, device="cpu"):
         super().__init__(neuron_num, ratio, device, feed_forward_num)
 
-        self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]  # 12
+        self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]  # 12  # NOTE: we can reduce this for experimental runs, we can change this as we move closer to the optimal during optimisation
         self.contrasts = [0, 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]  # 8
 
         self.weights = None
@@ -314,7 +319,7 @@ class NetworkExecuter(Rodents):
         self.sig_ext = torch.tensor(sig_ext, device=device)
         
         # Time constants for the ricciardi
-        T_alpha = 0.5
+        T_alpha = 0.5  # NOTE: Change this to change convergence (reduce this could make faster convergence)
         T_E = 0.01
         T_I = 0.01 * T_alpha
         self.T = torch.cat([T_E * torch.ones(self.neuron_num_e, device=device, requires_grad=False), T_I * torch.ones(self.neuron_num_i, device=device, requires_grad=False)])
