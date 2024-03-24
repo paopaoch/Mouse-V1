@@ -8,14 +8,15 @@ def forward_diff(func, parameters: list, hyperparameters=None, device="cpu"):
     Func: Must be a function that takes in list of tensor parameters and a hyperparameters.
 
     these parameters and hyperparameters should be extracted within the function to be differentiated"""
-    tangent = torch.tensor(1., device=device)
     gradients = []
     func_output = torch.tensor([0.], device=device)
     for i, parameter in tqdm(enumerate(parameters)):
+        tangent = torch.tensor(1., device=device)
         with fwAD.dual_level():
             dual_input = fwAD.make_dual(parameter, tangent)
             parameters_with_dual = parameters.copy()
             parameters_with_dual[i] =  dual_input
+            print(parameters_with_dual)
             
             dual_output = func(parameters_with_dual, hyperparameters, device=device)
             dual_tensor = fwAD.unpack_dual(dual_output)
@@ -27,7 +28,7 @@ def forward_diff(func, parameters: list, hyperparameters=None, device="cpu"):
 
 
 if __name__ == "__main__":
-    def fn(var, hyperparams):
+    def fn(var, hyperparams, device="cpu"):
         x, y = var
         a, b = hyperparams
         p = (a * x ** 2 + b * y ** 2 + x * y) / 100

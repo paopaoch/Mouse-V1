@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from scipy.special import i0
 
-torch.set_default_dtype(torch.float32)
+# torch.set_default_dtype(torch.float32)
 
 def get_data(device="cpu"):
     df = pd.read_csv("./data/K-Data.csv")

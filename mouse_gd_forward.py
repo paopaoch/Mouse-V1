@@ -32,8 +32,8 @@ def mouse_func(params: list, hyperparams: list, device="cpu"):
 
     J_array, P_array, w_array = extract_params(params)
     y_E, y_I = hyperparams
-    weights_generator = WeightsGenerator(J_array, P_array, w_array, 1000, forward_mode=True, device=device)
-    network_executer = NetworkExecuterParallel(1000, device=device)
+    weights_generator = WeightsGenerator(J_array, P_array, w_array, 10000, forward_mode=True, device=device)
+    network_executer = NetworkExecuterParallel(10000, device=device)
     loss_function = MouseLossFunction(device=device)
 
     trial_loss, _ = mouse_get_loss(weights_generator, network_executer, loss_function, y_E, y_I)
@@ -70,7 +70,8 @@ if __name__ == __name__:
     for i in range(100):
         grad, loss = forward_diff(mouse_func, params, data, device=device)
         print(loss)
+        print(grad)
         for j in range(len(params)):
-            params[i] = params[i] - lr * grad[i]
+            params[j] = params[j] - lr * grad[j]
         print(params)
         print("---------")
