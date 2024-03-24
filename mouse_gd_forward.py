@@ -28,7 +28,7 @@ def extract_params(params):
     return J_array, P_array, w_array
 
 
-def mouse_func(params: list[torch.Tensor], hyperparams: list, device="cpu"):
+def mouse_func(params: list, hyperparams: list, device="cpu"):
 
     J_array, P_array, w_array = extract_params(params)
     y_E, y_I = hyperparams
