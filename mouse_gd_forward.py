@@ -90,7 +90,7 @@ if __name__ == __name__:
         f.write("----------------------------\n")
         f.flush()
 
-        for i in range(100):
+        for i in range(100):  # need to implement a stopping criterion
             grad, loss = forward_diff(mouse_func, params, data, device=device)
             print(loss)
             for j in range(len(params)):
