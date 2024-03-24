@@ -63,7 +63,7 @@ if __name__ == __name__:
                 torch.tensor(-138.44395575681614, device=device),
                 torch.tensor(-138.44395575681614, device=device)]
 
-    data = get_data()
+    data = get_data(device=device)
 
     
     lr = 1000  # Vary this learning rate according to each dimension
