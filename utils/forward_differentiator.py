@@ -16,7 +16,6 @@ def forward_diff(func, parameters: list, hyperparameters=None, device="cpu"):
             dual_input = fwAD.make_dual(parameter, tangent)
             parameters_with_dual = parameters.copy()
             parameters_with_dual[i] =  dual_input
-            print(parameters_with_dual)
             
             dual_output = func(parameters_with_dual, hyperparameters, device=device)
             dual_tensor = fwAD.unpack_dual(dual_output)
