@@ -46,6 +46,8 @@ for i in range(100):
     w_array = (w_array - 100000 * wg.w_parameters.grad).clone().detach().requires_grad_(True)
 
     print(J_array)
+    print(P_array)
+    print(w_array)
 
 
     
