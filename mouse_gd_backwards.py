@@ -56,10 +56,11 @@ for i in range(200):
     print(P_array)
     print(w_array)
 
-    print("\n\n")
 
     loss_diffs.append(prev_loss - trial_loss.clone().detach())
     print(torch.tensor(loss_diffs[-10:], device=device).mean())
+    print("\n\n")
+    
     if i > 30 and torch.tensor(loss_diffs[-10:], device=device).mean() < 1e-5: # This is the same stopping criterion as xNES which could be appropriate but the learning rate is different.
         print("Early stopping")
         if stopping_criterion_count > 2:
