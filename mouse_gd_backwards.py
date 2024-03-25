@@ -58,7 +58,7 @@ for i in range(200):
     print("\n\n")
 
     loss_diffs.append(trial_loss.clone().detach() - prev_loss)
-    if i > 20 and torch.tensor(loss_diffs[-10:], device=device).mean() < 1e-6: # This is the same stopping criterion as xNES which could be appropriate but the learning rate is different.
+    if i > 30 and torch.tensor(loss_diffs[-10:], device=device).mean() < 1e-7: # This is the same stopping criterion as xNES which could be appropriate but the learning rate is different.
         print("Early stopping")
         break
     prev_loss = trial_loss.clone().detach()
