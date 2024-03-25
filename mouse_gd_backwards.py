@@ -22,7 +22,7 @@ with open("./data/data_1000_neuron3/responses.pkl", 'rb') as f:
 J_array = [-22.907410969337693, -32.550488507104102, -17.85627263740382, -30.060150147989074]
 P_array = [-3.2163953243244932, 10.833316937499324, -4.2163953243244932, 10.833316937499324]
 w_array = [-135.44395575681614, -132.44395575681614, -131.44395575681614, -132.44395575681614]
-    
+
 J_array = torch.tensor(J_array, device= device, requires_grad=True)
 P_array = torch.tensor(P_array, device= device, requires_grad=True)
 w_array = torch.tensor(w_array, device= device, requires_grad=True)
@@ -45,9 +45,9 @@ for i in range(100):
     trial_loss.backward()
 
     # GD
-    J_array = (J_array - 100 * wg.J_parameters.grad).clone().detach().requires_grad_(True)
-    P_array = (P_array - 10 * wg.P_parameters.grad).clone().detach().requires_grad_(True)
-    w_array = (w_array - 10000 * wg.w_parameters.grad).clone().detach().requires_grad_(True)
+    J_array = (J_array - 50 * wg.J_parameters.grad).clone().detach().requires_grad_(True)
+    P_array = (P_array - 5 * wg.P_parameters.grad).clone().detach().requires_grad_(True)
+    w_array = (w_array - 5000 * wg.w_parameters.grad).clone().detach().requires_grad_(True)
 
     print(J_array)
     print(P_array)
@@ -56,7 +56,7 @@ for i in range(100):
     print("\n\n")
 
     losses.append(trial_loss.clone().detach())
-    if i > 20 and torch.tensor(losses[-10:], device=device) < 1e-5: # This is the same stopping criterion as xNES which could be appropriate but the learning rate is different.
+    if i > 20 and torch.tensor(losses[-10:], device=device).mean() < 1e-5: # This is the same stopping criterion as xNES which could be appropriate but the learning rate is different.
         print("Early stopping")
         break
 
