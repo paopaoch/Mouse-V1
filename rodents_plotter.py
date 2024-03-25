@@ -241,7 +241,7 @@ def print_normalise_orientation_curve_multi_neuron(tuning_curves, contrast_index
         plt.close()
 
 
-def print_contrast_curve(tuning_curves: list[np.ndarray], title=""):
+def print_contrast_curve(tuning_curves: list, title=""):
     for tuning_curve in tuning_curves:
         tuning_curve.transpose(1, 0)
         plt.plot(tuning_curve.transpose(1, 0)[6])
