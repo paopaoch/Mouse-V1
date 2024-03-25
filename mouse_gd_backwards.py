@@ -35,10 +35,9 @@ for i in range(100):
 
     trial_loss, trial_mmd_loss = loss_function.calculate_loss(x_E, y_E, x_I, y_I, avg_step)
 
-    print(trial_loss)
+    print("loss:", trial_loss)
 
     trial_loss.backward()
-    print(J_array.grad)
 
     # GD
     J_array = (J_array - 1000 * wg.J_parameters.grad).clone().detach().requires_grad_(True)
