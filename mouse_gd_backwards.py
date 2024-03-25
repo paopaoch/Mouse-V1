@@ -31,7 +31,7 @@ loss_function = MouseLossFunctionOptimised(device=device)
 
 
 losses = []
-for i in range(100):
+for i in range(200):
     wg = WeightsGenerator(J_array, P_array, w_array, 1000, device=device, forward_mode=True)
 
     W = wg.generate_weight_matrix()
@@ -56,9 +56,10 @@ for i in range(100):
     print("\n\n")
 
     losses.append(trial_loss.clone().detach())
-    if i > 20 and torch.tensor(losses[-10:], device=device).mean() < 1e-5: # This is the same stopping criterion as xNES which could be appropriate but the learning rate is different.
+    if i > 20 and torch.tensor(losses[-10:], device=device).mean() < 1e-6: # This is the same stopping criterion as xNES which could be appropriate but the learning rate is different.
         print("Early stopping")
         break
 
 end = time()
 print(f"Time Taken: {end - start}")
+print(f"Average Time Taken: {(end - start) / (i + 1)}")
