@@ -1,16 +1,17 @@
 import torch
-from rat import MouseLossFunction, WeightsGenerator, NetworkExecuterParallel, get_data
+from rat import MouseLossFunctionOptimised, WeightsGenerator, NetworkExecuterParallel, get_data
 from utils.forward_differentiator import forward_diff
 
 import time
 from datetime import datetime
 import sys
 import socket
+import pickle
 
 
 def mouse_get_loss(weights_generator: WeightsGenerator, 
                 network_executer: NetworkExecuterParallel, 
-                loss_function: MouseLossFunction,
+                loss_function: MouseLossFunctionOptimised,
                 y_E, y_I, feed_forward=False):
     """This function run the network and get the MMD loss"""
     if feed_forward:
@@ -37,9 +38,9 @@ def mouse_func(params: list, hyperparams: list, device="cpu"):
 
     J_array, P_array, w_array = extract_params(params)
     y_E, y_I = hyperparams
-    weights_generator = WeightsGenerator(J_array, P_array, w_array, 10000, forward_mode=True, device=device)
-    network_executer = NetworkExecuterParallel(10000, device=device)
-    loss_function = MouseLossFunction(device=device)
+    weights_generator = WeightsGenerator(J_array, P_array, w_array, 1000, forward_mode=True, device=device)
+    network_executer = NetworkExecuterParallel(1000, device=device)
+    loss_function = MouseLossFunctionOptimised(device=device)
 
     trial_loss, _ = mouse_get_loss(weights_generator, network_executer, loss_function, y_E, y_I)
 
@@ -47,6 +48,8 @@ def mouse_func(params: list, hyperparams: list, device="cpu"):
 
 
 if __name__ == __name__:
+
+    start = time.time()
 
     if torch.cuda.is_available():
         device = "cuda:1"
@@ -68,12 +71,22 @@ if __name__ == __name__:
               torch.tensor(-138.44395575681614, device=device),
               torch.tensor(-138.44395575681614, device=device)]
 
-    data = get_data(device=device)
+    # data = get_data(device=device)
+
+    with open("./data/data_1000_neuron3/responses.pkl", 'rb') as f:
+        responses: torch.Tensor = pickle.load(f)
+        responses = responses.to(device)
+        data = (responses[:800], responses[800:])
+        responses = 0
     
     # lr = 1000  # Vary this learning rate according to each dimension
-    lr = [10000, 10000, 10000, 10000,
-          1000, 1000, 1000, 1000,
-          1000000, 1000000, 1000000, 1000000,]
+    # lr = [10000, 10000, 10000, 10000,
+    #       1000, 1000, 1000, 1000,
+    #       1000000, 1000000, 1000000, 1000000,]  # Seems to work well will actual data
+        
+    lr = [50, 50, 50, 50,
+          5, 5, 5, 5,
+          5000, 5000, 5000, 5000,]  # Seems to work well with simulated data
     
     file_name = f"log_forward_diff_{time.time()}.log"
 
@@ -90,7 +103,11 @@ if __name__ == __name__:
         f.write("----------------------------\n")
         f.flush()
 
-        for i in range(100):  # need to implement a stopping criterion
+        loss_diffs = []
+        prev_loss = torch.tensor(10000, device=device)
+        stopping_criterion_count = 0
+
+        for i in range(200):  # need to implement a stopping criterion
             grad, loss = forward_diff(mouse_func, params, data, device=device)
             print(loss)
             for j in range(len(params)):
@@ -99,3 +116,17 @@ if __name__ == __name__:
             f.write(f"params: {params}\n")
             f.write("----------------------------\n\n\n")
             f.flush()
+            if i > 30 and torch.tensor(loss_diffs[-10:], device=device).mean() < 1e-5: # This is the same stopping criterion as xNES which could be appropriate but the learning rate is different.
+                if stopping_criterion_count >= 2:
+                    f.write("Early stopping\n")
+                    break
+                stopping_criterion_count += 1
+            else:
+                stopping_criterion_count = 0
+            prev_loss = loss.clone().detach()
+
+
+        end = time.time()
+        f.write(f"time taken: {end - start}\n")
+        f.write(f"number of iterations: {i + 1}\n")
+        f.write(f"average time per iter: {(end - start) / (i + 1)}\n")

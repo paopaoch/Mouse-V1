@@ -278,7 +278,7 @@ if __name__ == "__main__":
     if not_data:
         responses_path = input("Path to response file: ")
         if responses_path == "":
-            neuron_num = 10000
+            neuron_num = 1000
             ratio = 0.8
             E_index = int(ratio * neuron_num)
             feed_forward_num = 100
@@ -296,6 +296,10 @@ if __name__ == "__main__":
             J_array = [-5.753641449035618, -18.152899666382492, 1.6034265007517936, -15.163474893680885]
             P_array = [-2.5418935811616112, 6.591673732008657, -2.5418935811616112, 6.591673732008657] 
             w_array = [-138.44395575681614, -138.44395575681614, -138.44395575681614, -138.44395575681614]
+
+            J_array = [-19.4891, -34.1345, -12.949700000000002, -32.0517]
+            P_array = [-2.3571, 10.819799999999994, -2.8461, 10.815700000000005]
+            w_array = [-132.2937, -133.93860000000004, -126.91470000000002, -134.3643]
 
 
             generator = WeightsGeneratorExact(J_array, P_array, w_array, neuron_num, feed_forward_num)
