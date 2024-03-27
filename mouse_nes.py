@@ -401,4 +401,4 @@ if __name__ == "__main__":
         y_E, y_I = responses[:800], responses[800:]
         responses = 0
 
-    print(nes_multigaussian_optim(mean, cov, 200, 24, y_E, y_I, device=device, neuron_num=1000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.000001, adaptive_lr=False))
+    print(nes_multigaussian_optim(mean, cov, 200, 24, y_E, y_I, device=device, neuron_num=1000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.0000001, adaptive_lr=False))
