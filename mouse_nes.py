@@ -93,7 +93,8 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                             device="cpu", avg_step_weighting=0.002, desc="", alpha=0.6, trials=1, weights_valid_weighting=1e5,
                             min_iter=20, stopping_criterion_step=1e-5, stopping_criterion_tolerance=2, file_name=None, 
                             beta=0.2, adaptive_lr=False):
-    
+    start = time.time()
+
     # local variable setup
     alpha = torch.tensor(alpha, device=device)
     beta = torch.tensor(beta, device=device)
@@ -345,6 +346,8 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         weights_generator.set_parameters(J, P, w)
         mean_loss, mean_MMD_loss = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I, feed_forward=feed_forward)
 
+        end = time.time()
+
         f.write(f"---------------------------------------------------\n\n\n")
         f.write("Final loss and MMD loss:\n")
         f.write(str(mean_loss))
@@ -357,6 +360,9 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         f.write("Final covariance matrix:\n")
         f.write(str(cov_optimised))
         f.write("\n\n")
+        f.write(f"time taken: {end - start}\n")
+        f.write(f"number of iterations: {i + 1}\n")
+        f.write(f"average time per iter: {(end - start) / (i + 1)}\n")
         f.flush()
 
     return mean, cov_optimised, i
@@ -372,8 +378,10 @@ if __name__ == "__main__":
         device = "cpu"
         print("GPU not available. Model will be created on CPU.")
 
-    mean_list = [-5.753641449035618, -18.152899666382492, 1.6034265007517936, -15.163474893680885, -2.5418935811616112, 6.591673732008657, -2.5418935811616112, 6.591673732008657, -138.44395575681614, -138.44395575681614, -138.44395575681614, -138.44395575681614]  # Config 13
-     
+    # mean_list = [-5.753641449035618, -18.152899666382492, 1.6034265007517936, -15.163474893680885, -2.5418935811616112, 6.591673732008657, -2.5418935811616112, 6.591673732008657, -138.44395575681614, -138.44395575681614, -138.44395575681614, -138.44395575681614]  # Config 13
+
+    mean_list = [-22.907410969337693, -32.550488507104102, -17.85627263740382, -30.060150147989074, -3.2163953243244932, 10.833316937499324, -4.2163953243244932, 10.833316937499324, -135.44395575681614, -132.44395575681614, -131.44395575681614, -132.44395575681614]
+
     # var_list = [5, 5, 5, 5, 
     #             1, 1, 1, 1, 
     #             250, 250, 250, 250]  # This is from the experiment with 1000 neurons and with simulated data
@@ -386,4 +394,4 @@ if __name__ == "__main__":
 
     y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.000001, adaptive_lr=True))
+    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=1000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.000001, adaptive_lr=False))
