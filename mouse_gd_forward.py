@@ -52,7 +52,7 @@ if __name__ == __name__:
     start = time.time()
 
     if torch.cuda.is_available():
-        device = "cuda:1"
+        device = "cuda:0"
         print("Model will be created on GPU")
     else:
         device = "cpu"
