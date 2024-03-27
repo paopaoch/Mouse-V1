@@ -125,14 +125,17 @@ if __name__ == __name__:
             print(loss)
             for j in range(len(params)):
                 params[j] = params[j] - lr[j] * grad[j]
-            f.write(f"{i}")
+            f.write(f"{i}\n")
             f.write(f"loss: {float(loss)}\n")
             f.write(f"params: {params}\n")
             f.write("----------------------------\n\n\n")
             f.flush()
+
+            loss_diffs.append(prev_loss - loss.clone().detach())
+            print(torch.tensor(loss_diffs[-10:], device=device).mean())
             if i > 30 and torch.tensor(loss_diffs[-10:], device=device).mean() < 1e-5: # This is the same stopping criterion as xNES which could be appropriate but the learning rate is different.
+                f.write("Early stopping\n")
                 if stopping_criterion_count >= 2:
-                    f.write("Early stopping\n")
                     break
                 stopping_criterion_count += 1
             else:
@@ -144,3 +147,4 @@ if __name__ == __name__:
         f.write(f"time taken: {end - start}\n")
         f.write(f"number of iterations: {i + 1}\n")
         f.write(f"average time per iter: {(end - start) / (i + 1)}\n")
+        f.flush()
