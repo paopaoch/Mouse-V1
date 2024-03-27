@@ -58,18 +58,31 @@ if __name__ == __name__:
         device = "cpu"
         print("GPU not available. Model will be created on CPU.")
 
-    params = [torch.tensor(-5.753641449035618, device=device),
-              torch.tensor(-18.152899666382492, device=device),
-              torch.tensor(1.6034265007517936, device=device),
-              torch.tensor(-15.163474893680885, device=device),
-              torch.tensor(-2.5418935811616112, device=device),
-              torch.tensor(6.591673732008657, device=device),
-              torch.tensor(-2.5418935811616112, device=device),
-              torch.tensor(6.591673732008657, device=device),
-              torch.tensor(-138.44395575681614, device=device),
-              torch.tensor(-138.44395575681614, device=device),
-              torch.tensor(-138.44395575681614, device=device),
-              torch.tensor(-138.44395575681614, device=device)]
+    # params = [torch.tensor(-5.753641449035618, device=device),
+    #           torch.tensor(-18.152899666382492, device=device),
+    #           torch.tensor(1.6034265007517936, device=device),
+    #           torch.tensor(-15.163474893680885, device=device),
+    #           torch.tensor(-2.5418935811616112, device=device),
+    #           torch.tensor(6.591673732008657, device=device),
+    #           torch.tensor(-2.5418935811616112, device=device),
+    #           torch.tensor(6.591673732008657, device=device),
+    #           torch.tensor(-138.44395575681614, device=device),
+    #           torch.tensor(-138.44395575681614, device=device),
+    #           torch.tensor(-138.44395575681614, device=device),
+    #           torch.tensor(-138.44395575681614, device=device)]
+        
+    params = [torch.tensor(-22.907410969337693, device=device),
+               torch.tensor(-32.550488507104102, device=device),
+               torch.tensor(-17.85627263740382, device=device),
+               torch.tensor(-30.060150147989074, device=device),
+               torch.tensor(-3.2163953243244932, device=device),
+               torch.tensor(10.833316937499324, device=device),
+               torch.tensor(-4.2163953243244932, device=device),
+               torch.tensor(10.833316937499324, device=device),
+               torch.tensor(-135.44395575681614, device=device),
+               torch.tensor(-132.44395575681614, device=device),
+               torch.tensor(-131.44395575681614, device=device),
+               torch.tensor(-132.44395575681614, device=device)]
 
     # data = get_data(device=device)
 
