@@ -125,6 +125,7 @@ if __name__ == __name__:
             print(loss)
             for j in range(len(params)):
                 params[j] = params[j] - lr[j] * grad[j]
+            f.write(f"{i}")
             f.write(f"loss: {float(loss)}\n")
             f.write(f"params: {params}\n")
             f.write("----------------------------\n\n\n")
