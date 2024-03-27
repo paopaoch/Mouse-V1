@@ -3,8 +3,9 @@ import time
 from datetime import datetime
 import sys
 from tqdm import tqdm
-from rat import MouseLossFunction, WeightsGeneratorExact, NetworkExecuterParallel, get_data
+from rat import MouseLossFunctionOptimised, WeightsGeneratorExact, NetworkExecuterParallel, get_data
 import socket
+import pickle
 
 
 class MouseDataPoint:
@@ -68,7 +69,7 @@ def sort_two_arrays(losses: list, samples: list, device="cpu"):  # sort accordin
 def calc_loss(trials,
              weights_generator: WeightsGeneratorExact, 
              network_executer: NetworkExecuterParallel, 
-             loss_function: MouseLossFunction,
+             loss_function: MouseLossFunctionOptimised,
              y_E, y_I, feed_forward=False):
     loss_sum = 0
     mmd_sum = 0
@@ -105,7 +106,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         feed_forward = False
     
     # Init model and loss function
-    loss_function = MouseLossFunction(device=device, avg_step_weighting=avg_step_weighting)
+    loss_function = MouseLossFunctionOptimised(device=device, avg_step_weighting=avg_step_weighting)
     network_executer = NetworkExecuterParallel(neuron_num, device=device, feed_forward_num=feed_forward_num)
     weights_generator = WeightsGeneratorExact(J, P, w, neuron_num, feed_forward_num=feed_forward_num, device=device)
     weights_valid = weights_generator.validate_weight_matrix()
@@ -392,6 +393,12 @@ if __name__ == "__main__":
     
     mean, cov = make_torch_params(mean_list, var_list, device=device)
 
-    y_E, y_I = get_data(device=device)
+    # y_E, y_I = get_data(device=device)
 
-    print(nes_multigaussian_optim(mean, cov, 200, 12, y_E, y_I, device=device, neuron_num=1000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.000001, adaptive_lr=False))
+    with open("./data/data_1000_neuron3/responses.pkl", 'rb') as f:
+        responses: torch.Tensor = pickle.load(f)
+        responses = responses.to(device)
+        y_E, y_I = responses[:800], responses[800:]
+        responses = 0
+
+    print(nes_multigaussian_optim(mean, cov, 200, 24, y_E, y_I, device=device, neuron_num=1000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.000001, adaptive_lr=False))
