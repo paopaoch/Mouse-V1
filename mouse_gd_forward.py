@@ -38,8 +38,8 @@ def mouse_func(params: list, hyperparams: list, device="cpu"):
 
     J_array, P_array, w_array = extract_params(params)
     y_E, y_I = hyperparams
-    weights_generator = WeightsGenerator(J_array, P_array, w_array, 1000, forward_mode=True, device=device)
-    network_executer = NetworkExecuterParallel(1000, device=device)
+    weights_generator = WeightsGenerator(J_array, P_array, w_array, 10000, forward_mode=True, device=device)
+    network_executer = NetworkExecuterParallel(10000, device=device)
     loss_function = MouseLossFunctionOptimised(device=device)
 
     trial_loss, _ = mouse_get_loss(weights_generator, network_executer, loss_function, y_E, y_I)
@@ -86,10 +86,16 @@ if __name__ == __name__:
 
     # data = get_data(device=device)
 
-    with open("./data/data_1000_neuron3/responses.pkl", 'rb') as f:
+    # with open("./data/data_1000_neuron3/responses.pkl", 'rb') as f:
+    #     responses: torch.Tensor = pickle.load(f)
+    #     responses = responses.to(device)
+    #     data = (responses[:800], responses[800:])
+    #     responses = 0
+
+    with open("./plots/ignore_plots_config13/responses.pkl", 'rb') as f:
         responses: torch.Tensor = pickle.load(f)
         responses = responses.to(device)
-        data = (responses[:800], responses[800:])
+        data = responses[:8000], responses[8000:]
         responses = 0
     
     # lr = 1000  # Vary this learning rate according to each dimension

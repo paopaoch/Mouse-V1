@@ -370,7 +370,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
 
 
 if __name__ == "__main__":
-    desc = "Test new adaptive learning"
+    desc = ""
 
     if torch.cuda.is_available():
         device = "cuda:1"
@@ -379,26 +379,35 @@ if __name__ == "__main__":
         device = "cpu"
         print("GPU not available. Model will be created on CPU.")
 
-    # mean_list = [-5.753641449035618, -18.152899666382492, 1.6034265007517936, -15.163474893680885, -2.5418935811616112, 6.591673732008657, -2.5418935811616112, 6.591673732008657, -138.44395575681614, -138.44395575681614, -138.44395575681614, -138.44395575681614]  # Config 13
+    # mean_list = [-5.753641449035618, -18.152899666382492, 1.6034265007517936, -15.163474893680885, 
+    #              -2.5418935811616112, 6.591673732008657, -2.5418935811616112, 6.591673732008657, 
+    #              -138.44395575681614, -138.44395575681614, -138.44395575681614, -138.44395575681614]  # Config 13 10000
+        
+    mean_list = [-5, -18, 2, -15, 
+                 -2, 6, -2, 6, 
+                 -135, -132, -131, -132]  # deviation from Config 13 10000
 
-    mean_list = [-22.907410969337693, -32.550488507104102, -17.85627263740382, -30.060150147989074, -3.2163953243244932, 10.833316937499324, -4.2163953243244932, 10.833316937499324, -135.44395575681614, -132.44395575681614, -131.44395575681614, -132.44395575681614]
+    # mean_list = [-22.907410969337693, -32.550488507104102, -17.85627263740382, -30.060150147989074, 
+    #              -3.2163953243244932, 10.833316937499324, -4.2163953243244932, 10.833316937499324,
+    #             -135.44395575681614, -132.44395575681614, -131.44395575681614, -132.44395575681614]
 
     # var_list = [5, 5, 5, 5, 
     #             1, 1, 1, 1, 
     #             250, 250, 250, 250]  # This is from the experiment with 1000 neurons and with simulated data
 
     var_list = [2.5, 2.5, 2.5, 2.5, 
-            0.5, 0.5, 0.5, 0.5, 
-            125, 125, 125, 125]  # This is from the experiment with 1000 neurons and with simulated data
+                0.5, 0.5, 0.5, 0.5, 
+                125, 125, 125, 125]  # This is from the experiment with 1000 neurons and with simulated data
     
     mean, cov = make_torch_params(mean_list, var_list, device=device)
 
     # y_E, y_I = get_data(device=device)
 
-    with open("./data/data_1000_neuron3/responses.pkl", 'rb') as f:
+    # with open("./data/data_1000_neuron3/responses.pkl", 'rb') as f:
+    with open("./plots/ignore_plots_config13/responses.pkl", 'rb') as f:
         responses: torch.Tensor = pickle.load(f)
         responses = responses.to(device)
-        y_E, y_I = responses[:800], responses[800:]
+        y_E, y_I = responses[:8000], responses[8000:]
         responses = 0
 
-    print(nes_multigaussian_optim(mean, cov, 200, 24, y_E, y_I, device=device, neuron_num=1000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.0000001, adaptive_lr=False))
+    print(nes_multigaussian_optim(mean, cov, 200, 24, y_E, y_I, device=device, neuron_num=10000, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.0000001, adaptive_lr=False))
