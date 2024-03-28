@@ -84,18 +84,18 @@ if __name__ == __name__:
     #            torch.tensor(-131.44395575681614, device=device),
     #            torch.tensor(-132.44395575681614, device=device)]
         
-    params = [torch.tensor(-5, device=device),
-              torch.tensor(-18, device=device),
-              torch.tensor(2, device=device),
-              torch.tensor(-15, device=device),
-              torch.tensor(-2, device=device),
-              torch.tensor(6, device=device),
-              torch.tensor(-2, device=device),
-              torch.tensor(6, device=device),
-              torch.tensor(-135, device=device),
-              torch.tensor(-132, device=device),
-              torch.tensor(-131, device=device),
-              torch.tensor(-132, device=device)]
+    params = [torch.tensor(-5., device=device),
+              torch.tensor(-18., device=device),
+              torch.tensor(2., device=device),
+              torch.tensor(-15., device=device),
+              torch.tensor(-2., device=device),
+              torch.tensor(6., device=device),
+              torch.tensor(-2., device=device),
+              torch.tensor(6., device=device),
+              torch.tensor(-135., device=device),
+              torch.tensor(-132., device=device),
+              torch.tensor(-131., device=device),
+              torch.tensor(-132., device=device)]
 
 
     # data = get_data(device=device)
