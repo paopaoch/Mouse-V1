@@ -52,7 +52,7 @@ if __name__ == __name__:
     start = time.time()
 
     if torch.cuda.is_available():
-        device = "cuda:0"
+        device = "cuda:1"
         print("Model will be created on GPU")
     else:
         device = "cpu"
@@ -84,31 +84,31 @@ if __name__ == __name__:
     #            torch.tensor(-131.44395575681614, device=device),
     #            torch.tensor(-132.44395575681614, device=device)]
         
-    # params = [torch.tensor(-5., device=device),
-    #           torch.tensor(-18., device=device),
-    #           torch.tensor(2., device=device),
-    #           torch.tensor(-15., device=device),
-    #           torch.tensor(-2., device=device),
-    #           torch.tensor(6., device=device),
-    #           torch.tensor(-2., device=device),
-    #           torch.tensor(6., device=device),
-    #           torch.tensor(-135., device=device),
-    #           torch.tensor(-132., device=device),
-    #           torch.tensor(-131., device=device),
-    #           torch.tensor(-132., device=device)]
+    params = [torch.tensor(-5., device=device),
+              torch.tensor(-18., device=device),
+              torch.tensor(2., device=device),
+              torch.tensor(-15., device=device),
+              torch.tensor(-2., device=device),
+              torch.tensor(6., device=device),
+              torch.tensor(-2., device=device),
+              torch.tensor(6., device=device),
+              torch.tensor(-135., device=device),
+              torch.tensor(-132., device=device),
+              torch.tensor(-131., device=device),
+              torch.tensor(-132., device=device)]
         
-    params = [torch.tensor(-6.5124, device=device),
-              torch.tensor(-18.3093, device=device),
-              torch.tensor(1.9300, device=device),
-              torch.tensor(-15.0095, device=device),
-              torch.tensor(-2.5466, device=device),
-              torch.tensor(5.1354, device=device),
-              torch.tensor(-2.6696, device=device),
-              torch.tensor(4.7931, device=device),
-              torch.tensor(-146.3552, device=device),
-              torch.tensor(-141.0944, device=device),
-              torch.tensor(-150.1857, device=device),
-              torch.tensor(-124.6875, device=device)]
+    # params = [torch.tensor(-6.5124, device=device),
+    #           torch.tensor(-18.3093, device=device),
+    #           torch.tensor(1.9300, device=device),
+    #           torch.tensor(-15.0095, device=device),
+    #           torch.tensor(-2.5466, device=device),
+    #           torch.tensor(5.1354, device=device),
+    #           torch.tensor(-2.6696, device=device),
+    #           torch.tensor(4.7931, device=device),
+    #           torch.tensor(-146.3552, device=device),
+    #           torch.tensor(-141.0944, device=device),
+    #           torch.tensor(-150.1857, device=device),
+    #           torch.tensor(-124.6875, device=device)]
 
 
     # data = get_data(device=device)
@@ -130,9 +130,9 @@ if __name__ == __name__:
     #       1000, 1000, 1000, 1000,
     #       1000000, 1000000, 1000000, 1000000,]  # Seems to work well will actual data
         
-    lr = [50, 50, 50, 50,
-          5, 5, 5, 5,
-          5000, 5000, 5000, 5000,]  # Seems to work well with simulated data
+    # lr = [50, 50, 50, 50,
+    #       5, 5, 5, 5,
+    #       5000, 5000, 5000, 5000,]  # Seems to work well with simulated data
     
     lr = [5, 5, 5, 5,
           .5, .5, .5, .5,
