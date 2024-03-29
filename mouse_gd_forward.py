@@ -84,18 +84,31 @@ if __name__ == __name__:
     #            torch.tensor(-131.44395575681614, device=device),
     #            torch.tensor(-132.44395575681614, device=device)]
         
-    params = [torch.tensor(-5., device=device),
-              torch.tensor(-18., device=device),
-              torch.tensor(2., device=device),
-              torch.tensor(-15., device=device),
-              torch.tensor(-2., device=device),
-              torch.tensor(6., device=device),
-              torch.tensor(-2., device=device),
-              torch.tensor(6., device=device),
-              torch.tensor(-135., device=device),
-              torch.tensor(-132., device=device),
-              torch.tensor(-131., device=device),
-              torch.tensor(-132., device=device)]
+    # params = [torch.tensor(-5., device=device),
+    #           torch.tensor(-18., device=device),
+    #           torch.tensor(2., device=device),
+    #           torch.tensor(-15., device=device),
+    #           torch.tensor(-2., device=device),
+    #           torch.tensor(6., device=device),
+    #           torch.tensor(-2., device=device),
+    #           torch.tensor(6., device=device),
+    #           torch.tensor(-135., device=device),
+    #           torch.tensor(-132., device=device),
+    #           torch.tensor(-131., device=device),
+    #           torch.tensor(-132., device=device)]
+        
+    params = [torch.tensor(-6.5124, device=device),
+              torch.tensor(-18.3093, device=device),
+              torch.tensor(1.9300, device=device),
+              torch.tensor(-15.0095, device=device),
+              torch.tensor(-2.5466, device=device),
+              torch.tensor(5.1354, device=device),
+              torch.tensor(-2.6696, device=device),
+              torch.tensor(4.7931, device=device),
+              torch.tensor(-146.3552, device=device),
+              torch.tensor(-141.0944, device=device),
+              torch.tensor(-150.1857, device=device),
+              torch.tensor(-124.6875, device=device)]
 
 
     # data = get_data(device=device)
@@ -121,11 +134,16 @@ if __name__ == __name__:
           5, 5, 5, 5,
           5000, 5000, 5000, 5000,]  # Seems to work well with simulated data
     
+    lr = [5, 5, 5, 5,
+          .5, .5, .5, .5,
+          500, 500, 500, 500,]  # ten times less to minimise from xNES minima
+    
     file_name = f"log_forward_diff_{time.time()}.log"
 
     with open(file_name, "w") as f:
         f.write("#####Forward mode mouse v1 log file#####\n\n\n")
         f.write(f"Code ran on the {datetime.now()}\n\n")
+        f.write(f"Run from xNES minima\n")
         f.write(f"Device: {device}\n")
         f.write(f"OS: {sys.platform}\n")
         f.write(f"Machine: {socket.gethostname()}\n")
@@ -153,7 +171,7 @@ if __name__ == __name__:
 
             loss_diffs.append(prev_loss - loss.clone().detach())
             print(torch.tensor(loss_diffs[-10:], device=device).mean())
-            if i > 30 and torch.tensor(loss_diffs[-10:], device=device).mean() < 1e-5: # This is the same stopping criterion as xNES which could be appropriate but the learning rate is different.
+            if i > 20 and torch.tensor(loss_diffs[-10:], device=device).mean() < 1e-5: # This is the same stopping criterion as xNES which could be appropriate but the learning rate is different.
                 f.write("Early stopping\n")
                 if stopping_criterion_count >= 2:
                     break
