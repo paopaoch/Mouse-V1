@@ -25,7 +25,6 @@ def forward_diff(func, parameters: list, hyperparameters=None, device="cpu"):
     return gradients,  func_output / len(parameters)
 
 
-
 if __name__ == "__main__":
     def fn(var, hyperparams, device="cpu"):
         x, y = var

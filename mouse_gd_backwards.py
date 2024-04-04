@@ -40,8 +40,9 @@ for i in range(200):
     W = wg.generate_weight_matrix()
     tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W)
     x_E, x_I = tuning_curves[:800], tuning_curves[800:]
+    bessel_val = wg.validate_weight_matrix()
 
-    trial_loss, trial_mmd_loss = loss_function.calculate_loss(x_E, y_E, x_I, y_I, avg_step)
+    trial_loss, trial_mmd_loss = loss_function.calculate_loss(x_E, y_E, x_I, y_I, avg_step, bessel_val=bessel_val)
 
     print("loss:", float(trial_loss))
 

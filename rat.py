@@ -71,6 +71,7 @@ def get_data(device="cpu"):
 
     return output
 
+
 class MouseLossFunction:
     def __init__(self, avg_step_weighting=0.002, high_contrast_index=7, device="cpu"):
         self.device = device
@@ -79,7 +80,7 @@ class MouseLossFunction:
         self.high_contrast_index = high_contrast_index
 
 
-    def calculate_loss(self, x_E: torch.Tensor, y_E: torch.Tensor, x_I: torch.Tensor, y_I: torch.Tensor, avg_step: torch.Tensor, x_centralised=False, y_centralised=False):
+    def calculate_loss(self, x_E: torch.Tensor, y_E: torch.Tensor, x_I: torch.Tensor, y_I: torch.Tensor, avg_step: torch.Tensor, bessel_val=torch.tensor(0), x_centralised=False, y_centralised=False):
         if not x_centralised:
             x_E = self.centralise_all_curves(x_E)
             x_I = self.centralise_all_curves(x_I)
@@ -91,7 +92,7 @@ class MouseLossFunction:
         E = self.MMD(x_E, y_E)
         I = self.MMD(x_I, y_I)
 
-        return E + I + (torch.maximum(self.one, avg_step) - 1) * self.avg_step_weighting, E + I
+        return E + I + (torch.maximum(self.one, avg_step) - 1) * self.avg_step_weighting, E + I + bessel_val
 
     
     def MMD(self, x: torch.Tensor, y: torch.Tensor):
@@ -242,14 +243,14 @@ class WeightsGenerator(Rodents):
 
 
     def validate_weight_matrix(self):
-        W_tot_EE = self.calc_theoretical_weights_tot(0, self.neuron_num_e)
-        W_tot_EI = self.calc_theoretical_weights_tot(1, self.neuron_num_i)
-        W_tot_IE = self.calc_theoretical_weights_tot(2, self.neuron_num_e)
-        W_tot_II = self.calc_theoretical_weights_tot(3, self.neuron_num_i)
+        W_tot_EE = self.calc_theoretical_weights_tot_torch(0, self.neuron_num_e)
+        W_tot_EI = self.calc_theoretical_weights_tot_torch(1, self.neuron_num_i)
+        W_tot_IE = self.calc_theoretical_weights_tot_torch(2, self.neuron_num_e)
+        W_tot_II = self.calc_theoretical_weights_tot_torch(3, self.neuron_num_i)
 
         if len(self.J_parameters) == 6:
-            W_tot_EF = self.calc_theoretical_weights_tot(4, self.feed_forward_num)
-            W_tot_IF = self.calc_theoretical_weights_tot(5, self.feed_forward_num)
+            W_tot_EF = self.calc_theoretical_weights_tot_torch(4, self.feed_forward_num)
+            W_tot_IF = self.calc_theoretical_weights_tot_torch(5, self.feed_forward_num)
         else:
             W_tot_EF = torch.tensor(1, device=self.device)
             W_tot_IF = torch.tensor(1, device=self.device)
@@ -269,6 +270,17 @@ class WeightsGenerator(Rodents):
             k = k.cpu()
             bessel: torch.Tensor = i0(k)
             bessel = bessel.to(device=self.device)
+
+        j = self._sigmoid(self.J_parameters[i], self.J_steep, self.J_scale)
+        p = self._sigmoid(self.P_parameters[i], self.P_steep, self.P_scale)
+        return j * torch.sqrt(torch.tensor(N_b, device=self.device)) * p * torch.exp(-k) * bessel
+    
+
+    def calc_theoretical_weights_tot_torch(self, i, N_b):
+        """Calculate weights tot for the contraints"""
+        k = 1 / (4 * (self._sigmoid(self.w_parameters[i], self.w_steep, self.w_scale) * torch.pi / 180) ** 2)
+        
+        bessel: torch.Tensor = torch.special.i0(k)
 
         j = self._sigmoid(self.J_parameters[i], self.J_steep, self.J_scale)
         p = self._sigmoid(self.P_parameters[i], self.P_steep, self.P_scale)
@@ -359,6 +371,7 @@ class NetworkExecuter(Rodents):
         # Add noise to fix point output
         self.N_trial = 50
         self.recorded_spike_T = 0.5
+        self.plot_overtime = True
         
 
     # -------------------------Public Methods--------------------
@@ -466,16 +479,23 @@ class NetworkExecuter(Rodents):
         avgStart = self.Nmax - self.Navg
         avg_sum = 0
 
+        recorded_xvec = []
+
         for _ in range(avgStart):  # Loop without taking average step size
             self._update_mu_sigma(xvec)
             dx = self.T_inv * (self._phi() - xvec) * self.dt
             xvec = xvec + dx
+            recorded_xvec.append(xvec)
 
         for _ in range(self.Navg):  # Loop whilst recording average step size
             self._update_mu_sigma(xvec)
             dx = self.T_inv * (self._phi() - xvec) * self.dt
             xvec = xvec + dx
             avg_sum = avg_sum + torch.abs(dx / torch.maximum(xmin, torch.abs(xvec)) ).max()
+            recorded_xvec.append(xvec)
+
+        if self.plot_overtime:
+            return recorded_xvec, 0
 
         return xvec, avg_sum / self.Navg
 
@@ -612,7 +632,7 @@ if __name__ == "__main__":
 
     n = 10000
 
-    keen = WeightsGenerator(J_array, P_array, w_array, n, 100, device="cpu")
+    keen = WeightsGeneratorExact(J_array, P_array, w_array, n, 100, device="cpu")
     W = keen.generate_weight_matrix()
     W_FF = keen.generate_feed_forward_weight_matrix()
 
@@ -635,8 +655,32 @@ if __name__ == "__main__":
     # print(sigma)
     start = time()
     executer = NetworkExecuterParallel(n, 100, device="cpu")
-    print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
-    print(time() - start)
+    executer.update_weight_matrix(W)
+    rates, avg_step = executer._get_steady_state_output()
+    values1 = []
+    values2 = []
+    values3 = []
+    values4 = []
+    values5 = []
+    for rate in rates:
+        values1.append(float(rate[1000][90]))
+        values2.append(float(rate[4000][90]))
+        values3.append(float(rate[6000][90]))
+        values4.append(float(rate[9000][90]))
+        values5.append(float(rate[9500][90]))
+    
+    plt.plot(values1, label="Neuron index 1000")
+    plt.plot(values2,  label="Neuron index 4000")
+    plt.plot(values3,  label="Neuron index 6000")
+    plt.plot(values4,  label="Neuron index 9000")
+    plt.plot(values5,  label="Neuron index 9500")
+    plt.legend()
+    plt.title("Neuron response over time config 13")
+    plt.xlabel("iteration")
+    plt.ylabel("rate / Hz")
+    plt.show()
+    # print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
+    # print(time() - start)
 
     # start = time()
     # executer = NetworkExecuter(n, 100, device="cpu")
