@@ -135,13 +135,13 @@ if __name__ == __name__:
     #       5, 5, 5, 5,
     #       5000, 5000, 5000, 5000,]  # Seems to work well with simulated data
     
-    # lr = [5, 5, 5, 5,
-    #       .5, .5, .5, .5,
-    #       500, 500, 500, 500,]  # ten times less to minimise from xNES minima
+    lr = [5, 5, 5, 5,
+          .5, .5, .5, .5,
+          500, 500, 500, 500,]  # ten times less to minimise from xNES minima
     
-    lr = [.5, .5, .5, .5,
-          .05, .05, .05, .05,
-          50, 50, 50, 50,]  # ten times less to minimise from xNES minima
+    # lr = [.5, .5, .5, .5,
+    #       .05, .05, .05, .05,
+    #       50, 50, 50, 50,]
     
     file_name = f"log_forward_diff_{time.time()}.log"
 
