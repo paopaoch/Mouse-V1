@@ -371,7 +371,7 @@ class NetworkExecuter(Rodents):
         # Add noise to fix point output
         self.N_trial = 50
         self.recorded_spike_T = 0.5
-        self.plot_overtime = True
+        self.plot_overtime = False
         
 
     # -------------------------Public Methods--------------------
@@ -595,7 +595,7 @@ class NetworkExecuterParallel(NetworkExecuter):
                 input_mean.append(contrast * self.scaling_g * self._cric_gauss(orientation - self.pref_F, self.w_ff))
         ff_output = torch.stack(input_mean).T
         self.input_mean = self.weights_FF @ ff_output
-        self.input_sd = self.weights_FF2 @ ff_output + torch.tensor(0.01, device=self.device)   # Adding a small DC offset here to prevent division by 0 error
+        self.input_sd = self.weights_FF2 @ ff_output + torch.tensor(0.01, device=self.device)  # Adding a small DC offset here to prevent division by 0 error
 
         return self.input_mean, self.input_sd
     
