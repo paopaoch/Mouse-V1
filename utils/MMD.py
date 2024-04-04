@@ -125,6 +125,7 @@ if __name__ == "__main__":
     time_it(MMD2, "MMD of actual V1 project shape: ", tensor3, tensor4)
     time_it(MMD2, "MMD of actual V1 project shape swaped: ", tensor4, tensor3)
 
+    time_it(optimised_MMD2, "MMD using the optimised method project shape: ", reshape_for_optimised(tensor3), reshape_for_optimised(tensor4))
 
     time_it(optimised_MMD2, "MMD using the optimised method: ", reshape_for_optimised(tensor4), reshape_for_optimised(tensor5))
     time_it(optimised_MMD2, "MMD using the optimised method: ", reshape_for_optimised(tensor1), reshape_for_optimised(tensor2))
