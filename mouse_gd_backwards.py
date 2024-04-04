@@ -58,7 +58,7 @@ for i in range(200):
     print(w_array)
 
 
-    loss_diffs.append(prev_loss - trial_loss.clone().detach())
+    loss_diffs.append(prev_loss - trial_mmd_loss.clone().detach())
     print("loss_diff", torch.tensor(loss_diffs[-10:], device=device).mean())
     print("\n\n")
 
@@ -69,7 +69,7 @@ for i in range(200):
         stopping_criterion_count += 1
     else:
         stopping_criterion_count = 0
-    prev_loss = trial_loss.clone().detach()
+    prev_loss = trial_mmd_loss.clone().detach()
 
 end = time()
 print(f"Time Taken: {end - start}")
