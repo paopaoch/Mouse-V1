@@ -80,7 +80,7 @@ class MouseLossFunction:
         self.high_contrast_index = high_contrast_index
 
 
-    def calculate_loss(self, x_E: torch.Tensor, y_E: torch.Tensor, x_I: torch.Tensor, y_I: torch.Tensor, avg_step: torch.Tensor, bessel_val=torch.tensor(0), x_centralised=False, y_centralised=False):
+    def calculate_loss(self, x_E: torch.Tensor, y_E: torch.Tensor, x_I: torch.Tensor, y_I: torch.Tensor, avg_step: torch.Tensor, bessel_val=torch.tensor(0), bessel_val_weighting=torch.tensor(0.001), x_centralised=False, y_centralised=False):
         if not x_centralised:
             x_E = self.centralise_all_curves(x_E)
             x_I = self.centralise_all_curves(x_I)
@@ -92,7 +92,7 @@ class MouseLossFunction:
         E = self.MMD(x_E, y_E)
         I = self.MMD(x_I, y_I)
 
-        return E + I + (torch.maximum(self.one, avg_step) - 1) * self.avg_step_weighting, E + I + bessel_val
+        return E + I + (torch.maximum(self.one, avg_step) - 1) * self.avg_step_weighting, E + I + bessel_val * bessel_val_weighting
 
     
     def MMD(self, x: torch.Tensor, y: torch.Tensor):

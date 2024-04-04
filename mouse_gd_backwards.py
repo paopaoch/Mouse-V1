@@ -42,8 +42,8 @@ for i in range(200):
     x_E, x_I = tuning_curves[:800], tuning_curves[800:]
     bessel_val = wg.validate_weight_matrix()
 
+    print("bessel_val:", bessel_val)
     trial_loss, trial_mmd_loss = loss_function.calculate_loss(x_E, y_E, x_I, y_I, avg_step, bessel_val=bessel_val)
-
     print("loss:", float(trial_loss))
 
     trial_loss.backward()
@@ -59,7 +59,7 @@ for i in range(200):
 
 
     loss_diffs.append(prev_loss - trial_loss.clone().detach())
-    print(torch.tensor(loss_diffs[-10:], device=device).mean())
+    print("loss_diff", torch.tensor(loss_diffs[-10:], device=device).mean())
     print("\n\n")
 
     if i > 30 and torch.tensor(loss_diffs[-10:], device=device).mean() < 1e-5: # This is the same stopping criterion as xNES which could be appropriate but the learning rate is different.
