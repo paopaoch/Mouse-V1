@@ -243,14 +243,14 @@ class WeightsGenerator(Rodents):
 
 
     def validate_weight_matrix(self):
-        W_tot_EE = self.calc_theoretical_weights_tot_torch(0, self.neuron_num_e)
-        W_tot_EI = self.calc_theoretical_weights_tot_torch(1, self.neuron_num_i)
-        W_tot_IE = self.calc_theoretical_weights_tot_torch(2, self.neuron_num_e)
-        W_tot_II = self.calc_theoretical_weights_tot_torch(3, self.neuron_num_i)
+        W_tot_EE = self.calc_theoretical_weights_tot(0, self.neuron_num_e)
+        W_tot_EI = self.calc_theoretical_weights_tot(1, self.neuron_num_i)
+        W_tot_IE = self.calc_theoretical_weights_tot(2, self.neuron_num_e)
+        W_tot_II = self.calc_theoretical_weights_tot(3, self.neuron_num_i)
 
         if len(self.J_parameters) == 6:
-            W_tot_EF = self.calc_theoretical_weights_tot_torch(4, self.feed_forward_num)
-            W_tot_IF = self.calc_theoretical_weights_tot_torch(5, self.feed_forward_num)
+            W_tot_EF = self.calc_theoretical_weights_tot(4, self.feed_forward_num)
+            W_tot_IF = self.calc_theoretical_weights_tot(5, self.feed_forward_num)
         else:
             W_tot_EF = torch.tensor(1, device=self.device)
             W_tot_IF = torch.tensor(1, device=self.device)
@@ -260,23 +260,32 @@ class WeightsGenerator(Rodents):
         return torch.maximum(first_condition, second_condition)
 
 
-    def calc_theoretical_weights_tot(self, i, N_b):
-        """Calculate weights tot for the contraints"""
-        k = 1 / (4 * (self._sigmoid(self.w_parameters[i], self.w_steep, self.w_scale) * torch.pi / 180) ** 2)
+    def balance_in_ex_in(self):
+        unscaled_W_tot_EE = self.calc_theoretical_weights_tot(0, self.neuron_num_e, scale=False)
+        unscaled_W_tot_EI = self.calc_theoretical_weights_tot(1, self.neuron_num_i, scale=False)
+        unscaled_W_tot_IE = self.calc_theoretical_weights_tot(2, self.neuron_num_e, scale=False)
+        unscaled_W_tot_II = self.calc_theoretical_weights_tot(3, self.neuron_num_i, scale=False)
         
-        if self.device == "cpu":
-            bessel: torch.Tensor = i0(k)  # i0 does not work in cuda
-        else:
-            k = k.cpu()
-            bessel: torch.Tensor = i0(k)
-            bessel = bessel.to(device=self.device)
+        return unscaled_W_tot_EE, unscaled_W_tot_EI, unscaled_W_tot_IE, unscaled_W_tot_II
 
-        j = self._sigmoid(self.J_parameters[i], self.J_steep, self.J_scale)
-        p = self._sigmoid(self.P_parameters[i], self.P_steep, self.P_scale)
-        return j * torch.sqrt(torch.tensor(N_b, device=self.device)) * p * torch.exp(-k) * bessel
+
+    # def calc_theoretical_weights_tot(self, i, N_b):
+    #     """Calculate weights tot for the contraints"""
+    #     k = 1 / (4 * (self._sigmoid(self.w_parameters[i], self.w_steep, self.w_scale) * torch.pi / 180) ** 2)
+        
+    #     if self.device == "cpu":
+    #         bessel: torch.Tensor = i0(k)  # i0 does not work in cuda
+    #     else:
+    #         k = k.cpu()
+    #         bessel: torch.Tensor = i0(k)
+    #         bessel = bessel.to(device=self.device)
+
+    #     j = self._sigmoid(self.J_parameters[i], self.J_steep, self.J_scale)
+    #     p = self._sigmoid(self.P_parameters[i], self.P_steep, self.P_scale)
+    #     return j * torch.sqrt(torch.tensor(N_b, device=self.device)) * p * torch.exp(-k) * bessel
     
 
-    def calc_theoretical_weights_tot_torch(self, i, N_b):
+    def calc_theoretical_weights_tot(self, i, N_b, scale=True):
         """Calculate weights tot for the contraints"""
         k = 1 / (4 * (self._sigmoid(self.w_parameters[i], self.w_steep, self.w_scale) * torch.pi / 180) ** 2)
         
@@ -284,7 +293,10 @@ class WeightsGenerator(Rodents):
 
         j = self._sigmoid(self.J_parameters[i], self.J_steep, self.J_scale)
         p = self._sigmoid(self.P_parameters[i], self.P_steep, self.P_scale)
-        return j * torch.sqrt(torch.tensor(N_b, device=self.device)) * p * torch.exp(-k) * bessel
+        if scale:
+            return j * torch.sqrt(torch.tensor(N_b, device=self.device)) * p * torch.exp(-k) * bessel
+        else:
+            return torch.sqrt(torch.tensor(N_b, device=self.device)) * p * torch.exp(-k) * bessel
 
 
     def set_parameters(self, J_array, P_array, w_array):
