@@ -311,7 +311,7 @@ class WeightsGenerator(Rodents):
         return pref_b[None, :] - pref_a[:, None]
 
 
-    def _get_sub_weight_matrix(self, diff: torch.Tensor, index: int):
+    def _get_sub_weight_matrix(self, diff: torch.Tensor, index: int):  # Rewrite this lmao
         J_single = self._sigmoid(self.J_parameters[index], self.J_steep, self.J_scale) / torch.sqrt(torch.tensor(diff.shape[1]))  # dont have to be a sqrt # this is the number of presynaptic neurons
         return J_single * self._sigmoid(self._sigmoid(self.P_parameters[index], self.P_steep, self.P_scale)
                                         * self._cric_gauss(diff, self._sigmoid(self.w_parameters[index], self.w_steep, self.w_scale))
@@ -593,9 +593,9 @@ class NetworkExecuterParallel(NetworkExecuter):
         input_mean = []
         for contrast in self.contrasts:
             for orientation in self.orientations:
-                input_mean.append(contrast * 20 * self.scaling_g * self._cric_gauss(orientation - self.pref, self.w_ff))
+                input_mean.append(contrast * 20 * self.scaling_g * self._cric_gauss(orientation - self.pref, self.w_ff))  # NOTE: replace 20 with v_t - v_r
         self.input_mean = torch.stack(input_mean).T  # Dont forget to transpose back to get input for each constrast and orientation
-        self.input_sd = self.sig_ext
+        self.input_sd = self.sig_ext  # THIS DEFAULTS TO 5
         return self.input_mean, self.input_sd
 
 
@@ -604,7 +604,7 @@ class NetworkExecuterParallel(NetworkExecuter):
         input_mean = []
         for contrast in self.contrasts:
             for orientation in self.orientations:
-                input_mean.append(contrast * self.scaling_g * self._cric_gauss(orientation - self.pref_F, self.w_ff))
+                input_mean.append(contrast * self.scaling_g * self._cric_gauss(orientation - self.pref_F, self.w_ff))  # NOTE: Check this
         ff_output = torch.stack(input_mean).T
         self.input_mean = self.weights_FF @ ff_output
         self.input_sd = self.weights_FF2 @ ff_output + torch.tensor(0.01, device=self.device)  # Adding a small DC offset here to prevent division by 0 error

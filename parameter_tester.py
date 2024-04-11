@@ -76,6 +76,7 @@ class ConstraintChecker:
         error = self.connection_count_condition() or error
         if self.feed_forward:
             error = self.connection_count_condition_FF() or error
+        print(self.wg.balance_in_ex_in())
         return error
 
 
@@ -330,8 +331,8 @@ if __name__ == "__main__":
 
     SEARCH_INIT = bool(input("Search Params? (default False): "))
 
-    N_E = 800
-    N_I = 200
+    N_E = 8000
+    N_I = 2000
     N_F = 100
 
     if SEARCH_INIT:
@@ -345,10 +346,10 @@ if __name__ == "__main__":
         print("\nInitial: ", INITIAL, '\n')
 
         if INITIAL:
-            EE = Connection(11, 0.4, 57, N_E)
-            EI = Connection(4.5, 0.95, 57, N_I)
-            IE = Connection(17, 0.4, 57, N_E)
-            II = Connection(5.7, 0.95, 57, N_I)
+            EE = Connection(63, 0.11, 32, N_E)
+            EI = Connection(32, 0.45, 32, N_I)
+            IE = Connection(60, 0.11, 32, N_E)
+            II = Connection(25, 0.45, 32, N_I)
             # EF = Connection(7.9, 0.2, 20, N_F)
             # IF = Connection(8, 0.2, 20, N_F)
             EF = None

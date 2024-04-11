@@ -282,12 +282,13 @@ if __name__ == "__main__":
             ratio = 0.8
             E_index = int(ratio * neuron_num)
             feed_forward_num = 100
+            scaling_g = 2
 
             # Get the network response
 
-            J_array = [-5.427200000000002, -20.2403, 2.328800000000001, -15.617]
-            P_array = [-2.1667999999999994, 6.0285, -2.0068, 5.967599999999997]
-            w_array = [-136.0089, -130.926, -129.7371, -133.2599] 
+            J_array = [-4.054651081081644, -7.5377180237638015, 4.0546510810816425, -4.054651081081644]
+            P_array = [-6.272223290801309, -0.6020120863864538, -6.272223290801309, -0.6020120863864538]
+            w_array = [-275.66574677358994, -275.66574677358994, -275.66574677358994, -275.66574677358994]
 
             generator = WeightsGeneratorExact(J_array, P_array, w_array, neuron_num, feed_forward_num)
             W = generator.generate_weight_matrix()
@@ -298,7 +299,7 @@ if __name__ == "__main__":
             else:
                 W_FF = None
 
-            executer = NetworkExecuterParallel(neuron_num, feed_forward_num, scaling_g=1, device="cpu")
+            executer = NetworkExecuterParallel(neuron_num, feed_forward_num, scaling_g=scaling_g, device="cpu")
             if len(J_array) == 6:
                 print_feed_forward_input(executer, W, W_FF)
 
