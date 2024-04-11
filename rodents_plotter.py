@@ -299,7 +299,7 @@ if __name__ == "__main__":
             else:
                 W_FF = None
 
-            executer = NetworkExecuterParallel(neuron_num, feed_forward_num, scaling_g=scaling_g, device="cpu")
+            executer = NetworkExecuterParallel(neuron_num, feed_forward_num, scaling_g=scaling_g, device="cpu", sig_ext=5, w_ff=30)
             if len(J_array) == 6:
                 print_feed_forward_input(executer, W, W_FF)
 

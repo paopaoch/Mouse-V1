@@ -25,6 +25,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from scipy.special import i0
+from time import sleep
 
 # torch.set_default_dtype(torch.float32)
 
@@ -326,7 +327,7 @@ class WeightsGeneratorExact(WeightsGenerator):
 
 
 class NetworkExecuter(Rodents):
-    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=1, w_ff=15, sig_ext=8, device="cpu"):
+    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=1, w_ff=30, sig_ext=8, device="cpu", plot_overtime=False):
         super().__init__(neuron_num, ratio, device, feed_forward_num)
 
         self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]  # 12  # NOTE: we can reduce this for experimental runs, we can change this as we move closer to the optimal during optimisation
@@ -357,7 +358,8 @@ class NetworkExecuter(Rodents):
         # Membrane time constant vector for all cells
         self.tau = torch.cat([tau_E * torch.ones(self.neuron_num_e, device=device, requires_grad=False),
                               tau_I * torch.ones(self.neuron_num_i, device=device, requires_grad=False)])
-        self.hardness = 0.01  # So confused
+        # self.hardness = 0.01  # So confused
+        self.hardness = 50
         self.Vt = 20
         self.Vr = 0
 
@@ -383,7 +385,7 @@ class NetworkExecuter(Rodents):
         # Add noise to fix point output
         self.N_trial = 50
         self.recorded_spike_T = 0.5
-        self.plot_overtime = False
+        self.plot_overtime = plot_overtime
         
 
     # -------------------------Public Methods--------------------
@@ -514,9 +516,9 @@ class NetworkExecuter(Rodents):
         return xvec, avg_sum / self.Navg
 
 
-    # This is the input-output function (for mean-field spiking neurons) that you would use Max
-    def _phi(self):
-
+    # # This is the input-output function (for mean-field spiking neurons) that you would use Max
+    def _phi_approx(self):
+        """This should approximate the _phi() function"""
         # Might need error handling for mu and sigma being None
         xp = (self.mu - self.Vr) / self.sigma
         xm = (self.mu - self.Vt) / self.sigma
@@ -533,12 +535,58 @@ class NetworkExecuter(Rodents):
         # rate = (rate * (1 - xm_pos)) + (xm_pos / self._softplus(self._f_ricci(xp1) - self._f_ricci(xm1), self.hardness))
         rate = (xm_pos / self._softplus(self._f_ricci(xp1) - self._f_ricci(xm1), self.hardness))
 
-
         #inds = (xp > 0) & (xm <= 0)
         rate = (rate * (1 - inds)) + (inds / (self._f_ricci(xp1) + torch.exp(xm**2) * self._g_ricci(self._softplus(-xm, self.hardness))))
-        
+
         rate = 1 / (self.tau_ref + 1 / rate)
 
+        return rate / self.tau
+    
+    
+    @staticmethod
+    def _relu(x):
+        return torch.max(torch.tensor(0.0), x)
+    
+    @staticmethod
+    def _step(x):
+        return torch.where(x >= 0, torch.tensor(1.0), torch.tensor(0.0))
+
+
+    def _phi_approx_relu_step(self):
+        """This should approximate the _phi() function"""
+        # Might need error handling for mu and sigma being None
+        xp = (self.mu - self.Vr) / self.sigma
+        xm = (self.mu - self.Vt) / self.sigma
+        
+
+        # rate = torch.zeros_like(xm, device=self.device) # dunno why we need this?
+        xm_pos = self._step(xm)
+        inds = self._step(-xm) * self._step(xp)
+        
+        xp1 = self._relu(xp)
+        xm1 = self._relu(xm)
+        
+        rate = (xm_pos / self._relu(self._f_ricci(xp1) - self._f_ricci(xm1)))
+
+        rate = (rate * (1 - inds)) + (inds / (self._f_ricci(xp1) + torch.exp(xm**2) * self._g_ricci(self._relu(-xm))))
+
+        rate = 1 / (self.tau_ref + 1 / rate)
+
+        return rate / self.tau
+
+
+    def _phi(self):
+        xp = (self.mu - self.Vr) / self.sigma
+        xm = (self.mu - self.Vt) / self.sigma
+
+        rate = torch.zeros_like(xm)
+        rate[xm > 0] = 1 / (self._f_ricci(xp[xm > 0]) - self._f_ricci(xm[xm > 0]))
+        inds = (xp > 0) & (xm <= 0)
+        rate[inds] = 1 / ( self._f_ricci(xp[inds]) + torch.exp(xm[inds]**2) * self._g_ricci(-xm[inds]) )
+        rate[xp <= 0] = torch.exp(-xm[xp <= 0]**2 - torch.log(self._g_ricci(-xm[xp <= 0]) 
+                            - torch.exp(xp[xp <= 0]**2 - xm[xp <= 0]**2) * self._g_ricci(-xp[xp <= 0])))
+        
+        rate = 1 / (self.tau_ref + 1 / rate)
         return rate / self.tau
 
 
@@ -567,8 +615,8 @@ class NetworkExecuter(Rodents):
 
 class NetworkExecuterParallel(NetworkExecuter):
 
-    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=1, w_ff=15, sig_ext=5, device="cpu"):
-        super().__init__(neuron_num, feed_forward_num, ratio, scaling_g, w_ff, sig_ext, device)
+    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=1, w_ff=15, sig_ext=8, device="cpu", plot_overtime=False):
+        super().__init__(neuron_num, feed_forward_num, ratio, scaling_g, w_ff, sig_ext, device, plot_overtime)
         self.tau = self.tau.unsqueeze(0)
         self.tau = self.tau.repeat(len(self.orientations) * len(self.contrasts), 1).T
 
@@ -593,7 +641,8 @@ class NetworkExecuterParallel(NetworkExecuter):
     def _stim_to_inputs(self):
         '''Set the inputs based on the contrast and orientation of the stimulus'''
         input_mean = []
-        mu_BL = 4.16
+        # mu_BL = 4.16
+        mu_BL = self.Vt - 2.71 * self.sig_ext
         for contrast in self.contrasts:
             for orientation in self.orientations:
                 input_mean.append(mu_BL * contrast * (self.Vt - self.Vr) * self.scaling_g * self._cric_gauss(orientation - self.pref, self.w_ff))  # NOTE: replace 20 with v_t - v_r
@@ -641,9 +690,13 @@ if __name__ == "__main__":
     from rodents_plotter import plot_weights, print_tuning_curve, centralise_all_curves, print_activity
     from time import time
 
-    J_array = [-4.054651081081644, -19.924301646902062, -0.0, -12.083112059245341]
-    P_array = [-6.591673732008658, 1.8571176252186712, -4.1588830833596715, 4.549042468104266]
-    w_array = [-167.03761889472233, -187.23627477210516, -143.08737747657977, -167.03761889472233]
+    # J_array = [-4.054651081081644, -19.924301646902062, -0.0, -12.083112059245341]
+    # P_array = [-6.591673732008658, 1.8571176252186712, -4.1588830833596715, 4.549042468104266]
+    # w_array = [-167.03761889472233, -187.23627477210516, -143.08737747657977, -167.03761889472233]
+
+    J_array = [-4.054651081081644, -7.5377180237638015, 4.0546510810816425, -4.054651081081644]
+    P_array = [-6.272223290801309, -0.6020120863864538, -6.272223290801309, -0.6020120863864538]
+    w_array = [-275.66574677358994, -275.66574677358994, -275.66574677358994, -275.66574677358994]
 
     n = 10000
 
@@ -669,7 +722,7 @@ if __name__ == "__main__":
     # plt.show()
     # print(sigma)
     start = time()
-    executer = NetworkExecuterParallel(n, 100, device="cpu")
+    executer = NetworkExecuterParallel(n, 100, device="cpu", plot_overtime=True, sig_ext=5)
     executer.update_weight_matrix(W)
     rates, avg_step = executer._get_steady_state_output()
     values1 = []
