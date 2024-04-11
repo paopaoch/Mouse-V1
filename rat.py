@@ -326,7 +326,7 @@ class WeightsGeneratorExact(WeightsGenerator):
 
 
 class NetworkExecuter(Rodents):
-    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=1, w_ff=15, sig_ext=5, device="cpu"):
+    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=1, w_ff=15, sig_ext=8, device="cpu"):
         super().__init__(neuron_num, ratio, device, feed_forward_num)
 
         self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]  # 12  # NOTE: we can reduce this for experimental runs, we can change this as we move closer to the optimal during optimisation
