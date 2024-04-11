@@ -451,14 +451,16 @@ class NetworkExecuter(Rodents):
 
     def _stim_to_inputs(self, contrast, grating_orientation):
         '''Set the inputs based on the contrast and orientation of the stimulus'''
-        self.input_mean = 4.16 + contrast * 20 * self.scaling_g * self._cric_gauss(grating_orientation - self.pref, self.w_ff)
+        # mu_BL = 4.16
+        mu_BL = self.Vt - 2.71 * self.sig_ext
+        self.input_mean = mu_BL + contrast * (self.Vt - self.Vr) * self.scaling_g * self._cric_gauss(grating_orientation - self.pref, self.w_ff)
         self.input_sd = self.sig_ext
         return self.input_mean, self.input_sd
     
 
     def _stim_to_inputs_with_ff(self, contrast, grating_orientation):
         '''Set the inputs based on the contrast and orientation of the stimulus'''
-        ff_output = contrast * self.scaling_g * self._cric_gauss(grating_orientation - self.pref_F, self.w_ff)
+        ff_output = (self.Vt - self.Vr) * contrast * self.scaling_g * self._cric_gauss(grating_orientation - self.pref_F, self.w_ff)
         self.input_mean = self.weights_FF @ ff_output
         self.input_sd = self.weights_FF2 @ ff_output + torch.tensor(0.01, device=self.device)   # Adding a small DC offset here to prevent division by 0 error
 
@@ -591,9 +593,10 @@ class NetworkExecuterParallel(NetworkExecuter):
     def _stim_to_inputs(self):
         '''Set the inputs based on the contrast and orientation of the stimulus'''
         input_mean = []
+        mu_BL = 4.16
         for contrast in self.contrasts:
             for orientation in self.orientations:
-                input_mean.append(contrast * 20 * self.scaling_g * self._cric_gauss(orientation - self.pref, self.w_ff))  # NOTE: replace 20 with v_t - v_r
+                input_mean.append(mu_BL * contrast * (self.Vt - self.Vr) * self.scaling_g * self._cric_gauss(orientation - self.pref, self.w_ff))  # NOTE: replace 20 with v_t - v_r
         self.input_mean = torch.stack(input_mean).T  # Dont forget to transpose back to get input for each constrast and orientation
         self.input_sd = self.sig_ext  # THIS DEFAULTS TO 5
         return self.input_mean, self.input_sd
@@ -604,7 +607,7 @@ class NetworkExecuterParallel(NetworkExecuter):
         input_mean = []
         for contrast in self.contrasts:
             for orientation in self.orientations:
-                input_mean.append(contrast * self.scaling_g * self._cric_gauss(orientation - self.pref_F, self.w_ff))  # NOTE: Check this
+                input_mean.append((self.Vt - self.Vr) * contrast * self.scaling_g * self._cric_gauss(orientation - self.pref_F, self.w_ff))  # NOTE: Check this
         ff_output = torch.stack(input_mean).T
         self.input_mean = self.weights_FF @ ff_output
         self.input_sd = self.weights_FF2 @ ff_output + torch.tensor(0.01, device=self.device)  # Adding a small DC offset here to prevent division by 0 error
