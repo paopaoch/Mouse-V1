@@ -451,7 +451,7 @@ class NetworkExecuter(Rodents):
 
     def _stim_to_inputs(self, contrast, grating_orientation):
         '''Set the inputs based on the contrast and orientation of the stimulus'''
-        self.input_mean = contrast * 20 * self.scaling_g * self._cric_gauss(grating_orientation - self.pref, self.w_ff)
+        self.input_mean = 4.16 + contrast * 20 * self.scaling_g * self._cric_gauss(grating_orientation - self.pref, self.w_ff)
         self.input_sd = self.sig_ext
         return self.input_mean, self.input_sd
     

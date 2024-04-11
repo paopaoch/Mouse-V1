@@ -282,7 +282,7 @@ if __name__ == "__main__":
             ratio = 0.8
             E_index = int(ratio * neuron_num)
             feed_forward_num = 100
-            scaling_g = 2
+            scaling_g = 1
 
             # Get the network response
 
