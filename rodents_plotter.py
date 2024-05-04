@@ -63,9 +63,10 @@ def print_tuning_curve(tuning_curve, title=""):
 
 def print_feed_forward_input(executer: NetworkExecuterParallel, W, W_FF):
     executer.update_weight_matrix(W, W_FF)
-    mean, sigma = executer._stim_to_inputs_with_ff(1, 45)
-    mean = mean.cpu()
-    sigma = sigma.cpu()
+    # mean, sigma = executer._stim_to_inputs_with_ff(1, 45)
+    mean, sigma = executer._stim_to_inputs_with_ff()
+    mean = mean[0].cpu()
+    sigma = sigma[0].cpu()
     plt.plot(mean)
     plt.title("Mean feed forward activity")
     plt.xlabel("Neuron Index")
@@ -145,12 +146,12 @@ def plot_percentage_explained(tuning_curves, title=""):
         plt.close()
 
 
-def plot_frac_of_var(tuning_curves, title="", bin_size=0.0025):
+def plot_frac_of_var(tuning_curves, title="", bin_size=0.0025, xlim=0.85):
     frac_of_vars = get_all_fraction_of_variance(tuning_curves)
     bins = np.arange(0, 1 + bin_size, bin_size)
     plt.hist(frac_of_vars, bins, bottom=0, width=bin_size, color="cadetblue")
     plt.xticks(np.arange(0, 1 + bin_size, bin_size * 20))
-    plt.xlim(0.85, 1)
+    plt.xlim(xlim, 1)
     plt.title(title)
     plt.xlabel("Fraction of data explained by first SV")
     plt.ylabel("Unit count")
@@ -282,14 +283,18 @@ if __name__ == "__main__":
             ratio = 0.8
             E_index = int(ratio * neuron_num)
             feed_forward_num = 100
-            scaling_g = 1
+            scaling_g = 0.25  # without ff use 0.25
 
             # Get the network response
 
-            J_array = [-4.054651081081644, -7.5377180237638015, 4.0546510810816425, -4.054651081081644]
-            P_array = [-6.272223290801309, -0.6020120863864538, -6.272223290801309, -0.6020120863864538]
-            w_array = [-275.66574677358994, -275.66574677358994, -275.66574677358994, -275.66574677358994]
+            J_array = [-0.5849256105807946, -1.7897775391126678, 0.1470644867601804, -1.5238179142000694]
+            P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124]
+            w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
 
+            # J_array = [-0.5849256105807946, -1.7897775391126678, 0.1470644867601804, -1.5238179142000694, -2.1972245773362196, -2.1972245773362196]
+            # P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124, -0.8001193001121133, -0.8001193001121133]
+            # w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.6094379124341003, -1.6094379124341003] 
+            
             generator = WeightsGeneratorExact(J_array, P_array, w_array, neuron_num, feed_forward_num)
             W = generator.generate_weight_matrix()
             plot_weights(W)
@@ -323,8 +328,8 @@ if __name__ == "__main__":
         
         responses = responses.cpu()
 
-        data_E = centralise_all_curves(np.array(responses[0:800].data))
-        data_I = centralise_all_curves(np.array(responses[800:].data))
+        data_E = centralise_all_curves(np.array(responses[0:E_index].data))
+        data_I = centralise_all_curves(np.array(responses[E_index:].data))
         data = np.concatenate((data_E, data_I), axis=0)
 
         # print_normalise_orientation_curve(data[100])
@@ -336,13 +341,13 @@ if __name__ == "__main__":
                                                        , 3, f"Normalised excitatory orientation tuning curves \n at constant contrast index 3 for multiple neurons")
         print_contrast_curve([data[100], data[150], data[200], data[250]], "Normalised excitatory contrast tuning curves at preferred orientation")
 
-        print_normalise_orientation_curve_multi_neuron([data[800], data[850], data[900], data[950]]
+        print_normalise_orientation_curve_multi_neuron([data[8000], data[8500], data[9000], data[9500]]
                                                        , 7, f"Normalised inhibitory orientation tuning curves \n at constant contrast index 7 for multiple neurons")
-        print_normalise_orientation_curve_multi_neuron([data[800], data[850], data[900], data[950]]
+        print_normalise_orientation_curve_multi_neuron([data[8000], data[8500], data[9000], data[9500]]
                                                        , 5, f"Normalised inhibitory orientation tuning curves \n at constant contrast index 5 for multiple neurons")
-        print_normalise_orientation_curve_multi_neuron([data[800], data[850], data[900], data[950]]
+        print_normalise_orientation_curve_multi_neuron([data[8000], data[8500], data[9000], data[9500]]
                                                        , 3, f"Normalised inhibitory orientation tuning curves \n at constant contrast index 3 for multiple neurons")
-        print_contrast_curve([data[800], data[850], data[900], data[950]], "Normalised inhibitory contrast tuning curves at preferred orientation")
+        print_contrast_curve([data[8000], data[8500], data[9000], data[9500]], "Normalised inhibitory contrast tuning curves at preferred orientation")
 
         print_tuning_curve(data[100], title="Example Excitatory Neuron Tuning Curve From Model")
         print_tuning_curve(data[-100], title="Example Inhibitory Neuron Tuning Curve From Model")
@@ -364,6 +369,9 @@ if __name__ == "__main__":
         plot_frac_of_var(data_E, title="Fraction of explained variance (degree of contrast invariance) - Excitatory")
         plot_frac_of_var(data_I, title="Fraction of explained variance (degree of contrast invariance) - Inhibitory")
 
+        plot_frac_of_var(data_E, title="Full fraction of explained variance (degree of contrast invariance) - Excitatory", xlim=0)
+        plot_frac_of_var(data_I, title="Full fraction of explained variance (degree of contrast invariance) - Inhibitory", xlim=0)
+
         plot_hist(get_circ_var, data_E, title="Histogram of the circular variance of the model E tuning curves")
         plot_hist(get_max_firing_rate, data_E, title="Histogram of the max firing rate of the model E tuning curves")
         plot_hist(get_mean_firing_rate, data_E, title="Histogram of the mean firing rate of the model E tuning curves")
@@ -372,31 +380,31 @@ if __name__ == "__main__":
         plot_hist(get_max_firing_rate, data_I, title="Histogram of the max firing rate of the model I tuning curves")
         plot_hist(get_mean_firing_rate, data_I, title="Histogram of the mean firing rate of the model I tuning curves")
 
-    else:
-        # Get the data
-        data_E, data_I = get_data()
-        responses = np.concatenate((np.array(data_E.data), np.array(data_I.data)), axis=0)
-        data_E = centralise_all_curves(np.array(data_E.data))
-        data_I = centralise_all_curves(np.array(data_I.data))
-        data = np.concatenate((data_E, data_I), axis=0)
+    # else:
+        # # Get the data
+        # data_E, data_I = get_data()
+        # responses = np.concatenate((np.array(data_E.data), np.array(data_I.data)), axis=0)
+        # data_E = centralise_all_curves(np.array(data_E.data))
+        # data_I = centralise_all_curves(np.array(data_I.data))
+        # data = np.concatenate((data_E, data_I), axis=0)
 
-        print_tuning_curve(data[5], title="Example Excitatory Neuron Tuning Curve From Data")
-        print_tuning_curve(data[-5], title="Example Inhibitory Neuron Tuning Curve From Data")
+        # print_tuning_curve(data[5], title="Example Excitatory Neuron Tuning Curve From Data")
+        # print_tuning_curve(data[-5], title="Example Inhibitory Neuron Tuning Curve From Data")
         
-        print_activity(responses, title="Response Plot for the data")
+        # print_activity(responses, title="Response Plot for the data")
 
-        print_tuning_curve(neuro_SVD(data[5])[0], title="Example SVD of Excitatory Neuron Tuning Curve From Data")
-        print_tuning_curve(neuro_SVD(data[-5])[0], title="Example SVD of Inhibitory Neuron Tuning Curve From Data")
+        # print_tuning_curve(neuro_SVD(data[5])[0], title="Example SVD of Excitatory Neuron Tuning Curve From Data")
+        # print_tuning_curve(neuro_SVD(data[-5])[0], title="Example SVD of Inhibitory Neuron Tuning Curve From Data")
 
-        plot_percentage_explained(data, title="Histogram of the percentage that the residue is left after SVD")
+        # plot_percentage_explained(data, title="Histogram of the percentage that the residue is left after SVD")
 
-        plot_frac_of_var(data_E, title="Fraction of explained variance (degree of contrast invariance) - Excitatory")
-        plot_frac_of_var(data_I, title="Fraction of explained variance (degree of contrast invariance) - Inhibitory")
+        # plot_frac_of_var(data_E, title="Fraction of explained variance (degree of contrast invariance) - Excitatory")
+        # plot_frac_of_var(data_I, title="Fraction of explained variance (degree of contrast invariance) - Inhibitory")
 
-        plot_hist(get_circ_var, data_E, title="Histogram of the circular variance of the data E tuning curves")
-        plot_hist(get_max_firing_rate, data_E, title="Histogram of the max firing rate of the data E tuning curves")
-        plot_hist(get_mean_firing_rate, data_E, title="Histogram of the mean firing rate of the data E tuning curves")
+        # plot_hist(get_circ_var, data_E, title="Histogram of the circular variance of the data E tuning curves")
+        # plot_hist(get_max_firing_rate, data_E, title="Histogram of the max firing rate of the data E tuning curves")
+        # plot_hist(get_mean_firing_rate, data_E, title="Histogram of the mean firing rate of the data E tuning curves")
 
-        plot_hist(get_circ_var, data_I, title="Histogram of the circular variance of the data I tuning curves")
-        plot_hist(get_max_firing_rate, data_I, title="Histogram of the max firing rate of the data I tuning curves")
-        plot_hist(get_mean_firing_rate, data_I, title="Histogram of the mean firing rate of the data I tuning curves")
+        # plot_hist(get_circ_var, data_I, title="Histogram of the circular variance of the data I tuning curves")
+        # plot_hist(get_max_firing_rate, data_I, title="Histogram of the max firing rate of the data I tuning curves")
+        # plot_hist(get_mean_firing_rate, data_I, title="Histogram of the mean firing rate of the data I tuning curves")

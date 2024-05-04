@@ -4,13 +4,13 @@ from rat import WeightsGeneratorExact
 import numpy as np
 from tqdm import tqdm
 
-J_steep = 1/10
+J_steep = 1
 J_scale = 100
 
-P_steep = 1/3
+P_steep = 1
 P_scale = 1
 
-w_steep = 1/180
+w_steep = 1
 w_scale = 180
 
 class Connection:
@@ -21,6 +21,7 @@ class Connection:
         self.N = N
         self.root_N = math.sqrt(N)
         self.W_tot = self.calc_theoretical_weights_tot()
+
 
     def calc_theoretical_weights_tot(self):
         k = 1 / (4 * (self.w * math.pi / 180) ** 2)
@@ -333,7 +334,7 @@ if __name__ == "__main__":
 
     N_E = 8000
     N_I = 2000
-    N_F = 100
+    N_F = 1000
 
     if SEARCH_INIT:
         EE, EI, IE, II = get_random_valid_params(trials=1000, n=N_E + N_I)
@@ -346,14 +347,14 @@ if __name__ == "__main__":
         print("\nInitial: ", INITIAL, '\n')
 
         if INITIAL:
-            EE = Connection(63, 0.11, 32, N_E)
-            EI = Connection(32, 0.45, 32, N_I)
-            IE = Connection(60, 0.11, 32, N_E)
-            II = Connection(25, 0.45, 32, N_I)
-            # EF = Connection(7.9, 0.2, 20, N_F)
-            # IF = Connection(8, 0.2, 20, N_F)
-            EF = None
-            IF = None
+            EE = Connection(35.78, 0.11, 32, N_E)
+            EI = Connection(14.31, 0.45, 32, N_I)
+            IE = Connection(53.67, 0.11, 32, N_E)
+            II = Connection(17.89, 0.45, 32, N_I)
+            # EF = Connection(10, 0.31, 30, N_F)
+            # IF = Connection(10, 0.31, 30, N_F)
+            # EF = None
+            # IF = None
         else:
             # mean_list = [-23.1309, -38.8711, -11.8566, -26.8844, -3.2984, 10.7771, -2.4424, 10.8624, -138.8649, -140.7406, -122.6129, -125.8241]
 

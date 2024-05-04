@@ -210,13 +210,13 @@ class WeightsGenerator(Rodents):
             self.w_parameters = torch.tensor(w_array, device=device, requires_grad=requires_grad)
 
         # Sigmoid values for parameters
-        self.J_steep = 1/10
+        self.J_steep = 1
         self.J_scale = 100
 
-        self.P_steep = 1/3
+        self.P_steep = 1
         self.P_scale = 1
 
-        self.w_steep = 1/180
+        self.w_steep = 1
         self.w_scale = 180
 
     
@@ -434,7 +434,7 @@ class NetworkExecuter(Rodents):
     def _stim_to_inputs(self, contrast, grating_orientation):
         '''Set the inputs based on the contrast and orientation of the stimulus'''
         # mu_BL = 4.16
-        mu_BL = self.Vt - 2.71 * self.sig_ext
+        mu_BL = self.Vt - 1.5 * self.sig_ext  # NOTE: try 2.71, 2, 1.5
         self.input_mean = mu_BL + contrast * (self.Vt - self.Vr) * self.scaling_g * self._cric_gauss(grating_orientation - self.pref, self.w_ff)
         self.input_sd = self.sig_ext
         return self.input_mean, self.input_sd
@@ -458,7 +458,7 @@ class NetworkExecuter(Rodents):
     def _add_noise_to_rate(self, rate_fp: torch.Tensor):
         sigma = torch.sqrt(rate_fp / self.N_trial / self.recorded_spike_T)
         rand = torch.randn(size=rate_fp.shape, device=self.device)
-        return rate_fp + sigma * rand
+        return torch.abs(rate_fp + sigma * rand)  # TODO: check this inclusion of the abs
     
 
     # -------------------------MOVE SIM UTILS INTO THE SAME CLASS------------------
@@ -584,9 +584,10 @@ class NetworkExecuterParallel(NetworkExecuter):
     def _stim_to_inputs_with_ff(self):
         '''Set the inputs based on the contrast and orientation of the stimulus'''
         input_mean = []
+        mu_BL = 1
         for contrast in self.contrasts:
             for orientation in self.orientations:
-                input_mean.append((self.Vt - self.Vr) * contrast * self.scaling_g * self._cric_gauss(orientation - self.pref_F, self.w_ff))  # NOTE: Check this
+                input_mean.append((self.Vt - self.Vr) * mu_BL * contrast * self.scaling_g * self._cric_gauss(orientation - self.pref_F, self.w_ff))  # NOTE: Check this
         ff_output = torch.stack(input_mean).T
         self.input_mean = self.weights_FF @ ff_output
         self.input_sd = self.weights_FF2 @ ff_output + torch.tensor(0.01, device=self.device)  # Adding a small DC offset here to prevent division by 0 error
