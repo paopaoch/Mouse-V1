@@ -268,22 +268,6 @@ class WeightsGenerator(Rodents):
         unscaled_W_tot_II = self.calc_theoretical_weights_tot(3, self.neuron_num_i, scale=False)
         
         return unscaled_W_tot_EE, unscaled_W_tot_EI, unscaled_W_tot_IE, unscaled_W_tot_II
-
-
-    # def calc_theoretical_weights_tot(self, i, N_b):
-    #     """Calculate weights tot for the contraints"""
-    #     k = 1 / (4 * (self._sigmoid(self.w_parameters[i], self.w_steep, self.w_scale) * torch.pi / 180) ** 2)
-        
-    #     if self.device == "cpu":
-    #         bessel: torch.Tensor = i0(k)  # i0 does not work in cuda
-    #     else:
-    #         k = k.cpu()
-    #         bessel: torch.Tensor = i0(k)
-    #         bessel = bessel.to(device=self.device)
-
-    #     j = self._sigmoid(self.J_parameters[i], self.J_steep, self.J_scale)
-    #     p = self._sigmoid(self.P_parameters[i], self.P_steep, self.P_scale)
-    #     return j * torch.sqrt(torch.tensor(N_b, device=self.device)) * p * torch.exp(-k) * bessel
     
 
     def calc_theoretical_weights_tot(self, i, N_b, scale=True):
@@ -514,33 +498,6 @@ class NetworkExecuter(Rodents):
             return recorded_xvec, 0
 
         return xvec, avg_sum / self.Navg
-
-
-    # # This is the input-output function (for mean-field spiking neurons) that you would use Max
-    def _phi_approx(self):
-        """This should approximate the _phi() function"""
-        # Might need error handling for mu and sigma being None
-        xp = (self.mu - self.Vr) / self.sigma
-        xm = (self.mu - self.Vt) / self.sigma
-        
-
-        # rate = torch.zeros_like(xm, device=self.device) # dunno why we need this?
-        xm_pos = self._sigmoid(xm * self.hardness)
-        inds = self._sigmoid(-xm * self.hardness) * self._sigmoid(xp * self.hardness)
-        
-        xp1 = self._softplus(xp, self.hardness)
-        xm1 = self._softplus(xm, self.hardness)
-        
-        #xm_pos = xm > 0
-        # rate = (rate * (1 - xm_pos)) + (xm_pos / self._softplus(self._f_ricci(xp1) - self._f_ricci(xm1), self.hardness))
-        rate = (xm_pos / self._softplus(self._f_ricci(xp1) - self._f_ricci(xm1), self.hardness))
-
-        #inds = (xp > 0) & (xm <= 0)
-        rate = (rate * (1 - inds)) + (inds / (self._f_ricci(xp1) + torch.exp(xm**2) * self._g_ricci(self._softplus(-xm, self.hardness))))
-
-        rate = 1 / (self.tau_ref + 1 / rate)
-
-        return rate / self.tau
     
     
     @staticmethod
@@ -550,29 +507,6 @@ class NetworkExecuter(Rodents):
     @staticmethod
     def _step(x):
         return torch.where(x >= 0, torch.tensor(1.0), torch.tensor(0.0))
-
-
-    def _phi_approx_relu_step(self):
-        """This should approximate the _phi() function"""
-        # Might need error handling for mu and sigma being None
-        xp = (self.mu - self.Vr) / self.sigma
-        xm = (self.mu - self.Vt) / self.sigma
-        
-
-        # rate = torch.zeros_like(xm, device=self.device) # dunno why we need this?
-        xm_pos = self._step(xm)
-        inds = self._step(-xm) * self._step(xp)
-        
-        xp1 = self._relu(xp)
-        xm1 = self._relu(xm)
-        
-        rate = (xm_pos / self._relu(self._f_ricci(xp1) - self._f_ricci(xm1)))
-
-        rate = (rate * (1 - inds)) + (inds / (self._f_ricci(xp1) + torch.exp(xm**2) * self._g_ricci(self._relu(-xm))))
-
-        rate = 1 / (self.tau_ref + 1 / rate)
-
-        return rate / self.tau
 
 
     def _phi(self):
@@ -703,62 +637,3 @@ if __name__ == "__main__":
     keen = WeightsGeneratorExact(J_array, P_array, w_array, n, 100, device="cpu")
     W = keen.generate_weight_matrix()
     W_FF = keen.generate_feed_forward_weight_matrix()
-
-    # plot_weights(W)
-
-    # plot_weights(W_FF)
-
-    # executer = NetworkExecuter(1000, 100)
-    # executer.update_weight_matrix(W, W_FF)
-    # mean, sigma = executer._stim_to_inputs_with_ff(1, 45)
-    # plt.plot(mean)
-    # plt.show()
-
-    # plt.plot(sigma)
-    # plt.show()
-
-    # mean, sigma = executer._stim_to_inputs(1, 45)
-    # plt.plot(mean)
-    # plt.show()
-    # print(sigma)
-    start = time()
-    executer = NetworkExecuterParallel(n, 100, device="cpu", plot_overtime=True, sig_ext=5)
-    executer.update_weight_matrix(W)
-    rates, avg_step = executer._get_steady_state_output()
-    values1 = []
-    values2 = []
-    values3 = []
-    values4 = []
-    values5 = []
-    for rate in rates:
-        values1.append(float(rate[1000][90]))
-        values2.append(float(rate[4000][90]))
-        values3.append(float(rate[6000][90]))
-        values4.append(float(rate[9000][90]))
-        values5.append(float(rate[9500][90]))
-    
-    plt.plot(values1, label="Neuron index 1000")
-    plt.plot(values2,  label="Neuron index 4000")
-    plt.plot(values3,  label="Neuron index 6000")
-    plt.plot(values4,  label="Neuron index 9000")
-    plt.plot(values5,  label="Neuron index 9500")
-    plt.legend()
-    plt.title("Neuron response over time config 13")
-    plt.xlabel("iteration")
-    plt.ylabel("rate / Hz")
-    plt.show()
-    # print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
-    # print(time() - start)
-
-    # start = time()
-    # executer = NetworkExecuter(n, 100, device="cpu")
-    # print(executer.run_all_orientation_and_contrast(W, W_FF)[0].shape)
-    # print(time() - start)
-    # executer.update_weight_matrix(W, W_FF)
-
-    # inputs, _ = executer._stim_to_inputs()
-    # inputs2, std2 = executer._stim_to_inputs_with_ff()
-
-    # plot_weights(inputs.T)
-    # plot_weights(inputs2.T)
-    # plot_weights(std2.T)
