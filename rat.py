@@ -14,8 +14,7 @@ ConnectivityWeights: Inherit from Rodents for weight matrix generation.
 
 NetworkExecuter: Inherit from Rodents for running the network given a weight matrix.
 
-NOTE: THIS FILE DOES NOT INHERIT FROM torch.nn AND DUE TO RANDOMNESS, DOES NOT SUPPORT BACKPROPAGATION AND GRADIENT BASED OPTIMISATION.
-        PLEASE REFER TO mouse.py FOR LEGACY CODE WHICH DOES SUPPORTS AUTOGRAD.
+NOTE: THIS FILE DOES NOT INHERIT FROM torch.nn AND DUE TO RANDOMNESS, SOME FUNCTIONS DO NOT SUPPORT BACKPROPAGATION AND GRADIENT BASED OPTIMISATION.
 
 """
 
@@ -24,7 +23,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from scipy.special import i0
 from time import sleep
 
 # torch.set_default_dtype(torch.float32)
@@ -137,7 +135,7 @@ class MouseLossFunction:
         return torch.stack(tuning_curves)
 
 
-class MouseLossFunctionOptimised(MouseLossFunction):  # TODO: NOTE: include the weights valid into loss for gradient based optim
+class MouseLossFunctionOptimised(MouseLossFunction):
 
 
     def MMD(self, x: torch.Tensor, y: torch.Tensor):
@@ -147,9 +145,7 @@ class MouseLossFunctionOptimised(MouseLossFunction):  # TODO: NOTE: include the 
         G_x = x @ x.T
         G_y = y @ y.T
         G_xy = x @ y.T
-        return torch.mean(self._optimised_kernel(G_x, G_x, G_x) 
-                          + self._optimised_kernel(G_y, G_y, G_y) 
-                          - 2*self._optimised_kernel(G_x, G_y, G_xy))
+        return torch.mean(self._optimised_kernel(G_x, G_x, G_x)) + torch.mean(self._optimised_kernel(G_y, G_y, G_y)) - torch.mean(2*self._optimised_kernel(G_x, G_y, G_xy))
 
 
     @staticmethod
