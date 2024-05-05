@@ -132,3 +132,5 @@ if __name__ == "__main__":
                 else:
                     stopping_criterion_count = 0
                 prev_loss = trial_mmd_loss.clone().detach()
+                
+                f.flush()
