@@ -374,17 +374,22 @@ if __name__ == "__main__":
             # IE = Connection(24, 0.11, 32, N_E)
             # II = Connection(8, 0.45, 32, N_I)
 
-            EE = Connection(11.31, 0.11, 32, N_E)  # 1000
-            EI = Connection(4.52, 0.45, 32, N_I)
-            IE = Connection(16.97, 0.11, 32, N_E)
-            II = Connection(5.66, 0.45, 32, N_I)
+            # EE = Connection(11.31, 0.11, 32, N_E)  # 1000
+            # EI = Connection(4.52, 0.45, 32, N_I)
+            # IE = Connection(16.97, 0.11, 32, N_E)
+            # II = Connection(5.66, 0.45, 32, N_I)
+
+            EE = Connection(15, 0.22, 45, N_E)  # 1000
+            EI = Connection(7, 0.35, 45, N_I)
+            IE = Connection(20, 0.22, 45, N_E)
+            II = Connection(4, 0.35, 45, N_I)
 
             # EF = Connection(5, 0.11, 30, N_F)
             # IF = Connection(5, 0.11, 30, N_F)
             EF = None
             IF = None
         else:
-            mean_list = [-0.638863, 1.872354, -1.391042, 0.794095, -2.720267, 0.90546, -0.421757, 1.511226, 0.978622, -0.962887, 0.690393, 0.414007]
+            mean_list = [0.138149, 0.401524, -0.47303, -0.75472, -3.548612, -2.190864, -1.451089, 1.060272, -0.320151, 2.073733, 0.029329, 0.044442]
 
             if len(mean_list) == 18:
                 EE = Connection(params_to_J(mean_list[0]), params_to_P(mean_list[6]), params_to_w(mean_list[12]), N_E)
