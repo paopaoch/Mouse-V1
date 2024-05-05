@@ -133,4 +133,8 @@ if __name__ == "__main__":
                     stopping_criterion_count = 0
                 prev_loss = trial_mmd_loss.clone().detach()
                 
+                # Terminate if nan
+                if torch.isnan(J_array).any().item() or torch.isnan(P_array).any().item() or torch.isnan(w_array).any().item():
+                    break
+                
                 f.flush()
