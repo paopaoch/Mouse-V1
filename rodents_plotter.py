@@ -279,7 +279,7 @@ if __name__ == "__main__":
     if not_data:
         responses_path = input("Path to response file: ")
         if responses_path == "":
-            neuron_num = 10000
+            neuron_num = 1000
             ratio = 0.8
             E_index = int(ratio * neuron_num)
             feed_forward_num = 1000 
@@ -287,9 +287,13 @@ if __name__ == "__main__":
 
             # Get the network response
 
-            J_array = [-1.6582280766035324, -2.68273239311792, -1.1526795099383855, -2.4423470353692043]  # n = 2000
+            J_array = [-2.059459853260332, -3.0504048076264896, -1.5877549090278045, -2.813481385641024]  # n = 1000
             P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124]
             w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
+
+            # J_array = [-1.6582280766035324, -2.68273239311792, -1.1526795099383855, -2.4423470353692043]  # n = 2000
+            # P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124]
+            # w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
 
             # J_array = [-1.411484609948449, -2.4642873625852646, -0.8765172970974294, -2.2196470413920517]  # n = 3000
             # P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124]
@@ -349,13 +353,13 @@ if __name__ == "__main__":
                                                        , 3, f"Normalised excitatory orientation tuning curves \n at constant contrast index 3 for multiple neurons")
         print_contrast_curve([data[100], data[150], data[200], data[250]], "Normalised excitatory contrast tuning curves at preferred orientation")
 
-        print_normalise_orientation_curve_multi_neuron([data[2400], data[2500], data[2600], data[2700]]
+        print_normalise_orientation_curve_multi_neuron([data[800], data[850], data[900], data[950]]
                                                        , 7, f"Normalised inhibitory orientation tuning curves \n at constant contrast index 7 for multiple neurons")
-        print_normalise_orientation_curve_multi_neuron([data[2400], data[2500], data[2600], data[2700]]
+        print_normalise_orientation_curve_multi_neuron([data[800], data[850], data[900], data[950]]
                                                        , 5, f"Normalised inhibitory orientation tuning curves \n at constant contrast index 5 for multiple neurons")
-        print_normalise_orientation_curve_multi_neuron([data[2400], data[2500], data[2600], data[2700]]
+        print_normalise_orientation_curve_multi_neuron([data[800], data[850], data[900], data[950]]
                                                        , 3, f"Normalised inhibitory orientation tuning curves \n at constant contrast index 3 for multiple neurons")
-        print_contrast_curve([data[2400], data[2500], data[2600], data[2700]], "Normalised inhibitory contrast tuning curves at preferred orientation")
+        print_contrast_curve([data[800], data[850], data[900], data[950]], "Normalised inhibitory contrast tuning curves at preferred orientation")
 
         print_tuning_curve(data[100], title="Example Excitatory Neuron Tuning Curve From Model")
         print_tuning_curve(data[-100], title="Example Inhibitory Neuron Tuning Curve From Model")

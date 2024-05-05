@@ -332,9 +332,13 @@ if __name__ == "__main__":
 
     SEARCH_INIT = bool(input("Search Params? (default False): "))
 
-    N_E = 1600
-    N_I = 400
+    N_E = 800
+    N_I = 200
     N_F = 1000
+
+    # N_E = 1600
+    # N_I = 400
+    # N_F = 1000
 
     # N_E = 2400
     # N_I = 600
@@ -365,10 +369,15 @@ if __name__ == "__main__":
             # IE = Connection(29.39, 0.11, 32, N_E)
             # II = Connection(9.80, 0.45, 32, N_I)
 
-            EE = Connection(16, 0.11, 32, N_E)  # 2000
-            EI = Connection(6.4, 0.45, 32, N_I)
-            IE = Connection(24, 0.11, 32, N_E)
-            II = Connection(8, 0.45, 32, N_I)
+            # EE = Connection(16, 0.11, 32, N_E)  # 2000
+            # EI = Connection(6.4, 0.45, 32, N_I)
+            # IE = Connection(24, 0.11, 32, N_E)
+            # II = Connection(8, 0.45, 32, N_I)
+
+            EE = Connection(11.31, 0.11, 32, N_E)  # 1000
+            EI = Connection(4.52, 0.45, 32, N_I)
+            IE = Connection(16.97, 0.11, 32, N_E)
+            II = Connection(5.66, 0.45, 32, N_I)
 
             # EF = Connection(5, 0.11, 30, N_F)
             # IF = Connection(5, 0.11, 30, N_F)

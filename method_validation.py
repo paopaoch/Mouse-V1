@@ -12,22 +12,23 @@ if __name__ == "__main__":
         device = "cpu"
         print("GPU not available. Model will be created on CPU.")
 
-    J_array = [-1.6582280766035324, -2.68273239311792, -1.1526795099383855, -2.4423470353692043]  # n = 2000
+
+    J_array = [-2.059459853260332, -3.0504048076264896, -1.5877549090278045, -2.813481385641024]  # n = 1000
     P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124]
     w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
 
     J_array = torch.tensor(J_array, device= device, requires_grad=True)
     P_array = torch.tensor(P_array, device= device, requires_grad=True)
     w_array = torch.tensor(w_array, device= device, requires_grad=True)
-    executer = NetworkExecuterParallel(2000, device=device)
+    executer = NetworkExecuterParallel(1000, device=device)
     loss_function = MouseLossFunctionOptimised(device=device)
 
 
     # Create dataset
-    wg = WeightsGenerator(J_array, P_array, w_array, 2000, device=device, forward_mode=True)
+    wg = WeightsGenerator(J_array, P_array, w_array, 1000, device=device, forward_mode=True)
     W = wg.generate_weight_matrix()
     tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W)
-    y_E, y_I = tuning_curves[:1600], tuning_curves[1600:]
+    y_E, y_I = tuning_curves[:800], tuning_curves[800:]
 
 
     loss_diffs = []
@@ -35,11 +36,11 @@ if __name__ == "__main__":
     stopping_criterion_count = 0
     for i in range(200):
         print(i)
-        wg = WeightsGenerator(J_array, P_array, w_array, 2000, device=device, forward_mode=True)
+        wg = WeightsGenerator(J_array, P_array, w_array, 1000, device=device, forward_mode=True)
 
         W = wg.generate_weight_matrix()
         tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W)
-        x_E, x_I = tuning_curves[:1600], tuning_curves[1600:]
+        x_E, x_I = tuning_curves[:800], tuning_curves[800:]
         bessel_val = wg.validate_weight_matrix()
 
         print("bessel_val:", bessel_val)
