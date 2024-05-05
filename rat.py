@@ -307,7 +307,7 @@ class WeightsGeneratorExact(WeightsGenerator):
 
 
 class NetworkExecuter(Rodents):
-    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=1, w_ff=30, sig_ext=8, device="cpu", plot_overtime=False):
+    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=0.15, w_ff=30, sig_ext=8, device="cpu", plot_overtime=False):
         super().__init__(neuron_num, ratio, device, feed_forward_num)
 
         self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]  # 12  # NOTE: we can reduce this for experimental runs, we can change this as we move closer to the optimal during optimisation
@@ -545,7 +545,7 @@ class NetworkExecuter(Rodents):
 
 class NetworkExecuterParallel(NetworkExecuter):
 
-    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=1, w_ff=15, sig_ext=8, device="cpu", plot_overtime=False):
+    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=0.15, w_ff=15, sig_ext=8, device="cpu", plot_overtime=False):
         super().__init__(neuron_num, feed_forward_num, ratio, scaling_g, w_ff, sig_ext, device, plot_overtime)
         self.tau = self.tau.unsqueeze(0)
         self.tau = self.tau.repeat(len(self.orientations) * len(self.contrasts), 1).T

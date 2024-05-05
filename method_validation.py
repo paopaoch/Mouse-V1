@@ -55,7 +55,7 @@ if __name__ == "__main__":
     
     restart_num = 20
 
-    executer = NetworkExecuterParallel(1000, device=device)
+    executer = NetworkExecuterParallel(1000, device=device, scaling_g=0.15)
     loss_function = MouseLossFunctionOptimised(device=device)
 
     # Create dataset
