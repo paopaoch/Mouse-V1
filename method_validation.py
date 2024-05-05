@@ -4,7 +4,7 @@ import time
 import os
 import sys
 import socket
-import datetime
+from datetime import datetime
 
 
 def round_1D_tensor_to_list(a, decimals=6):
