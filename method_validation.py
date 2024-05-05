@@ -47,7 +47,7 @@ if __name__ == "__main__":
     desc = "Method validation"
 
     if torch.cuda.is_available():
-        device = "cuda:1"
+        device = "cuda:0"
         print("Model will be created on GPU")
     else:
         device = "cpu"
@@ -136,5 +136,5 @@ if __name__ == "__main__":
                 # Terminate if nan
                 if torch.isnan(J_array).any().item() or torch.isnan(P_array).any().item() or torch.isnan(w_array).any().item():
                     break
-                
+
                 f.flush()
