@@ -332,6 +332,10 @@ if __name__ == "__main__":
 
     SEARCH_INIT = bool(input("Search Params? (default False): "))
 
+    # N_E = 2400
+    # N_I = 600
+    # N_F = 1000
+
     N_E = 8000
     N_I = 2000
     N_F = 1000
@@ -347,29 +351,22 @@ if __name__ == "__main__":
         print("\nInitial: ", INITIAL, '\n')
 
         if INITIAL:
-            EE = Connection(35.78, 0.11, 32, N_E)
+            EE = Connection(35.78, 0.11, 32, N_E)  # 10000
             EI = Connection(14.31, 0.45, 32, N_I)
             IE = Connection(53.67, 0.11, 32, N_E)
             II = Connection(17.89, 0.45, 32, N_I)
-            # EF = Connection(10, 0.31, 30, N_F)
-            # IF = Connection(10, 0.31, 30, N_F)
+
+            # EE = Connection(19.60, 0.11, 32, N_E)  # 3000
+            # EI = Connection(7.84, 0.45, 32, N_I)
+            # IE = Connection(29.39, 0.11, 32, N_E)
+            # II = Connection(9.80, 0.45, 32, N_I)
+
+            EF = Connection(5, 0.11, 30, N_F)
+            IF = Connection(5, 0.11, 30, N_F)
             # EF = None
             # IF = None
         else:
-            # mean_list = [-23.1309, -38.8711, -11.8566, -26.8844, -3.2984, 10.7771, -2.4424, 10.8624, -138.8649, -140.7406, -122.6129, -125.8241]
-
-            mean_list = [-5.4272,
-                            -20.2403,
-                            2.3288,
-                            -15.617,
-                            -2.1668,
-                            6.0285,
-                            -2.0068,
-                            5.9676,
-                            -136.0089,
-                            -130.926,
-                            -129.7371,
-                            -133.2599]
+            mean_list = [-23.1309, -38.8711, -11.8566, -26.8844, -3.2984, 10.7771, -2.4424, 10.8624, -138.8649, -140.7406, -122.6129, -125.8241]
 
             if len(mean_list) == 18:
                 EE = Connection(params_to_J(mean_list[0]), params_to_P(mean_list[6]), params_to_w(mean_list[12]), N_E)

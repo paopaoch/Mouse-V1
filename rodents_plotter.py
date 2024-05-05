@@ -282,18 +282,22 @@ if __name__ == "__main__":
             neuron_num = 10000
             ratio = 0.8
             E_index = int(ratio * neuron_num)
-            feed_forward_num = 100
-            scaling_g = 0.25  # without ff use 0.25
+            feed_forward_num = 1000 
+            scaling_g = 0.15  # without ff use 0.15
 
             # Get the network response
 
-            J_array = [-0.5849256105807946, -1.7897775391126678, 0.1470644867601804, -1.5238179142000694]
-            P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124]
-            w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
+            # J_array = [-1.411484609948449, -2.4642873625852646, -0.8765172970974294, -2.2196470413920517]  # n = 3000
+            # P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124]
+            # w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
 
-            # J_array = [-0.5849256105807946, -1.7897775391126678, 0.1470644867601804, -1.5238179142000694, -2.1972245773362196, -2.1972245773362196]
-            # P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124, -0.8001193001121133, -0.8001193001121133]
-            # w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.6094379124341003, -1.6094379124341003] 
+            # J_array = [-0.5849256105807946, -1.7897775391126678, 0.1470644867601804, -1.5238179142000694]  # n = 10000
+            # P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124]
+            # w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
+
+            J_array = [-0.5849256105807946, -1.7897775391126678, 0.1470644867601804, -1.5238179142000694, -2.9444389791664403, -2.9444389791664403]
+            P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -2.0907410969337694]
+            w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.6094379124341003, -1.6094379124341003] 
             
             generator = WeightsGeneratorExact(J_array, P_array, w_array, neuron_num, feed_forward_num)
             W = generator.generate_weight_matrix()
@@ -341,13 +345,13 @@ if __name__ == "__main__":
                                                        , 3, f"Normalised excitatory orientation tuning curves \n at constant contrast index 3 for multiple neurons")
         print_contrast_curve([data[100], data[150], data[200], data[250]], "Normalised excitatory contrast tuning curves at preferred orientation")
 
-        print_normalise_orientation_curve_multi_neuron([data[8000], data[8500], data[9000], data[9500]]
+        print_normalise_orientation_curve_multi_neuron([data[2400], data[2500], data[2600], data[2700]]
                                                        , 7, f"Normalised inhibitory orientation tuning curves \n at constant contrast index 7 for multiple neurons")
-        print_normalise_orientation_curve_multi_neuron([data[8000], data[8500], data[9000], data[9500]]
+        print_normalise_orientation_curve_multi_neuron([data[2400], data[2500], data[2600], data[2700]]
                                                        , 5, f"Normalised inhibitory orientation tuning curves \n at constant contrast index 5 for multiple neurons")
-        print_normalise_orientation_curve_multi_neuron([data[8000], data[8500], data[9000], data[9500]]
+        print_normalise_orientation_curve_multi_neuron([data[2400], data[2500], data[2600], data[2700]]
                                                        , 3, f"Normalised inhibitory orientation tuning curves \n at constant contrast index 3 for multiple neurons")
-        print_contrast_curve([data[8000], data[8500], data[9000], data[9500]], "Normalised inhibitory contrast tuning curves at preferred orientation")
+        print_contrast_curve([data[2400], data[2500], data[2600], data[2700]], "Normalised inhibitory contrast tuning curves at preferred orientation")
 
         print_tuning_curve(data[100], title="Example Excitatory Neuron Tuning Curve From Model")
         print_tuning_curve(data[-100], title="Example Inhibitory Neuron Tuning Curve From Model")
