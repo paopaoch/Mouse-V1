@@ -56,9 +56,9 @@ if __name__ == "__main__":
         trial_loss.backward()
 
         # GD
-        J_array = (J_array - 50 * wg.J_parameters.grad).clone().detach().requires_grad_(True)
-        P_array = (P_array - 5 * wg.P_parameters.grad).clone().detach().requires_grad_(True)
-        w_array = (w_array - 5000 * wg.w_parameters.grad).clone().detach().requires_grad_(True)
+        J_array = (J_array - 1 * wg.J_parameters.grad).clone().detach().requires_grad_(True)
+        P_array = (P_array - 1 * wg.P_parameters.grad).clone().detach().requires_grad_(True)
+        w_array = (w_array - 1 * wg.w_parameters.grad).clone().detach().requires_grad_(True)
 
         print(J_array)
         print(P_array)
