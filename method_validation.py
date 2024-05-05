@@ -111,9 +111,9 @@ if __name__ == "__main__":
                 trial_loss.backward()
 
                 # GD
-                J_array: torch.Tensor = (J_array - 5 * wg.J_parameters.grad).clone().detach().requires_grad_(True)
-                P_array: torch.Tensor = (P_array - 5 * wg.P_parameters.grad).clone().detach().requires_grad_(True)
-                w_array: torch.Tensor = (w_array - 5 * wg.w_parameters.grad).clone().detach().requires_grad_(True)
+                J_array: torch.Tensor = (J_array - 1 * wg.J_parameters.grad).clone().detach().requires_grad_(True)
+                P_array: torch.Tensor = (P_array - 1 * wg.P_parameters.grad).clone().detach().requires_grad_(True)
+                w_array: torch.Tensor = (w_array - 1 * wg.w_parameters.grad).clone().detach().requires_grad_(True)
 
                 f.write(f"{round_1D_tensor_to_list(J_array)}\n")
                 f.write(f"{round_1D_tensor_to_list(P_array)}\n")
