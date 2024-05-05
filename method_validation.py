@@ -12,24 +12,30 @@ if __name__ == "__main__":
         device = "cpu"
         print("GPU not available. Model will be created on CPU.")
 
-
-    J_array = [-2.059459853260332, -3.0504048076264896, -1.5877549090278045, -2.813481385641024]  # n = 1000
-    P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124]
-    w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
-
-    J_array = torch.tensor(J_array, device= device, requires_grad=True)
-    P_array = torch.tensor(P_array, device= device, requires_grad=True)
-    w_array = torch.tensor(w_array, device= device, requires_grad=True)
     executer = NetworkExecuterParallel(1000, device=device)
     loss_function = MouseLossFunctionOptimised(device=device)
 
 
     # Create dataset
+    J_array = [-2.059459853260332, -3.0504048076264896, -1.5877549090278045, -2.813481385641024]  # n = 1000
+    P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124]
+    w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
+
+    J_array = torch.tensor(J_array, device= device)
+    P_array = torch.tensor(P_array, device= device)
+    w_array = torch.tensor(w_array, device= device)
     wg = WeightsGenerator(J_array, P_array, w_array, 1000, device=device, forward_mode=True)
     W = wg.generate_weight_matrix()
     tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W)
     y_E, y_I = tuning_curves[:800], tuning_curves[800:]
 
+
+    J_array = [-2.059459853260332, -3.0504048076264896, -1.5877549090278045, -2.813481385641024]  # n = 1000
+    P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124]
+    w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
+    J_array = torch.tensor(J_array, device= device, requires_grad=True)
+    P_array = torch.tensor(P_array, device= device, requires_grad=True)
+    w_array = torch.tensor(w_array, device= device, requires_grad=True)
 
     loss_diffs = []
     prev_loss = torch.tensor(10000, device=device)
