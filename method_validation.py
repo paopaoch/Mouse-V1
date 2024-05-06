@@ -53,7 +53,7 @@ if __name__ == "__main__":
         device = "cpu"
         print("GPU not available. Model will be created on CPU.")
     
-    restart_num = 20
+    restart_num = 1
 
     executer = NetworkExecuterParallel(1000, device=device, scaling_g=0.15)
     loss_function = MouseLossFunctionOptimised(device=device)
@@ -83,9 +83,12 @@ if __name__ == "__main__":
         f.write(f"{round_1D_tensor_to_list(w_array)}\n")
 
     for _ in range(restart_num):
-        J_array = torch.randn((4))
-        P_array = torch.randn((4))
-        w_array = torch.randn((4))
+        # J_array = torch.randn((4))
+        # P_array = torch.randn((4))
+        # w_array = torch.randn((4))
+        J_array = [-2.059459853260332, -3.0504048076264896, -1.5877549090278045, -2.813481385641024]  # n = 1000
+        P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124]
+        w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
         J_array = torch.tensor(J_array, device= device, requires_grad=True)
         P_array = torch.tensor(P_array, device= device, requires_grad=True)
         w_array = torch.tensor(w_array, device= device, requires_grad=True)
