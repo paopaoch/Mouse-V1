@@ -1,9 +1,9 @@
 #####METHOD VALIDATION#####
-Code ran on the 2024-05-06 13:41:46.869040
+Code ran on the 2024-05-05 18:21:32.564957
 
 Device: cuda:0
 OS: linux
-Machine: cblgpu05
+Machine: cblgpu06
 Method validation
 
 [-2.05946, -3.050405, -1.587755, -2.813481]

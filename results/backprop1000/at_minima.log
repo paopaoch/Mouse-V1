@@ -1,778 +1,450 @@
-Model will be created on GPU
 0
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.007954061031341553
-tensor([-2.0596, -3.0503, -1.5880, -2.8133], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0909, -0.2006, -2.0910, -0.2006], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5316, -1.5314, -1.5316, -1.5314], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(9999.9922, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.010541439056396484
+[-2.059474, -3.050395, -1.588332, -2.813152]
+[-2.090752, -0.200665, -2.09124, -0.20047]
+[-1.531486, -1.531468, -1.531808, -1.531238]
+loss_diff: 9999.9892578125
 
 
 1
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.00638580322265625
-tensor([-2.0597, -3.0503, -1.5880, -2.8134], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0909, -0.2006, -2.0909, -0.2006], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5316, -1.5314, -1.5316, -1.5314], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(4999.9971, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.0067635178565979
+[-2.059094, -3.050659, -1.588793, -2.812889]
+[-2.090448, -0.200824, -2.091636, -0.200307]
+[-1.531254, -1.531684, -1.532089, -1.531026]
+loss_diff: 4999.99658203125
 
 
 2
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006611049175262451
-tensor([-2.0597, -3.0502, -1.5874, -2.8137], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0910, -0.2006, -2.0905, -0.2008], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5316, -1.5313, -1.5313, -1.5316], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(3333.3315, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007681548595428467
+[-2.058981, -3.050738, -1.589366, -2.812562]
+[-2.090355, -0.200871, -2.092118, -0.200109]
+[-1.531192, -1.531741, -1.532456, -1.530752]
+loss_diff: 3333.330810546875
 
 
 3
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006403982639312744
-tensor([-2.0600, -3.0500, -1.5875, -2.8137], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0912, -0.2004, -2.0905, -0.2008], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5318, -1.5312, -1.5313, -1.5316], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(2499.9985, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.008237600326538086
+[-2.05885, -3.050828, -1.590036, -2.81218]
+[-2.090251, -0.200924, -2.092702, -0.199872]
+[-1.53111, -1.531817, -1.532855, -1.530459]
+loss_diff: 2499.997802734375
 
 
 4
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.008728563785552979
-tensor([-2.0601, -3.0499, -1.5878, -2.8135], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0913, -0.2004, -2.0907, -0.2007], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5319, -1.5311, -1.5315, -1.5314], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(1999.9984, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007024288177490234
+[-2.058738, -3.050907, -1.590785, -2.811742]
+[-2.090159, -0.200971, -2.093329, -0.199607]
+[-1.531042, -1.531879, -1.533362, -1.530072]
+loss_diff: 1999.9984130859375
 
 
 5
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.009044229984283447
-tensor([-2.0602, -3.0499, -1.5881, -2.8133], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0913, -0.2004, -2.0910, -0.2006], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5319, -1.5311, -1.5317, -1.5313], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(1666.6653, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.008712589740753174
+[-2.058589, -3.051006, -1.590304, -2.812021]
+[-2.090045, -0.201031, -2.092923, -0.199777]
+[-1.530941, -1.531975, -1.533054, -1.530313]
+loss_diff: 1666.6650390625
 
 
 6
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006336390972137451
-tensor([-2.0603, -3.0498, -1.5882, -2.8132], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0914, -0.2003, -2.0911, -0.2005], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5320, -1.5310, -1.5318, -1.5312], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(1428.5707, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.00868457555770874
+[-2.058371, -3.051156, -1.590195, -2.812081]
+[-2.08987, -0.201121, -2.092835, -0.199813]
+[-1.530806, -1.532101, -1.532966, -1.530375]
+loss_diff: 1428.5701904296875
 
 
 7
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.00660473108291626
-tensor([-2.0605, -3.0497, -1.5881, -2.8133], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0916, -0.2002, -2.0910, -0.2006], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5321, -1.5309, -1.5318, -1.5312], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(1249.9993, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.01144564151763916
+[-2.058238, -3.051246, -1.590693, -2.81179]
+[-2.089767, -0.201174, -2.093276, -0.199639]
+[-1.530715, -1.532185, -1.53323, -1.530178]
+loss_diff: 1249.99853515625
 
 
 8
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.00822603702545166
-tensor([-2.0607, -3.0495, -1.5878, -2.8135], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0918, -0.2001, -2.0907, -0.2007], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5322, -1.5308, -1.5317, -1.5313], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(1111.1102, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007572829723358154
+[-2.058057, -3.05137, -1.591448, -2.811353]
+[-2.089622, -0.201247, -2.093915, -0.199369]
+[-1.530603, -1.532287, -1.533704, -1.52983]
+loss_diff: 1111.1102294921875
 
 
 9
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006548762321472168
-tensor([-2.0608, -3.0494, -1.5871, -2.8139], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0919, -0.2001, -2.0901, -0.2009], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5323, -1.5307, -1.5313, -1.5316], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(999.9993, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007818043231964111
+[-2.05832, -3.051192, -1.591595, -2.811264]
+[-2.08983, -0.20114, -2.094035, -0.19932]
+[-1.53077, -1.532131, -1.533811, -1.529748]
+loss_diff: 999.9992065429688
 
 
 10
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006736814975738525
-tensor([-2.0612, -3.0492, -1.5872, -2.8138], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0921, -0.2000, -2.0901, -0.2009], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5324, -1.5306, -1.5314, -1.5315], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(0.0001, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007538318634033203
+[-2.058054, -3.051376, -1.5909, -2.811659]
+[-2.089616, -0.201249, -2.093453, -0.199558]
+[-1.53061, -1.532276, -1.533349, -1.530091]
+loss_diff: 0.00030031203641556203
 
 
 11
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006939113140106201
-tensor([-2.0614, -3.0491, -1.5875, -2.8137], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0923, -0.1999, -2.0904, -0.2008], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5325, -1.5305, -1.5316, -1.5313], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-5.5331e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.00688093900680542
+[-2.058038, -3.051388, -1.590619, -2.81182]
+[-2.0896, -0.201256, -2.093224, -0.199655]
+[-1.530604, -1.53228, -1.533146, -1.530249]
+loss_diff: -1.1742115020751953e-05
 
 
 12
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006349086761474609
-tensor([-2.0615, -3.0490, -1.5877, -2.8136], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0924, -0.1998, -2.0905, -0.2007], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5326, -1.5304, -1.5317, -1.5312], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(2.6196e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.00775754451751709
+[-2.057933, -3.051462, -1.591268, -2.811446]
+[-2.089511, -0.201301, -2.093782, -0.199428]
+[-1.530551, -1.532328, -1.53354, -1.529962]
+loss_diff: -7.599592208862305e-06
 
 
 13
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006692230701446533
-tensor([-2.0617, -3.0488, -1.5884, -2.8132], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0926, -0.1997, -2.0912, -0.2005], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5327, -1.5303, -1.5322, -1.5309], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-2.8825e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.008359432220458984
+[-2.057654, -3.051653, -1.592127, -2.810946]
+[-2.08929, -0.201415, -2.094509, -0.199129]
+[-1.530379, -1.532486, -1.534081, -1.529561]
+loss_diff: -1.2183189937786665e-05
 
 
 14
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.011530280113220215
-tensor([-2.0619, -3.0487, -1.5881, -2.8133], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0927, -0.1997, -2.0909, -0.2006], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5328, -1.5302, -1.5321, -1.5310], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-0.0003, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007491409778594971
+[-2.057518, -3.051746, -1.591908, -2.811072]
+[-2.089183, -0.20147, -2.094332, -0.199204]
+[-1.530288, -1.532571, -1.533916, -1.529693]
+loss_diff: -4.6712160838069394e-05
 
 
 15
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.010419070720672607
-tensor([-2.0622, -3.0485, -1.5886, -2.8131], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0930, -0.1995, -2.0913, -0.2004], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5330, -1.5301, -1.5323, -1.5308], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-0.0001, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.008502423763275146
+[-2.057257, -3.051926, -1.59223, -2.810892]
+[-2.088974, -0.201577, -2.094594, -0.199095]
+[-1.530129, -1.532718, -1.534148, -1.529516]
+loss_diff: 2.1016598111600615e-05
 
 
 16
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.008647382259368896
-tensor([-2.0624, -3.0483, -1.5889, -2.8129], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0931, -0.1994, -2.0915, -0.2003], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5331, -1.5300, -1.5325, -1.5307], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-0.0002, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007592260837554932
+[-2.0571, -3.052034, -1.592178, -2.810923]
+[-2.088848, -0.201641, -2.094551, -0.199114]
+[-1.530032, -1.532807, -1.534104, -1.52955]
+loss_diff: 0.00010923147056018934
 
 
 17
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.0063362717628479
-tensor([-2.0628, -3.0481, -1.5884, -2.8132], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0934, -0.1993, -2.0911, -0.2005], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5333, -1.5298, -1.5323, -1.5308], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(2.6846e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.0067359209060668945
+[-2.05714, -3.052004, -1.59255, -2.810708]
+[-2.088884, -0.201624, -2.094869, -0.198981]
+[-1.530044, -1.532797, -1.53433, -1.52938]
+loss_diff: 0.00047097206697799265
 
 
 18
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.0070400238037109375
-tensor([-2.0630, -3.0479, -1.5884, -2.8132], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0936, -0.1992, -2.0911, -0.2005], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5335, -1.5296, -1.5324, -1.5308], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(0.0001, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.009533524513244629
+[-2.056958, -3.05213, -1.59248, -2.81074]
+[-2.088737, -0.201699, -2.094822, -0.199]
+[-1.529932, -1.5329, -1.534259, -1.529435]
+loss_diff: -0.00019606947898864746
 
 
 19
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.009203433990478516
-tensor([-2.0632, -3.0478, -1.5885, -2.8132], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0938, -0.1991, -2.0912, -0.2005], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5336, -1.5295, -1.5324, -1.5307], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-0.0003, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007262051105499268
+[-2.056709, -3.052298, -1.592636, -2.810652]
+[-2.088543, -0.201799, -2.094944, -0.198946]
+[-1.52977, -1.53305, -1.534382, -1.529339]
+loss_diff: 5.5599211918888614e-05
 
 
 20
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.00626605749130249
-tensor([-2.0635, -3.0476, -1.5881, -2.8134], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0940, -0.1990, -2.0908, -0.2006], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5338, -1.5294, -1.5322, -1.5308], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(4.7076e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.008294761180877686
+[-2.056294, -3.05258, -1.593754, -2.810004]
+[-2.088214, -0.201966, -2.095886, -0.198563]
+[-1.529507, -1.533292, -1.535107, -1.528793]
+loss_diff: -7.564425322925672e-05
 
 
 21
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.00711977481842041
-tensor([-2.0638, -3.0473, -1.5882, -2.8133], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0943, -0.1988, -2.0909, -0.2006], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5339, -1.5292, -1.5323, -1.5308], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-1.8066e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.00789731740951538
+[-2.055987, -3.05279, -1.593938, -2.809892]
+[-2.087973, -0.202089, -2.096048, -0.198494]
+[-1.529308, -1.53348, -1.535204, -1.528723]
+loss_diff: -0.00010163784463657066
 
 
 22
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.0061509013175964355
-tensor([-2.0641, -3.0471, -1.5881, -2.8134], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0945, -0.1987, -2.0908, -0.2006], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5341, -1.5290, -1.5322, -1.5309], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(1.9819e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.00742870569229126
+[-2.055845, -3.052888, -1.59315, -2.810354]
+[-2.087856, -0.202147, -2.09539, -0.198768]
+[-1.529227, -1.533552, -1.53467, -1.529137]
+loss_diff: 3.288388325017877e-05
 
 
 23
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006081819534301758
-tensor([-2.0643, -3.0470, -1.5876, -2.8136], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0947, -0.1986, -2.0904, -0.2008], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5342, -1.5290, -1.5320, -1.5310], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(6.1041e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007634282112121582
+[-2.055676, -3.053003, -1.593459, -2.810177]
+[-2.08772, -0.202216, -2.095647, -0.198659]
+[-1.529125, -1.533645, -1.534866, -1.528989]
+loss_diff: 7.251500937854871e-05
 
 
 24
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.0066918134689331055
-tensor([-2.0644, -3.0469, -1.5878, -2.8135], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0948, -0.1986, -2.0906, -0.2007], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5343, -1.5289, -1.5321, -1.5309], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(0.0005, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.008321046829223633
+[-2.055621, -3.053041, -1.593584, -2.810104]
+[-2.087676, -0.202239, -2.095749, -0.198615]
+[-1.529091, -1.533676, -1.534963, -1.528915]
+loss_diff: -8.296370651805773e-05
 
 
 25
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.007903993129730225
-tensor([-2.0645, -3.0469, -1.5878, -2.8136], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0948, -0.1986, -2.0905, -0.2007], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5343, -1.5289, -1.5321, -1.5309], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(0.0003, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007929742336273193
+[-2.055408, -3.053186, -1.593715, -2.810029]
+[-2.087504, -0.202326, -2.095857, -0.198568]
+[-1.528963, -1.533794, -1.535053, -1.528849]
+loss_diff: 5.726814197259955e-05
 
 
 26
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.007252991199493408
-tensor([-2.0647, -3.0467, -1.5876, -2.8137], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0950, -0.1985, -2.0904, -0.2008], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5344, -1.5288, -1.5320, -1.5310], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(0.0001, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.0077661871910095215
+[-2.055326, -3.053242, -1.594236, -2.80972]
+[-2.08744, -0.202359, -2.096301, -0.198385]
+[-1.528908, -1.533844, -1.535392, -1.528596]
+loss_diff: -1.7392636436852627e-05
 
 
 27
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.00652158260345459
-tensor([-2.0647, -3.0467, -1.5873, -2.8139], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0951, -0.1985, -2.0900, -0.2009], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5344, -1.5288, -1.5319, -1.5311], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-1.8531e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007819771766662598
+[-2.055352, -3.053226, -1.593918, -2.809905]
+[-2.087459, -0.202349, -2.096037, -0.198494]
+[-1.528924, -1.53383, -1.535172, -1.528757]
+loss_diff: -0.00010838508751476184
 
 
 28
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006391584873199463
-tensor([-2.0650, -3.0466, -1.5876, -2.8137], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0952, -0.1984, -2.0903, -0.2008], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5345, -1.5286, -1.5321, -1.5309], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(6.4844e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007553577423095703
+[-2.055144, -3.053366, -1.593803, -2.809972]
+[-2.087293, -0.202433, -2.095946, -0.198535]
+[-1.528794, -1.533949, -1.53508, -1.528829]
+loss_diff: 0.00019799471192527562
 
 
 29
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.0069373250007629395
-tensor([-2.0654, -3.0462, -1.5874, -2.8138], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0956, -0.1982, -2.0901, -0.2009], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5348, -1.5284, -1.5320, -1.5310], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(0.0002, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007272958755493164
+[-2.054872, -3.053551, -1.594108, -2.809794]
+[-2.087076, -0.202544, -2.096211, -0.198426]
+[-1.528624, -1.534106, -1.535258, -1.528699]
+loss_diff: -1.090765067601751e-06
 
 
 30
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.008551478385925293
-tensor([-2.0657, -3.0460, -1.5878, -2.8136], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0958, -0.1981, -2.0905, -0.2007], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5350, -1.5283, -1.5322, -1.5308], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-0.0002, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007551670074462891
+[-2.054785, -3.05361, -1.593904, -2.809909]
+[-2.087007, -0.202579, -2.096052, -0.198497]
+[-1.52857, -1.534154, -1.535092, -1.528829]
+loss_diff: 7.430911500705406e-05
 
 
 31
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.008907735347747803
-tensor([-2.0659, -3.0459, -1.5882, -2.8133], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0960, -0.1980, -2.0909, -0.2006], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5351, -1.5282, -1.5325, -1.5306], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-0.0002, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.0072473883628845215
+[-2.054755, -3.05363, -1.594075, -2.809811]
+[-2.086983, -0.202591, -2.096198, -0.198437]
+[-1.528549, -1.534174, -1.535197, -1.52875]
+loss_diff: 6.499290611827746e-05
 
 
 32
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.009037196636199951
-tensor([-2.0659, -3.0459, -1.5882, -2.8133], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0960, -0.1980, -2.0908, -0.2006], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5351, -1.5281, -1.5325, -1.5306], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-0.0003, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.008954644203186035
+[-2.054702, -3.053667, -1.593433, -2.810185]
+[-2.08694, -0.202613, -2.095668, -0.198662]
+[-1.528515, -1.534205, -1.53475, -1.529092]
+loss_diff: -0.00015259385691024363
 
 
 33
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006774425506591797
-tensor([-2.0662, -3.0457, -1.5884, -2.8132], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0962, -0.1978, -2.0910, -0.2005], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5352, -1.5280, -1.5327, -1.5305], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-6.9261e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007775425910949707
+[-2.054381, -3.053885, -1.593637, -2.810063]
+[-2.086682, -0.202743, -2.095849, -0.198589]
+[-1.528322, -1.534381, -1.534859, -1.529013]
+loss_diff: -1.411438006471144e-05
 
 
 34
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.008684933185577393
-tensor([-2.0662, -3.0457, -1.5880, -2.8134], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0962, -0.1978, -2.0906, -0.2007], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5352, -1.5280, -1.5324, -1.5306], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-0.0002, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007871568202972412
+[-2.054144, -3.054046, -1.59422, -2.809713]
+[-2.08649, -0.202839, -2.096354, -0.198377]
+[-1.528184, -1.534505, -1.535219, -1.528738]
+loss_diff: 4.4947864807909355e-05
 
 
 35
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006729304790496826
-tensor([-2.0663, -3.0456, -1.5879, -2.8135], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0963, -0.1978, -2.0905, -0.2007], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5353, -1.5279, -1.5323, -1.5307], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(0.0001, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007118523120880127
+[-2.053837, -3.054251, -1.593872, -2.809916]
+[-2.086246, -0.202961, -2.096064, -0.198499]
+[-1.52799, -1.534683, -1.534987, -1.528913]
+loss_diff: 8.112192153930664e-05
 
 
 36
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006876826286315918
-tensor([-2.0664, -3.0455, -1.5875, -2.8138], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0964, -0.1978, -2.0902, -0.2009], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5354, -1.5279, -1.5321, -1.5309], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(3.7616e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.009689748287200928
+[-2.053658, -3.05437, -1.593797, -2.809959]
+[-2.086107, -0.203032, -2.096015, -0.198524]
+[-1.52787, -1.534792, -1.5349, -1.528987]
+loss_diff: -0.00019235610670875758
 
 
 37
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.007089436054229736
-tensor([-2.0667, -3.0453, -1.5869, -2.8141], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0967, -0.1976, -2.0897, -0.2010], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5355, -1.5277, -1.5318, -1.5311], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-5.6785e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007246911525726318
+[-2.05351, -3.054471, -1.59416, -2.80975]
+[-2.085987, -0.203091, -2.096319, -0.198396]
+[-1.527779, -1.534875, -1.535145, -1.5288]
+loss_diff: 5.7286026276415214e-05
 
 
 38
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006834447383880615
-tensor([-2.0670, -3.0451, -1.5871, -2.8140], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0969, -0.1975, -2.0898, -0.2010], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5357, -1.5276, -1.5319, -1.5310], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-4.4286e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.00826108455657959
+[-2.053678, -3.054358, -1.5945, -2.809548]
+[-2.086123, -0.203024, -2.096612, -0.198274]
+[-1.527876, -1.534786, -1.535342, -1.528652]
+loss_diff: -7.075071334838867e-05
 
 
 39
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.0077991485595703125
-tensor([-2.0672, -3.0449, -1.5872, -2.8139], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0971, -0.1974, -2.0900, -0.2009], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5358, -1.5274, -1.5320, -1.5309], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-8.6182e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.0070816874504089355
+[-2.053586, -3.054419, -1.595223, -2.809129]
+[-2.08605, -0.203061, -2.097213, -0.198024]
+[-1.527818, -1.534838, -1.53583, -1.528285]
+loss_diff: 1.912713014462497e-05
 
 
 40
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.007263064384460449
-tensor([-2.0674, -3.0448, -1.5866, -2.8143], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0972, -0.1973, -2.0894, -0.2012], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5359, -1.5273, -1.5316, -1.5312], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(0.0001, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.009868144989013672
+[-2.053422, -3.054531, -1.595194, -2.809138]
+[-2.085918, -0.203127, -2.097209, -0.198029]
+[-1.527719, -1.534928, -1.535769, -1.528337]
+loss_diff: -0.00023164750018622726
 
 
 41
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.011226654052734375
-tensor([-2.0677, -3.0446, -1.5864, -2.8144], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0974, -0.1972, -2.0892, -0.2013], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5361, -1.5272, -1.5315, -1.5313], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-0.0002, device='cuda:1')
+bessel_val: 0.0
+loss: 0.00823211669921875
+[-2.053232, -3.054659, -1.595622, -2.808884]
+[-2.085767, -0.203204, -2.097584, -0.197875]
+[-1.527592, -1.535046, -1.536025, -1.528147]
+loss_diff: -9.847283217823133e-05
 
 
-
-Early stopping
 42
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.007382869720458984
-tensor([-2.0679, -3.0445, -1.5870, -2.8141], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0976, -0.1971, -2.0897, -0.2010], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5362, -1.5271, -1.5318, -1.5311], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(0.0002, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007726013660430908
+[-2.053456, -3.054506, -1.595844, -2.808755]
+[-2.085951, -0.203112, -2.097784, -0.197795]
+[-1.527719, -1.53493, -1.536134, -1.528069]
+loss_diff: 0.00012286305718589574
 
 
 43
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.007758200168609619
-tensor([-2.0679, -3.0445, -1.5870, -2.8141], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0976, -0.1971, -2.0897, -0.2010], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5362, -1.5271, -1.5319, -1.5310], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-9.8377e-05, device='cuda:1')
+bessel_val: 0.0
+loss: 0.007476747035980225
+[-2.053329, -3.054592, -1.596062, -2.808628]
+[-2.085848, -0.203164, -2.097972, -0.197718]
+[-1.527643, -1.534999, -1.536268, -1.527969]
+loss_diff: 2.9867887860746123e-05
 
 
-
-Early stopping
 44
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006702303886413574
-tensor([-2.0679, -3.0445, -1.5873, -2.8139], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0976, -0.1971, -2.0899, -0.2009], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5362, -1.5271, -1.5321, -1.5309], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(0.0002, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.00813448429107666
+[-2.053286, -3.054623, -1.596218, -2.808534]
+[-2.085811, -0.203182, -2.098108, -0.197661]
+[-1.527618, -1.535021, -1.536355, -1.527903]
+loss_diff: -2.6291609174222685e-05
 
 
 45
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.00631636381149292
-tensor([-2.0681, -3.0444, -1.5875, -2.8138], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0978, -0.1971, -2.0901, -0.2009], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5363, -1.5270, -1.5323, -1.5308], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(4.1294e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.0080413818359375
+[-2.053494, -3.054481, -1.596324, -2.808469]
+[-2.085982, -0.203098, -2.098208, -0.197622]
+[-1.527734, -1.534917, -1.536394, -1.527878]
+loss_diff: -9.228587441612035e-05
 
 
 46
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.008757233619689941
-tensor([-2.0682, -3.0442, -1.5874, -2.8138], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0979, -0.1970, -2.0901, -0.2009], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5364, -1.5269, -1.5322, -1.5308], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-0.0002, device='cuda:1')
+bessel_val: 0.0
+loss: 0.008332312107086182
+[-2.053376, -3.054559, -1.596422, -2.808409]
+[-2.085892, -0.203144, -2.098296, -0.197585]
+[-1.527649, -1.534997, -1.536453, -1.527837]
+loss_diff: 0.00013574362674262375
 
 
-
-Early stopping
 47
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.00622105598449707
-tensor([-2.0684, -3.0442, -1.5874, -2.8139], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0980, -0.1969, -2.0900, -0.2009], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5364, -1.5269, -1.5322, -1.5308], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(8.6838e-05, device='cuda:1')
-
+bessel_val: 0.0
+loss: 0.007262170314788818
+[-2.053244, -3.054647, -1.596318, -2.808473]
+[-2.085789, -0.203196, -2.098208, -0.197624]
+[-1.52756, -1.535078, -1.536386, -1.527887]
+loss_diff: -1.5258789289873675e-06
 
 
 48
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.007173299789428711
-tensor([-2.0685, -3.0440, -1.5872, -2.8140], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0982, -0.1969, -2.0898, -0.2010], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5365, -1.5268, -1.5321, -1.5308], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-3.3885e-05, device='cuda:1')
+bessel_val: 0.0
+loss: 0.009486019611358643
+[-2.053057, -3.054774, -1.597263, -2.807926]
+[-2.08564, -0.203271, -2.098996, -0.197295]
+[-1.527442, -1.535186, -1.536998, -1.527416]
+loss_diff: -0.00012249351129867136
 
 
-
-Early stopping
 49
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.0062694549560546875
-tensor([-2.0687, -3.0439, -1.5870, -2.8141], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0983, -0.1968, -2.0897, -0.2011], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5366, -1.5267, -1.5320, -1.5309], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(0.0002, device='cuda:1')
+bessel_val: 0.0
+loss: 0.007068514823913574
+[-2.053149, -3.054712, -1.59683, -2.808178]
+[-2.085715, -0.203235, -2.098644, -0.197447]
+[-1.527493, -1.53514, -1.536685, -1.527663]
+loss_diff: 1.3172626722735004e-06
 
 
-
-50
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.00800710916519165
-tensor([-2.0689, -3.0438, -1.5875, -2.8138], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0984, -0.1967, -2.0901, -0.2009], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5367, -1.5266, -1.5323, -1.5307], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-7.4404e-05, device='cuda:1')
-
-
-
-Early stopping
-51
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006209194660186768
-tensor([-2.0693, -3.0435, -1.5877, -2.8137], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0988, -0.1965, -2.0902, -0.2008], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5370, -1.5264, -1.5324, -1.5306], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(0.0005, device='cuda:1')
-
-
-
-52
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.008472919464111328
-tensor([-2.0696, -3.0433, -1.5878, -2.8137], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0990, -0.1964, -2.0903, -0.2008], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5371, -1.5262, -1.5325, -1.5306], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-0.0001, device='cuda:1')
-
-
-
-Early stopping
-53
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.005448877811431885
-tensor([-2.0697, -3.0432, -1.5877, -2.8137], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0991, -0.1964, -2.0902, -0.2008], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5372, -1.5262, -1.5325, -1.5306], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(0.0002, device='cuda:1')
-
-
-
-54
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.006311655044555664
-tensor([-2.0699, -3.0431, -1.5878, -2.8137], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0992, -0.1963, -2.0903, -0.2008], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5373, -1.5261, -1.5326, -1.5305], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(3.9065e-05, device='cuda:1')
-
-
-
-55
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.00957256555557251
-tensor([-2.0698, -3.0431, -1.5879, -2.8136], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0992, -0.1963, -2.0904, -0.2008], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5372, -1.5261, -1.5327, -1.5304], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-0.0003, device='cuda:1')
-
-
-
-Early stopping
-56
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.012758255004882812
-tensor([-2.0699, -3.0430, -1.5882, -2.8135], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0993, -0.1963, -2.0906, -0.2007], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5373, -1.5261, -1.5329, -1.5302], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-0.0004, device='cuda:1')
-
-
-
-Early stopping
-57
-bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-loss: 0.007114529609680176
-tensor([-2.0700, -3.0429, -1.5888, -2.8131], device='cuda:1',
-       requires_grad=True)
-tensor([-2.0994, -0.1962, -2.0911, -0.2004], device='cuda:1',
-       requires_grad=True)
-tensor([-1.5374, -1.5260, -1.5333, -1.5299], device='cuda:1',
-       requires_grad=True)
-loss_diff tensor(-8.9347e-05, device='cuda:1')
-
-
-
-Early stopping
-
-
-#53 MINIMA
-#bessel_val: tensor(0., device='cuda:1', grad_fn=<MaximumBackward0>)
-#loss: 0.005448877811431885
-#tensor([-2.0697, -3.0432, -1.5877, -2.8137], device='cuda:1',
-#       requires_grad=True)
-#tensor([-2.0991, -0.1964, -2.0902, -0.2008], device='cuda:1',
-#       requires_grad=True)
-#tensor([-1.5372, -1.5262, -1.5325, -1.5306], device='cuda:1',
-#       requires_grad=True)
-#loss_diff tensor(0.0002, device='cuda:1')
-
-#mean_list = [-2.0697, -3.0432, -1.5877, -2.8137, -2.0991, -0.1964, -2.0902, -0.2008, -1.5372, -1.5262, -1.5325, -1.5306]
