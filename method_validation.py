@@ -53,7 +53,7 @@ if __name__ == "__main__":
         device = "cpu"
         print("GPU not available. Model will be created on CPU.")
     
-    restart_num = 20
+    restart_num = 30
 
     executer = NetworkExecuterParallel(1000, device=device, scaling_g=0.15)
     loss_function = MouseLossFunctionOptimised(device=device)

@@ -49,7 +49,7 @@ def jsd(samples_p, samples_q):
     result_jsd = 0
     for i, j  in zip(samples_p, samples_q):
         result_jsd += jensen_shannon_divergence_from_samples(i, j)
-    return np.exp(result_jsd + 3)
+    return result_jsd
 
 # Example usage with arbitrary-dimensional datasets
 samples_p = np.random.randn(96, 1000, 1)  # Sample from distribution P (3 dimensions)
@@ -96,6 +96,11 @@ w_array = [-1.0986122886681098, -1.0986122886681098, -1.0986122886681098, -1.098
 J_array = [-2.059459853260332, -3.0504048076264896, -1.5877549090278045, -2.813481385641024]  # n = 1000
 P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124]
 w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886]   # Should be lowest
+
+J_array = [-1.233466, 0.362151, -1.84669, 0.275236]
+P_array = [-0.6024259999999999, -1.489425, 0.3773059999999996, 0.7860370000000003]
+w_array = [-2.260707, 0.19369199999999995, 1.2847419999999998, 1.3065529999999999] 
+
 J_array = torch.tensor(J_array)
 P_array = torch.tensor(P_array)
 w_array = torch.tensor(w_array)
