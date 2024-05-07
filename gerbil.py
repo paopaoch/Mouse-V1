@@ -73,6 +73,11 @@ def get_jsd_loss(
     if not y_centralised:
         y_E = centralise_all_curves(y_E)
         y_I = centralise_all_curves(y_I)
+    
+    x, y, z = y_E.shape
+    y_E = y_E.reshape(x, y * z).unsqueeze(2)
+    x, y, z = y_I.shape
+    y_I = y_I.reshape(x, y * z).unsqueeze(2)
 
     y_E = y_E.detach().cpu().numpy()
     y_I = y_I.detach().cpu().numpy()
