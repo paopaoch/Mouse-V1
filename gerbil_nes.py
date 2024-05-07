@@ -106,7 +106,7 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         feed_forward = False
     
     # Init model and loss function
-    network_executer = NetworkExecuterParallel(neuron_num, device=device, feed_forward_num=feed_forward_num)
+    network_executer = NetworkExecuterParallel(neuron_num, device=device, feed_forward_num=feed_forward_num, scaling_g=0.15)
     weights_generator = WeightsGeneratorExact(J, P, w, neuron_num, feed_forward_num=feed_forward_num, device=device)
     weights_valid = weights_generator.validate_weight_matrix()
 
@@ -366,42 +366,3 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         f.flush()
 
     return mean, cov_optimised, i
-
-
-if __name__ == "__main__":
-    desc = ""
-
-    if torch.cuda.is_available():
-        device = "cuda:1"
-        print("Model will be created on GPU")
-    else:
-        device = "cpu"
-        print("GPU not available. Model will be created on CPU.")
-
-    # mean_list = [-5.753641449035618, -18.152899666382492, 1.6034265007517936, -15.163474893680885, 
-    #              -2.5418935811616112, 6.591673732008657, -2.5418935811616112, 6.591673732008657, 
-    #              -138.44395575681614, -138.44395575681614, -138.44395575681614, -138.44395575681614]  # Config 13 10000
-
-    mean_list = [-1.7346010553881064, -2.586689344097943, -1.3862943611198906, -3.1780538303479458,
-                 -1.265666373331276, -0.6190392084062235, -1.265666373331276, -0.6190392084062235, 
-                 -1.0986122886681098, -1.0986122886681098, -1.0986122886681098, -1.0986122886681098]
-
-    var_list = [0.5, 0.5, 0.5, 0.5, 
-                0.5, 0.5, 0.5, 0.5, 
-                0.5, 0.5, 0.5, 0.5,]  # This is from the experiment with 1000 neurons and with simulated data
-    
-    mean, cov = make_torch_params(mean_list, var_list, device=device)
-
-    # y_E, y_I = get_data(device=device)
-
-    # with open("./data/data_1000_neuron3/responses.pkl", 'rb') as f:
-    with open("./plots/ignore_plots_config13/responses.pkl", 'rb') as f:
-        responses: torch.Tensor = pickle.load(f)
-        responses = responses.to(device)
-        y_E, y_I = responses[:8000], responses[8000:]
-        responses = 0
-
-    print(nes_multigaussian_optim(mean, cov, 200, 24, y_E, y_I, 
-                                  device=device, neuron_num=1000, 
-                                  desc=desc, trials=1, alpha=0.1, eta_delta=1, 
-                                  avg_step_weighting=0.1, stopping_criterion_step=0.0000001, adaptive_lr=False))
