@@ -59,7 +59,7 @@ if __name__ == "__main__":
     for contrast_i, contrast in enumerate(contrasts):
         
         torch.manual_seed(69)  # we need to retry with the same random seed
-        executer.contrasts = contrasts
+        executer.contrasts = contrast
         J_array = [-1.7346010553881064, -2.586689344097943, -1.3862943611198906, -3.1780538303479458]  # pre-determined start
         P_array = [-1.265666373331276, -0.6190392084062235, -1.265666373331276, -0.6190392084062235]
         w_array = [-1.0986122886681098, -1.0986122886681098, -1.0986122886681098, -1.0986122886681098]
