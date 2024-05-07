@@ -78,9 +78,15 @@ def get_jsd_loss(
     y_E = y_E.reshape(x, y * z).unsqueeze(2)
     x, y, z = y_I.shape
     y_I = y_I.reshape(x, y * z).unsqueeze(2)
+    x, y, z = x_E.shape
+    x_E = x_E.reshape(x, y * z).unsqueeze(2)
+    x, y, z = x_I.shape
+    x_I = x_I.reshape(x, y * z).unsqueeze(2)
 
     y_E = y_E.detach().cpu().numpy()
     y_I = y_I.detach().cpu().numpy()
+    x_E = x_E.detach().cpu().numpy()
+    x_I = x_I.detach().cpu().numpy()
 
     E = jsd(x_E, y_E)
     I = jsd(x_I, y_I)
