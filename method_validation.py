@@ -48,7 +48,7 @@ if __name__ == "__main__":
     desc = "Method validation"
 
     if torch.cuda.is_available():
-        device = "cuda:1"
+        device = "cuda:0"
         print("Model will be created on GPU")
     else:
         device = "cpu"
@@ -87,9 +87,9 @@ if __name__ == "__main__":
         # J_array = torch.randn((4))
         # P_array = torch.randn((4))
         # w_array = torch.randn((4))
-        J_array = [-1.9265, -3.6378, -1.3867, -2.0895]
-        P_array = [-3.8113, -1.496, -2.367, 0.24729999999999996]
-        w_array = [-1.6551, -0.7149999999999999, -1.3291, -2.1243] 
+        J_array = [-2.4301, -2.6042, -1.701, -2.8844]
+        P_array = [-1.9108, -0.6369999999999998, -1.6651, 0.17859999999999995]
+        w_array = [-1.3111999999999997, -1.3845, -1.2137, -0.3243000000000002] 
         J_array = torch.tensor(J_array, device= device, requires_grad=True)
         P_array = torch.tensor(P_array, device= device, requires_grad=True)
         w_array = torch.tensor(w_array, device= device, requires_grad=True)
