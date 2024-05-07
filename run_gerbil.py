@@ -32,9 +32,9 @@ tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W)
 y_E, y_I = tuning_curves[:800], tuning_curves[800:]
 
 
-var_list = [0.5, 0.5, 0.5, 0.5,
-            0.5, 0.5, 0.5, 0.5, 
-            0.5, 0.5, 0.5, 0.5,]
+var_list = [0.1, 0.1, 0.1, 0.1,
+            0.1, 0.1, 0.1, 0.1, 
+            0.1, 0.1, 0.1, 0.1,]
 
 mean, cov = make_torch_params(mean_list, var_list, device=device)
 nes_multigaussian_optim(mean, cov, 200, 24, y_E, y_I, device=device, neuron_num=n, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.0000001, adaptive_lr=False)
