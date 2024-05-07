@@ -4,7 +4,7 @@ import time
 import sys
 import socket
 from datetime import datetime
-from rodents_routine import round_1D_tensor_to_list, create_directory_if_not_exists, subsample_tensor_uniform
+from utils.rodents_routine import round_1D_tensor_to_list, create_directory_if_not_exists, subsample_tensor_uniform
 
 
 if __name__ == "__main__":
