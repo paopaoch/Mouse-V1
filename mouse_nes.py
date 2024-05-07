@@ -401,9 +401,9 @@ if __name__ == "__main__":
     y_E, y_I = tuning_curves[:800], tuning_curves[800:]
 
 
-    var_list = [0.1, 0.1, 0.1, 0.1,
-                0.1, 0.1, 0.1, 0.1, 
-                0.1, 0.1, 0.1, 0.1,]
+    var_list = [0.5, 0.5, 0.5, 0.5,
+                0.5, 0.5, 0.5, 0.5, 
+                0.5, 0.5, 0.5, 0.5,]
 
     mean, cov = make_torch_params(mean_list, var_list, device=device)
 
