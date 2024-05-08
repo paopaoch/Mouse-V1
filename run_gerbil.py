@@ -7,7 +7,7 @@ torch.manual_seed(69)
 desc = "NES with JSD"
 
 if torch.cuda.is_available():
-    device = "cuda:0"
+    device = "cuda:1"
     print("Model will be created on GPU")
 else:
     device = "cpu"
