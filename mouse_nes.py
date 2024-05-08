@@ -339,6 +339,9 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                 stopping_reached_count = 0
             prev_avg_nes_step = avg_nes_step.clone().detach()
 
+            if torch.isnan(mean).any().item():
+                break
+
         # Get back parameters
         A_optimised = B * sigma
         cov_optimised = A_optimised.t() @ A_optimised
