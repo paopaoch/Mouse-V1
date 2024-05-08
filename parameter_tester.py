@@ -389,7 +389,7 @@ if __name__ == "__main__":
             EF = None
             IF = None
         else:
-            mean_list = [-2.4301, -2.6042, -1.7010, -2.8844, -1.9108, -0.6370, -1.6651,  0.1786, -1.3112, -1.3845, -1.2137, -0.3243]
+            mean_list = [-2.1952, -4.0602, -1.0369, -3.2760, -3.8089, -0.2978, -2.1087,  0.0103, -1.9804, -1.7178, -1.9194, -0.3518]
 
             if len(mean_list) == 18:
                 EE = Connection(params_to_J(mean_list[0]), params_to_P(mean_list[6]), params_to_w(mean_list[12]), N_E)
