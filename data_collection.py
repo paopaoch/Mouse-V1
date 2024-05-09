@@ -30,13 +30,6 @@ with open(metadata_file, 'w') as f:
     f.write('dir,J_EE,J_EI,J_IE,J_II,P_EE,P_EI,P_IE,P_II,w_EE,w_EI,w_IE,w_II')
 
 def execute_network(W):
-    if type(J_array) != J_array:
-        J_array = torch.tensor(J_array, device=device)
-    if type(P_array) != P_array:
-        P_array = torch.tensor(P_array, device=device)
-    if type(w_array) != w_array:
-        w_array = torch.tensor(w_array, device=device)
-
     tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W)
     y_E, y_I = tuning_curves[:E_index], tuning_curves[E_index:]
     return y_E, y_I, avg_step
