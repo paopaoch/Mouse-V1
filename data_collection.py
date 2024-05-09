@@ -43,9 +43,9 @@ def execute_network(W):
 
 
 def get_random_param():
-    J_array = np.random.rand(12) * 9 - 4.5
-    P_array = np.random.rand(12) * 9 - 4.5
-    w_array = np.random.rand(12) * 9 - 4.5
+    J_array = np.random.rand(4) * 9 - 4.5
+    P_array = np.random.rand(4) * 9 - 4.5
+    w_array = np.random.rand(4) * 9 - 4.5
     J_array = torch.tensor(J_array, device=device, requires_grad=True)
     P_array = torch.tensor(P_array, device=device, requires_grad=True)
     w_array = torch.tensor(w_array, device=device, requires_grad=True)
