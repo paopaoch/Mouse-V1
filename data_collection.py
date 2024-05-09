@@ -1,5 +1,5 @@
 from rat import WeightsGenerator, NetworkExecuterParallel, MouseLossFunctionOptimised
-from utils.rodents_routine import get_device, create_directory_if_not_exists, round_1D_tensor_to_list
+from utils.rodents_routine import get_device, create_directory_if_not_exists, round_1D_tensor_to_list, params_to_J_scalar, params_to_P_scalar, params_to_w_scalar
 import torch
 import numpy as np
 import time
@@ -45,7 +45,7 @@ def get_random_param():
     return J_array, P_array, w_array
 
 
-def run_gd(J_array, P_array, w_array, y_E, y_I, iterations=50):
+def run_gd(J_array, P_array, w_array, y_E, y_I, iterations=10):
     valid_count = 0
     found = False
     for _ in tqdm(range(iterations)):
@@ -106,11 +106,11 @@ def save_data(y_E, y_I, J_array, P_array, w_array):
     P_array = round_1D_tensor_to_list(P_array)
     w_array = round_1D_tensor_to_list(w_array)
 
-    with open(metadata_file, 'a') as f:  # TODO: format arrays to values
-        f.write(f"""\n{sub_dir_name}
-                ,{J_array[0]},{J_array[1]},{J_array[2]},{J_array[3]}
-                ,{P_array[0]},{P_array[1]},{P_array[2]},{P_array[3]}
-                ,{w_array[0]},{w_array[1]},{w_array[2]},{w_array[3]}""")
+    with open(metadata_file, 'a') as f:
+        f.write(f"\n{sub_dir_name}"
+                + f",{round(params_to_J_scalar(J_array[0]), 2)},{round(params_to_J_scalar(J_array[1]), 2)},{round(params_to_J_scalar(J_array[2]), 2)},{round(params_to_J_scalar(J_array[3]), 2)}"
+                + f",{round(params_to_P_scalar(P_array[0]), 2)},{round(params_to_P_scalar(P_array[1]), 2)},{round(params_to_P_scalar(P_array[2]), 2)},{round(params_to_P_scalar(P_array[3]), 2)}"
+                + f",{round(params_to_w_scalar(w_array[0]), 2)},{round(params_to_w_scalar(w_array[1]), 2)},{round(params_to_w_scalar(w_array[2]), 2)},{round(params_to_w_scalar(w_array[3]), 2)}")
 
 
 def main(dataset_size=3000):

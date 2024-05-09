@@ -1,6 +1,7 @@
 import torch
 import os
 import random
+import math
 
 J_steep = 1
 J_scale = 100
@@ -76,6 +77,10 @@ def _sigmoid(value, steepness=1, scaling=1):
     return scaling / (1 + torch.exp(-steepness * value))
 
 
+def _sigmoid_scalar(value, steepness=1, scaling=1):
+    return scaling / (1 + math.exp(-steepness * value))
+
+
 def _inverse_sigmoid(value, steepness=1, scaling=1):
     return - (1 / steepness) * torch.log((scaling / value) - 1)
 
@@ -88,3 +93,8 @@ w_to_params = lambda x: _inverse_sigmoid(x, w_steep, w_scale)
 params_to_J = lambda x: _sigmoid(x, J_steep, J_scale)
 params_to_P = lambda x: _sigmoid(x, P_steep, P_scale)
 params_to_w = lambda x: _sigmoid(x, w_steep, w_scale)
+
+
+params_to_J_scalar = lambda x: _sigmoid_scalar(x, J_steep, J_scale)
+params_to_P_scalar = lambda x: _sigmoid_scalar(x, P_steep, P_scale)
+params_to_w_scalar = lambda x: _sigmoid_scalar(x, w_steep, w_scale)
