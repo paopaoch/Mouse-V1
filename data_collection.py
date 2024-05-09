@@ -54,7 +54,6 @@ def run_gd(J_array, P_array, w_array, y_E, y_I, iterations=50):
         bessel_val = wg.validate_weight_matrix()
         x_E, x_I, avg_step = execute_network(W)
         loss, _ = loss_func.calculate_loss(x_E, x_I, y_E, y_I, avg_step, bessel_val)
-        print(loss)
         loss.backward()
         J_array: torch.Tensor = (J_array - 1 * wg.J_parameters.grad).clone().detach().requires_grad_(True)
         P_array: torch.Tensor = (P_array - 1 * wg.P_parameters.grad).clone().detach().requires_grad_(True)
@@ -99,9 +98,9 @@ def save_data(y_E, y_I, J_array, P_array, w_array):
     full_sub_dir_name = f"{dir_name}/{sub_dir_name}"
     create_directory_if_not_exists(full_sub_dir_name)
     with open(f"{full_sub_dir_name}/y_E.pkl", "wb") as f:
-        pickle.dump(y_E)
+        pickle.dump(y_E, f)
     with open(f"{full_sub_dir_name}/y_I.pkl", "wb") as f:
-        pickle.dump(y_I)
+        pickle.dump(y_I, f)
 
     J_array = round_1D_tensor_to_list(J_array)
     P_array = round_1D_tensor_to_list(P_array)
