@@ -124,6 +124,7 @@ def main(dataset_size=3000):
         y_E, y_I = trim_data(y_E, y_I)
         save_data(y_E, y_I, J_array, P_array, w_array)
         count += 1
+        print(count)
 
 
 main(dataset_size=2000)
