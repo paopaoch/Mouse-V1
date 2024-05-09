@@ -7,6 +7,7 @@ import pickle
 from tqdm import tqdm
 
 N = 1000
+E_index = 800
 device = get_device("cuda:0")
 executer = NetworkExecuterParallel(N, device=device)
 loss_func = MouseLossFunctionOptimised(device=device)
@@ -19,7 +20,8 @@ config13 = {
 
 WG13 = WeightsGenerator(config13["J"], config13["P"], config13["w"], N, device=device)
 W = WG13.generate_weight_matrix()
-config_E, config_I, _ = executer.run_all_orientation_and_contrast(W)
+tuning_curves, _ = executer.run_all_orientation_and_contrast(W)
+config_E, config_I = tuning_curves[:E_index], tuning_curves[E_index:]
 
 dir_name = f"DATASET_{time.time()}"
 create_directory_if_not_exists(dir_name)
@@ -36,7 +38,7 @@ def execute_network(W):
         w_array = torch.tensor(w_array, device=device)
 
     tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W)
-    y_E, y_I = tuning_curves[:800], tuning_curves[800:]
+    y_E, y_I = tuning_curves[:E_index], tuning_curves[E_index:]
     return y_E, y_I, avg_step
 
 
