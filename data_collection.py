@@ -54,11 +54,16 @@ def run_gd(J_array, P_array, w_array, y_E, y_I, iterations=50):
         bessel_val = wg.validate_weight_matrix()
         x_E, x_I, avg_step = execute_network(W)
         loss, _ = loss_func.calculate_loss(x_E, x_I, y_E, y_I, avg_step, bessel_val)
+        print(loss)
         loss.backward()
         J_array: torch.Tensor = (J_array - 1 * wg.J_parameters.grad).clone().detach().requires_grad_(True)
         P_array: torch.Tensor = (P_array - 1 * wg.P_parameters.grad).clone().detach().requires_grad_(True)
         w_array: torch.Tensor = (w_array - 1 * wg.w_parameters.grad).clone().detach().requires_grad_(True)
         
+        if torch.isnan(J_array).any().item() or torch.isnan(P_array).any().item() or torch.isnan(w_array).any().item():
+            found = False
+            break
+
         if bessel_val == 0:
             valid_count += 1
         if valid_count == 4:
