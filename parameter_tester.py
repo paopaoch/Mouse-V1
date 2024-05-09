@@ -379,10 +379,15 @@ if __name__ == "__main__":
             # IE = Connection(16.97, 0.11, 32, N_E)
             # II = Connection(5.66, 0.45, 32, N_I)
 
-            EE = Connection(15, 0.22, 45, N_E)  # 1000
-            EI = Connection(7, 0.35, 45, N_I)
-            IE = Connection(20, 0.22, 45, N_E)
-            II = Connection(4, 0.35, 45, N_I)
+            EE = Connection(29.9035, 0.0335, 23.0645, N_E)  # 1000
+            EI = Connection(87.2499, 0.8239, 5.527, N_I)
+            IE = Connection(29.253, 0.9396, 40.9159, N_E)
+            II = Connection(93.7406, 0.9263, 112.43, N_I)
+
+            # EE = Connection(15, 0.22, 45, N_E)  # 1000
+            # EI = Connection(7, 0.35, 45, N_I)
+            # IE = Connection(20, 0.22, 45, N_E)
+            # II = Connection(4, 0.35, 45, N_I)
 
             # EF = Connection(5, 0.11, 30, N_F)
             # IF = Connection(5, 0.11, 30, N_F)
