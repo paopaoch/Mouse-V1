@@ -2,6 +2,14 @@ import torch
 import os
 import random
 
+J_steep = 1
+J_scale = 100
+
+P_steep = 1
+P_scale = 1
+
+w_steep = 1
+w_scale = 180
 
 def round_1D_tensor_to_list(a, decimals=6):
     """
@@ -52,3 +60,31 @@ def subsample_tensor_uniform(original_tensor, x):
     subsampled_tensor = original_tensor[indices, :, :]
 
     return subsampled_tensor
+
+
+def get_device(cuda_name="cuda:0"):
+    if torch.cuda.is_available():
+        device = cuda_name
+        print("Model will be created on GPU")
+    else:
+        device = "cpu"
+        print("GPU not available. Model will be created on CPU.")
+    return device
+
+
+def _sigmoid(value, steepness=1, scaling=1):
+    return scaling / (1 + torch.exp(-steepness * value))
+
+
+def _inverse_sigmoid(value, steepness=1, scaling=1):
+    return - (1 / steepness) * torch.log((scaling / value) - 1)
+
+
+J_to_params = lambda x: _inverse_sigmoid(x, J_steep, J_scale)
+P_to_params = lambda x: _inverse_sigmoid(x, P_steep, P_scale)
+w_to_params = lambda x: _inverse_sigmoid(x, w_steep, w_scale)
+
+
+params_to_J = lambda x: _sigmoid(x, J_steep, J_scale)
+params_to_P = lambda x: _sigmoid(x, P_steep, P_scale)
+params_to_w = lambda x: _sigmoid(x, w_steep, w_scale)

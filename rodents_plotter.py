@@ -315,6 +315,10 @@ if __name__ == "__main__":
             # P_array = [-2.540272, -0.43081000000000014, -1.709688, 1.4607419999999998]
             # w_array = [1.9253960000000003, 1.2231920000000003, 0.6714970000000001, 0.10828700000000002] 
 
+            J_array = [-5.6143, 4.219200000000003, -2.7704, 2.3773999999999993]
+            P_array = [-2.6886, -3.678, 1.6468999999999994, 5.235799999999983]
+            w_array = [-3.0668, -1.6994, -1.6572, 0.9739] 
+
             generator = WeightsGeneratorExact(J_array, P_array, w_array, neuron_num, feed_forward_num)
             W = generator.generate_weight_matrix()
             plot_weights(W)
