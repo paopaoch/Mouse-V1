@@ -49,7 +49,7 @@ def run_gd(J_array, P_array, w_array, y_E, y_I, iterations=50):
     valid_count = 0
     found = False
     for _ in tqdm(range(iterations)):
-        wg = WeightsGenerator(J_array, P_array, w_array, N, device=device)
+        wg = WeightsGenerator(J_array, P_array, w_array, N, device=device, forward_mode=True)
         W = wg.generate_weight_matrix()
         bessel_val = wg.validate_weight_matrix()
         x_E, x_I, avg_step = execute_network(W)
@@ -102,8 +102,11 @@ def save_data(y_E, y_I, J_array, P_array, w_array):
     P_array = round_1D_tensor_to_list(P_array)
     w_array = round_1D_tensor_to_list(w_array)
 
-    with open(metadata_file, 'a') as f:
-        f.write(f"\n{sub_dir_name},{J_array[0]},{J_array[1]},{J_array[2]},{J_array[3]},{P_array[0]},{P_array[1]},{P_array[2]},{P_array[3]},{w_array[0]},{w_array[1]},{w_array[2]},{w_array[3]}")
+    with open(metadata_file, 'a') as f:  # TODO: format arrays to values
+        f.write(f"""\n{sub_dir_name}
+                ,{J_array[0]},{J_array[1]},{J_array[2]},{J_array[3]}
+                ,{P_array[0]},{P_array[1]},{P_array[2]},{P_array[3]}
+                ,{w_array[0]},{w_array[1]},{w_array[2]},{w_array[3]}""")
 
 
 def main(dataset_size=3000):
