@@ -108,9 +108,9 @@ def save_data(y_E, y_I, J_array, P_array, w_array):
 
     with open(metadata_file, 'a') as f:
         f.write(f"\n{sub_dir_name}"
-                + f",{round(params_to_J_scalar(J_array[0]), 2)},{round(params_to_J_scalar(J_array[1]), 2)},{round(params_to_J_scalar(J_array[2]), 2)},{round(params_to_J_scalar(J_array[3]), 2)}"
-                + f",{round(params_to_P_scalar(P_array[0]), 2)},{round(params_to_P_scalar(P_array[1]), 2)},{round(params_to_P_scalar(P_array[2]), 2)},{round(params_to_P_scalar(P_array[3]), 2)}"
-                + f",{round(params_to_w_scalar(w_array[0]), 2)},{round(params_to_w_scalar(w_array[1]), 2)},{round(params_to_w_scalar(w_array[2]), 2)},{round(params_to_w_scalar(w_array[3]), 2)}")
+                + f",{round(params_to_J_scalar(J_array[0]), 4)},{round(params_to_J_scalar(J_array[1]), 4)},{round(params_to_J_scalar(J_array[2]), 4)},{round(params_to_J_scalar(J_array[3]), 4)}"
+                + f",{round(params_to_P_scalar(P_array[0]), 4)},{round(params_to_P_scalar(P_array[1]), 4)},{round(params_to_P_scalar(P_array[2]), 4)},{round(params_to_P_scalar(P_array[3]), 4)}"
+                + f",{round(params_to_w_scalar(w_array[0]), 4)},{round(params_to_w_scalar(w_array[1]), 4)},{round(params_to_w_scalar(w_array[2]), 4)},{round(params_to_w_scalar(w_array[3]), 4)}")
 
 
 def main(dataset_size=3000):
