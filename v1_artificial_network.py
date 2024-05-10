@@ -1,12 +1,13 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader
+from torch.utils.data import Dataset, DataLoader
+import pickle
 
 
-class V1_CNN(nn.Module):
-    def __init__(self, num_classes=10):
-        super(V1_CNN, self).__init__()
+class V1CNN(nn.Module):
+    def __init__(self, num_classes=12):
+        super(V1CNN, self).__init__()
         self.features_excit = nn.Sequential(
             nn.Conv2d(1, 4, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
@@ -29,25 +30,25 @@ class V1_CNN(nn.Module):
         self.regressor = nn.Sequential(
             nn.Linear(60 * 4 * 4 * 6, 48),  # nuber of images * number of output channel * image width * image height
             nn.ReLU(),
-            nn.Linear(128, 12),
+            nn.Linear(48, 12),
             nn.ReLU(),
+            nn.Dropout(p=0.5),
             nn.Linear(12, num_classes),  # 12 classes
             nn.Sigmoid()
         )
 
 
-    def forward(self, x: torch.Tensor):  # input is a len 2 list of torch vector of size (batch_size, 60, 8, 12)
-        x = x.transpose(1, 0, 2, 3)
+    def forward(self, x):  # input is a len 2 list of torch vector of size (batch_size, 48 (or 12), 8, 12)
 
         cnn_output_list = []
-        for image in x[0]:
-            image: torch.Tensor = image.unsqueeze(1)  # image is now (batch_size, 1, 8, 12) I think
+        for image in x[0].permute(1, 0, 2, 3):
+            image: torch.Tensor = image.unsqueeze(1)  # image is now (batch_size, 1, 8, 12)
             image = self.features_excit(image)
             image = torch.flatten(image, 1)
             cnn_output_list.append(image)
 
-        for image in x[1]:
-            image: torch.Tensor = image.unsqueeze(1)  # image is now (batch_size, 1, 8, 12) I think
+        for image in x[1].permute(1, 0, 2, 3):
+            image: torch.Tensor = image.unsqueeze(1)  # image is now (batch_size, 1, 8, 12)
             image = self.features_inhib(image)
             image = torch.flatten(image, 1)
             cnn_output_list.append(image)
@@ -58,6 +59,73 @@ class V1_CNN(nn.Module):
         return h
 
 
-# DATASET CLASS
-# load the pickle files, load the csv data, global scaling? Need to find a way to encode the ex an in tuning curve
+class V1Dataset(Dataset):
+    def __init__(self, pickle_file_content, device="cpu", data_type="train"):
+        self.input = pickle_file_content[f"X_{data_type}"]
+        self.ground_truth_params = pickle_file_content[f"y_{data_type}"]
+        self.max_E = pickle_file_content["max_E"]
+        self.max_I = pickle_file_content["max_I"]
+        self.size = len(pickle_file_content[f"X_{data_type}"])
+        self.device = device
 
+    def __len__(self):
+        return self.size
+    
+
+    def __getitem__(self, index):
+        sample = {
+            'input': None,
+            'target': None
+        }
+
+        sample["target"] = self.ground_truth_params[index].to(self.device)
+        sample["input"] = [(self.input[index][0] / self.max_E).to(self.device),
+                           (self.input[index][1] / self.max_I).to(self.device)]
+        return sample
+    
+
+with open("dataset_full_for_training.pkl", 'rb') as f:
+    pickle_data = pickle.load(f)
+
+batch_size = 32
+shuffle = True
+train_dataset = V1Dataset(pickle_data, data_type="train")
+test_dataset = V1Dataset(pickle_data, data_type="test")
+val_dataset = V1Dataset(pickle_data, data_type="val")
+
+print(pickle_data["y_val"])
+
+train_data_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle)
+test_data_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+val_data_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+
+model = V1CNN()
+criterion = nn.MSELoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+num_epochs = 100
+
+for epoch in range(num_epochs):
+    model.train()
+    running_loss = 0.0
+    for batch in train_data_loader:
+        inputs = batch["input"]
+        targets = batch['target']
+        
+        optimizer.zero_grad()
+        outputs = model.forward(inputs)
+        loss = criterion(outputs, targets)  # need to add the bessel val and weights normalisation layer
+        loss.backward()
+        optimizer.step()
+        running_loss += loss.item()
+    print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {running_loss / len(train_data_loader):.4f}')
+
+    # Get validation losses
+    model.eval()
+    running_loss = 0.0
+    for batch in val_data_loader:
+        inputs = batch["input"]
+        targets = batch['target']
+        outputs = model.forward(inputs)
+        loss = criterion(outputs, targets)
+        running_loss += loss.item()
+    print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {running_loss / len(val_data_loader):.4f}\n')

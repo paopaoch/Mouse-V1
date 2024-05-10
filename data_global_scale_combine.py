@@ -13,6 +13,7 @@ import pickle as pk
 import torch
 from tqdm import tqdm
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 
 def to_normalise_tensor(params_dict):
@@ -34,9 +35,12 @@ def to_normalise_tensor(params_dict):
     ])
 
 
-data_directories = ["DATASET_bessel_1715341433.8128526", "DATASET_bessel_1715341541.757791", "DATASET_bessel_1715341542.6103182", "DATASET_bessel_1715341593.620646", "DATASET_bessel_1715341603.251537", "DATASET_bessel_1715341607.5874019", "DATASET_bessel_1715341610.1236033", "DATASET_bessel_1715341611.6014147", "DATASET_bessel_1715341627.3461742",]
+# data_directories = ["DATASET_bessel_1715341433.8128526", "DATASET_bessel_1715341541.757791", "DATASET_bessel_1715341542.6103182", "DATASET_bessel_1715341593.620646", "DATASET_bessel_1715341603.251537", "DATASET_bessel_1715341607.5874019", "DATASET_bessel_1715341610.1236033", "DATASET_bessel_1715341611.6014147", "DATASET_bessel_1715341627.3461742",]
+
+data_directories = ["DATASET_bessel_1715379325.9177291"]
 
 full_dataset = []
+params = []
 max_E = 0
 max_I = 0
 for directory in data_directories:
@@ -50,7 +54,7 @@ for directory in data_directories:
     metadata = df.to_dict(orient="index")
 
     for subdir in tqdm(subdirs):
-        dataset = {'E': None, 'I': None, 'params': None}
+        dataset = [None, None]
         with open(f'{directory}/{subdir}/y_E.pkl', 'rb') as f:
             data_E: torch.Tensor = pk.load(f)
             data_E = data_E.cpu()
@@ -67,21 +71,30 @@ for directory in data_directories:
             continue
         
         max_E = max(max_E, current_data_max_E)
-        dataset['E'] = data_E
+        dataset[0] = data_E
 
         max_I = max(max_I, current_data_max_I)
-        dataset['I'] = data_I
+        dataset[1] = data_I
 
-        dataset["params"] = to_normalise_tensor(metadata[subdir])
+        params.append(to_normalise_tensor(metadata[subdir]))
 
         full_dataset.append(dataset)
 
 print(max_E)
 print(max_I)
 
+X_train, X_test, y_train, y_test = train_test_split(full_dataset, params, test_size=0.1, random_state=42)
+X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
+
 all_data = {"max_E": max_E,
             "max_I": max_I,
-            "full_dataset": full_dataset}
+            "X_train": X_train,
+            "X_test": X_test,
+            "X_val": X_val,
+            "y_train": y_train,
+            "y_test": y_test,
+            "y_val": y_val,
+            "params": params}
 
 with open("dataset_full_for_training.pkl", 'wb') as f:
     pk.dump(all_data, f)
