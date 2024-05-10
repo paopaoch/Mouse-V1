@@ -52,8 +52,9 @@ def run_gd(J_array, P_array, w_array, y_E, y_I, iterations=10):
         wg = WeightsGenerator(J_array, P_array, w_array, N, device=device, forward_mode=True)
         W = wg.generate_weight_matrix()
         bessel_val = wg.validate_weight_matrix()
-        x_E, x_I, avg_step = execute_network(W)
-        loss, _ = loss_func.calculate_loss(x_E, x_I, y_E, y_I, avg_step, bessel_val)
+        # x_E, x_I, avg_step = execute_network(W)
+        # loss, _ = loss_func.calculate_loss(x_E, x_I, y_E, y_I, avg_step, bessel_val)
+        loss = bessel_val
         loss.backward()
         J_array: torch.Tensor = (J_array - 1 * wg.J_parameters.grad).clone().detach().requires_grad_(True)
         P_array: torch.Tensor = (P_array - 1 * wg.P_parameters.grad).clone().detach().requires_grad_(True)
@@ -123,30 +124,23 @@ def main(dataset_size=3000):
             raise BufferError(f"Tried for too many iterations generated {count} rows")
 
         J_array, P_array, w_array, found = get_valid_params()
+        J_array = J_array.requires_grad_(False)
+        P_array = P_array.requires_grad_(False)
+        w_array = w_array.requires_grad_(False)
         if not found:
             continue
         wg = WeightsGenerator(J_array, P_array, w_array, N, device=device)
         W = wg.generate_weight_matrix()
         y_E, y_I, _ = execute_network(W)
-        print(y_E)
-        print(torch.max(y_E))
+        # print(y_E)
+        # print(torch.max(y_E))
         y_E, y_I = trim_data(y_E, y_I)
-        print(y_E)
-        print(torch.max(y_E))
-        print(J_array, P_array, w_array)
-        # save_data(y_E, y_I, J_array, P_array, w_array)
+        # print(y_E)
+        # print(torch.max(y_E))
+        # print(J_array, P_array, w_array)
+        save_data(y_E, y_I, J_array, P_array, w_array)
         count += 1
         print(count)
 
 
 main(dataset_size=1500)
-
-if __name__ == "__main__":
-    with open(f'/Users/paopao_ch/Documents/projects/v1_modelling/Mouse-V1-Pytorch/DATASET_1715261937.703/1715264173.555181/y_E.pkl', 'rb') as f:
-        data = pickle.load(f)
-    print(torch.max(data))
-
-    # E, I = data[:800], data[800:]
-    # print(trim_data(E, I)[0].shape)
-    # print(trim_data(E, I)[1].shape)
-    # save_data()
