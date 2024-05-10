@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 N = 1000
 E_index = 800
-device = get_device("cuda:1")
+device = get_device("cuda:0")
 executer = NetworkExecuterParallel(N, device=device)
 loss_func = MouseLossFunctionOptimised(device=device)
 
