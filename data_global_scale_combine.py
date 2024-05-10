@@ -52,10 +52,12 @@ for directory in data_directories:
     for subdir in tqdm(subdirs):
         dataset = {'E': None, 'I': None, 'params': None}
         with open(f'{directory}/{subdir}/y_E.pkl', 'rb') as f:
-            data_E = pk.load(f)
+            data_E: torch.Tensor = pk.load(f)
+            data_E = data_E.cpu()
         
         with open(f'{directory}/{subdir}/y_I.pkl', 'rb') as f:
-            data_I = pk.load(f)
+            data_I: torch.Tensor = pk.load(f)
+            data_I = data_I.cpu()
         
         
         current_data_max_E = torch.max(data_E)
