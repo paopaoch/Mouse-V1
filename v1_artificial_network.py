@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import pickle
-
+from utils.rodents_routine import get_device
 
 class V1CNN(nn.Module):
     def __init__(self, num_classes=12):
@@ -83,15 +83,16 @@ class V1Dataset(Dataset):
                            (self.input[index][1] / self.max_I).to(self.device)]
         return sample
     
+device = get_device("cuda:0")
 
 with open("dataset_full_for_training.pkl", 'rb') as f:
     pickle_data = pickle.load(f)
 
 batch_size = 32
 shuffle = True
-train_dataset = V1Dataset(pickle_data, data_type="train")
-test_dataset = V1Dataset(pickle_data, data_type="test")
-val_dataset = V1Dataset(pickle_data, data_type="val")
+train_dataset = V1Dataset(pickle_data, data_type="train", device=device)
+test_dataset = V1Dataset(pickle_data, data_type="test", device=device)
+val_dataset = V1Dataset(pickle_data, data_type="val", device=device)
 
 print(pickle_data["y_val"])
 
@@ -99,7 +100,7 @@ train_data_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shu
 test_data_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 val_data_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
-model = V1CNN()
+model = V1CNN().to(device)
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 num_epochs = 100
