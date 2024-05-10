@@ -128,10 +128,25 @@ def main(dataset_size=3000):
         wg = WeightsGenerator(J_array, P_array, w_array, N, device=device)
         W = wg.generate_weight_matrix()
         y_E, y_I, _ = execute_network(W)
+        print(y_E)
+        print(torch.max(y_E))
         y_E, y_I = trim_data(y_E, y_I)
-        save_data(y_E, y_I, J_array, P_array, w_array)
+        print(y_E)
+        print(torch.max(y_E))
+        print(J_array, P_array, w_array)
+        # save_data(y_E, y_I, J_array, P_array, w_array)
         count += 1
         print(count)
 
 
 main(dataset_size=1500)
+
+if __name__ == "__main__":
+    with open(f'/Users/paopao_ch/Documents/projects/v1_modelling/Mouse-V1-Pytorch/DATASET_1715261937.703/1715264173.555181/y_E.pkl', 'rb') as f:
+        data = pickle.load(f)
+    print(torch.max(data))
+
+    # E, I = data[:800], data[800:]
+    # print(trim_data(E, I)[0].shape)
+    # print(trim_data(E, I)[1].shape)
+    # save_data()
