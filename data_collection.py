@@ -23,7 +23,7 @@ W = WG13.generate_weight_matrix()
 tuning_curves, _ = executer.run_all_orientation_and_contrast(W)
 config_E, config_I = tuning_curves[:E_index], tuning_curves[E_index:]
 
-dir_name = f"DATASET_{time.time()}"
+dir_name = f"DATASET_bessel_{time.time()}"
 create_directory_if_not_exists(dir_name)
 metadata_file = f"{dir_name}/metadata.csv"
 with open(metadata_file, 'w') as f:
