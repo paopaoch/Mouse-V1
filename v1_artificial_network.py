@@ -92,17 +92,14 @@ def calc_theoretical_weights_tot(J, P, w, N_b, device="cpu"):
 
 
 def validate_weight_matrix(model_output, device="cpu"):
-    W_tot_EE = calc_theoretical_weights_tot(model_output[0] * 100, model_output[4], model_output[8] * 180, 800, device=device)
-    W_tot_EI = calc_theoretical_weights_tot(model_output[1] * 100, model_output[5], model_output[9] * 180, 200, device=device)
-    W_tot_IE = calc_theoretical_weights_tot(model_output[2] * 100, model_output[6], model_output[10] * 180, 800, device=device)
-    W_tot_II = calc_theoretical_weights_tot(model_output[3] * 100, model_output[7], model_output[11] * 180, 200, device=device)
-
-    W_tot_EF = torch.tensor(1, device=device)
-    W_tot_IF = torch.tensor(1, device=device)
+    W_tot_EE = calc_theoretical_weights_tot(model_output[:,0] * 100, model_output[:,4], model_output[:,8] * 180, 800, device=device)
+    W_tot_EI = calc_theoretical_weights_tot(model_output[:,1] * 100, model_output[:,5], model_output[:,9] * 180, 200, device=device)
+    W_tot_IE = calc_theoretical_weights_tot(model_output[:,2] * 100, model_output[:,6], model_output[:,10] * 180, 800, device=device)
+    W_tot_II = calc_theoretical_weights_tot(model_output[:,3] * 100, model_output[:,7], model_output[:,11] * 180, 200, device=device)
     
-    first_condition = torch.maximum((W_tot_EE / W_tot_IE) - (W_tot_EI / W_tot_II), torch.tensor(0, device=device))
-    second_condition = torch.maximum((W_tot_EI / W_tot_II) - (W_tot_EF / W_tot_IF), torch.tensor(0, device=device))
-    return torch.maximum(first_condition, second_condition)
+    first_condition = torch.maximum((W_tot_EE / W_tot_IE) - 1, torch.tensor(0, device=device))
+    second_condition = torch.maximum((W_tot_EI / W_tot_II) - 1, torch.tensor(0, device=device))
+    return torch.mean(torch.maximum(first_condition, second_condition))
 
 device = get_device("cuda:0")
 
