@@ -6,7 +6,7 @@ import pickle
 from utils.rodents_routine import get_device
 
 class V1CNN(nn.Module):
-    def __init__(self, num_classes=12):
+    def __init__(self, num_classes=1):
         super(V1CNN, self).__init__()
         self.features_excit = nn.Sequential(
             nn.Conv2d(1, 4, kernel_size=3, stride=1, padding=1),
@@ -140,7 +140,7 @@ for epoch in range(num_epochs):
     running_total_loss = 0.0
     for batch in train_data_loader:
         inputs = batch["input"]
-        targets = batch['target']
+        targets = batch['target'][:,0]  # just the first value
         
         optimizer.zero_grad()
         outputs = model.forward(inputs)
