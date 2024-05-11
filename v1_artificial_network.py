@@ -127,8 +127,8 @@ model.eval()
 running_loss = 0.0
 for batch in test_data_loader:
     inputs = batch["input"]
-    targets = batch['target']
-    outputs = model.forward(inputs)
+    targets = batch['target'][:, 0]
+    outputs = model.forward(inputs)[:,0]
     loss = criterion(outputs, targets)
     running_loss += loss.item()
 
@@ -143,7 +143,7 @@ for epoch in range(num_epochs):
         targets = batch['target'][:,0]  # just the first value
         
         optimizer.zero_grad()
-        outputs = model.forward(inputs)
+        outputs = model.forward(inputs)[:,0]
         loss = criterion(outputs, targets)  # need to add the bessel val and weights normalisation layer
         # bessel = validate_weight_matrix(outputs, device=device)
         # total_loss = loss + bessel * 0.1  # for weighting  # Bessel val is NaN
@@ -160,8 +160,8 @@ for epoch in range(num_epochs):
     running_loss = 0.0
     for batch in val_data_loader:
         inputs = batch["input"]
-        targets = batch['target']
-        outputs = model.forward(inputs)
+        targets = batch['target'][:, 0]
+        outputs = model.forward(inputs)[:,0]
         loss = criterion(outputs, targets)
         running_loss += loss.item()
     print(f'Epoch [{epoch + 1}/{num_epochs}], Eval MSE Loss: {running_loss / len(val_data_loader):.4f}\n')
@@ -180,8 +180,8 @@ model.eval()
 running_loss = 0.0
 for batch in test_data_loader:
     inputs = batch["input"]
-    targets = batch['target']
-    outputs = model.forward(inputs)
+    targets = batch['target'][:, 0]
+    outputs = model.forward(inputs)[:,0]
     loss = criterion(outputs, targets)
     running_loss += loss.item()
 
