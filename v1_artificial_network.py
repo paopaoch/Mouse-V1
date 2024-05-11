@@ -32,7 +32,7 @@ class V1CNN(nn.Module):
             nn.ReLU(),
             nn.Linear(128, 128),
             nn.ReLU(),
-            nn.Linear(128, 128),
+            nn.Linear(128, 12),
             nn.ReLU(),
             nn.Dropout(p=0.5),
             nn.Linear(12, num_classes),  # 12 classes
