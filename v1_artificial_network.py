@@ -32,7 +32,7 @@ class V1CNN(nn.Module):
             nn.ReLU(),
             nn.Linear(128, 12),
             nn.ReLU(),
-            nn.Dropout(p=0.5),
+            nn.Dropout(p=0.2),
             nn.Linear(12, num_classes),  # 12 classes
             nn.Sigmoid()
         )
@@ -118,7 +118,7 @@ val_data_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
 model = V1CNN().to(device)
 criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)
+optimizer = optim.Adam(model.parameters(), lr=0.001)
 num_epochs = 100
 current_val_loss = 1000000
 patience = 2
