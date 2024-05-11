@@ -145,14 +145,15 @@ for epoch in range(num_epochs):
         optimizer.zero_grad()
         outputs = model.forward(inputs)
         loss = criterion(outputs, targets)  # need to add the bessel val and weights normalisation layer
-        bessel = validate_weight_matrix(outputs, device=device)
-        total_loss = loss + bessel * 0.1  # for weighting
-        total_loss.backward()
+        # bessel = validate_weight_matrix(outputs, device=device)
+        # total_loss = loss + bessel * 0.1  # for weighting  # Bessel val is NaN
+        # total_loss.backward()
+        loss.backward()
         optimizer.step()
         running_loss += loss.item()
-        running_total_loss += total_loss.item()
+        # running_total_loss += total_loss.item()
     print(f'Epoch [{epoch + 1}/{num_epochs}], Training MSE Loss: {running_loss / len(train_data_loader):.4f}')
-    print(f'Epoch [{epoch + 1}/{num_epochs}], Training Total Loss: {running_total_loss / len(train_data_loader):.4f}')
+    # print(f'Epoch [{epoch + 1}/{num_epochs}], Training Total Loss: {running_total_loss / len(train_data_loader):.4f}')
 
     # Get validation losses
     model.eval()
