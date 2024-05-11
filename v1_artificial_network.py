@@ -116,7 +116,7 @@ for batch in test_data_loader:
     loss = criterion(outputs, targets)
     running_loss += loss.item()
 
-print(f'testing Loss: {running_loss / len(val_data_loader):.4f}\n')
+print(f'\ntesting Loss: {running_loss / len(val_data_loader):.4f}\n')
 
 for epoch in range(num_epochs):
     model.train()
