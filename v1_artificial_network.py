@@ -28,9 +28,11 @@ class V1CNN(nn.Module):
 
 
         self.regressor = nn.Sequential(
-            nn.Linear(60 * 4 * 4 * 6, 48),  # nuber of images * number of output channel * image width * image height
+            nn.Linear(60 * 4 * 4 * 6, 128),  # nuber of images * number of output channel * image width * image height
             nn.ReLU(),
-            nn.Linear(48, 12),
+            nn.Linear(128, 128),
+            nn.ReLU(),
+            nn.Linear(128, 128),
             nn.ReLU(),
             nn.Dropout(p=0.5),
             nn.Linear(12, num_classes),  # 12 classes
@@ -105,6 +107,17 @@ num_epochs = 100
 current_val_loss = 1000000
 patience = 2
 
+model.eval()
+running_loss = 0.0
+for batch in test_data_loader:
+    inputs = batch["input"]
+    targets = batch['target']
+    outputs = model.forward(inputs)
+    loss = criterion(outputs, targets)
+    running_loss += loss.item()
+
+print(f'testing Loss: {running_loss / len(val_data_loader):.4f}\n')
+
 for epoch in range(num_epochs):
     model.train()
     running_loss = 0.0
@@ -139,6 +152,8 @@ for epoch in range(num_epochs):
         print("Early stopping")
         break
 
+    current_val_loss = running_loss / len(val_data_loader)
+
 model.eval()
 running_loss = 0.0
 for batch in test_data_loader:
@@ -147,7 +162,7 @@ for batch in test_data_loader:
     outputs = model.forward(inputs)
     loss = criterion(outputs, targets)
     running_loss += loss.item()
-    
+
 print(f'testing Loss: {running_loss / len(val_data_loader):.4f}\n')
 print(f"last test output: {outputs[-1]}")
 print(f"last test target: {targets[-1]}")
