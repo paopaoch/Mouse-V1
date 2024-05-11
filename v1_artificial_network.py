@@ -94,8 +94,6 @@ train_dataset = V1Dataset(pickle_data, data_type="train", device=device)
 test_dataset = V1Dataset(pickle_data, data_type="test", device=device)
 val_dataset = V1Dataset(pickle_data, data_type="val", device=device)
 
-print(pickle_data["y_val"])
-
 train_data_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle)
 test_data_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 val_data_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
@@ -104,6 +102,8 @@ model = V1CNN().to(device)
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 num_epochs = 100
+current_val_loss = 1000000
+patience = 2
 
 for epoch in range(num_epochs):
     model.train()
@@ -118,7 +118,7 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
         running_loss += loss.item()
-    print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {running_loss / len(train_data_loader):.4f}')
+    print(f'Epoch [{epoch + 1}/{num_epochs}], Training Loss: {running_loss / len(train_data_loader):.4f}')
 
     # Get validation losses
     model.eval()
@@ -129,4 +129,27 @@ for epoch in range(num_epochs):
         outputs = model.forward(inputs)
         loss = criterion(outputs, targets)
         running_loss += loss.item()
-    print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {running_loss / len(val_data_loader):.4f}\n')
+    print(f'Epoch [{epoch + 1}/{num_epochs}], Eval Loss: {running_loss / len(val_data_loader):.4f}\n')
+    if current_val_loss < running_loss / len(val_data_loader):
+        patience -= 1
+    else:
+        patience = 2
+    
+    if patience == 0:
+        print("Early stopping")
+        break
+
+model.eval()
+running_loss = 0.0
+for batch in test_data_loader:
+    inputs = batch["input"]
+    targets = batch['target']
+    outputs = model.forward(inputs)
+    loss = criterion(outputs, targets)
+    running_loss += loss.item()
+    
+print(f'testing Loss: {running_loss / len(val_data_loader):.4f}\n')
+print(f"last test output: {outputs[-1]}")
+print(f"last test target: {targets[-1]}")
+print(f"last test output: {outputs[0]}")
+print(f"last test target: {targets[0]}")
