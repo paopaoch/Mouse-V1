@@ -164,7 +164,7 @@ for epoch in range(num_epochs):
         loss = criterion(outputs, targets)
         running_loss += loss.item()
     print(f'Epoch [{epoch + 1}/{num_epochs}], Eval MSE Loss: {running_loss / len(val_data_loader):.4f}\n')
-    if current_val_loss < running_loss / len(val_data_loader):
+    if current_val_loss < running_loss / len(val_data_loader) and epoch > 20:
         patience -= 1
     else:
         patience = 2
