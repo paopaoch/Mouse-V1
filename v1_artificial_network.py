@@ -118,7 +118,7 @@ val_data_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
 model = V1CNN().to(device)
 criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)
 num_epochs = 100
 current_val_loss = 1000000
 patience = 2
