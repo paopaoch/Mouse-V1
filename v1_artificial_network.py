@@ -11,18 +11,18 @@ class V1CNN(nn.Module):
         self.features_excit = nn.Sequential(
             nn.Conv2d(1, 4, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(4, 8, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(4, 4, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(4, 4, kernel_size=3, stride=1, padding=1),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
 
         self.features_inhib = nn.Sequential(
             nn.Conv2d(1, 4, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(4, 8, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(4, 4, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(4, 4, kernel_size=3, stride=1, padding=1),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
 
