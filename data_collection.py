@@ -6,33 +6,34 @@ import time
 import pickle
 from tqdm import tqdm
 
-N = 1000
-E_index = 800
-device = get_device("cuda:1")
-executer = NetworkExecuterParallel(N, device=device)
-loss_func = MouseLossFunctionOptimised(device=device)
+if __name__ == "__main__":
+    N = 1000
+    E_index = 800
+    device = get_device("cuda:1")
+    executer = NetworkExecuterParallel(N, device=device)
+    loss_func = MouseLossFunctionOptimised(device=device)
 
-config13 = {
-    "J" : [-2.059459853260332, -3.0504048076264896, -1.5877549090278045, -2.813481385641024],
-    "P" : [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124],
-    "w" : [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886]
-}
+    config13 = {
+        "J" : [-2.059459853260332, -3.0504048076264896, -1.5877549090278045, -2.813481385641024],
+        "P" : [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124],
+        "w" : [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886]
+    }
 
-WG13 = WeightsGenerator(config13["J"], config13["P"], config13["w"], N, device=device)
-W = WG13.generate_weight_matrix()
-tuning_curves, _ = executer.run_all_orientation_and_contrast(W)
-config_E, config_I = tuning_curves[:E_index], tuning_curves[E_index:]
+    WG13 = WeightsGenerator(config13["J"], config13["P"], config13["w"], N, device=device)
+    W = WG13.generate_weight_matrix()
+    tuning_curves, _ = executer.run_all_orientation_and_contrast(W)
+    config_E, config_I = tuning_curves[:E_index], tuning_curves[E_index:]
 
-dir_name = f"DATASET_bessel_{time.time()}"
-create_directory_if_not_exists(dir_name)
-metadata_file = f"{dir_name}/metadata.csv"
-with open(metadata_file, 'w') as f:
-    f.write('dir,J_EE,J_EI,J_IE,J_II,P_EE,P_EI,P_IE,P_II,w_EE,w_EI,w_IE,w_II')
+    dir_name = f"DATASET_bessel_{time.time()}"
+    create_directory_if_not_exists(dir_name)
+    metadata_file = f"{dir_name}/metadata.csv"
+    with open(metadata_file, 'w') as f:
+        f.write('dir,J_EE,J_EI,J_IE,J_II,P_EE,P_EI,P_IE,P_II,w_EE,w_EI,w_IE,w_II')
 
-def execute_network(W):
-    tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W)
-    y_E, y_I = tuning_curves[:E_index], tuning_curves[E_index:]
-    return y_E, y_I, avg_step
+    def execute_network(W):
+        tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W)
+        y_E, y_I = tuning_curves[:E_index], tuning_curves[E_index:]
+        return y_E, y_I, avg_step
 
 
 def get_random_param():
@@ -45,7 +46,7 @@ def get_random_param():
     return J_array, P_array, w_array
 
 
-def run_gd(J_array, P_array, w_array, y_E, y_I, iterations=10):
+def run_gd(J_array, P_array, w_array, y_E, y_I, iterations=10, search_bessel=True):
     valid_count = 0
     found = False
     for _ in tqdm(range(iterations)):
@@ -64,11 +65,12 @@ def run_gd(J_array, P_array, w_array, y_E, y_I, iterations=10):
             found = False
             break
 
-        if bessel_val == 0:
-            valid_count += 1
-        if valid_count == 4:
-            found = True
-            break
+        if search_bessel:
+            if bessel_val == 0:
+                valid_count += 1
+            if valid_count == 4:
+                found = True
+                break
 
     return J_array, P_array, w_array, found
 
@@ -142,5 +144,5 @@ def main(dataset_size=3000):
         count += 1
         print(count)
 
-
-main(dataset_size=10000)
+if __name__ == "__main__":
+    main(dataset_size=4000)

@@ -101,92 +101,95 @@ def validate_weight_matrix(model_output, device="cpu"):
     second_condition = torch.maximum((W_tot_EI / W_tot_II) - 1, torch.tensor(0, device=device))
     return torch.mean(torch.maximum(first_condition, second_condition))
 
-device = get_device("cuda:0")
+if __name__ == "__main__":
+    device = get_device("cuda:0")
+    PATH = "V1CNN.pth"
 
-with open("dataset_full_for_training.pkl", 'rb') as f:
-    pickle_data = pickle.load(f)
+    with open("dataset_full_for_training.pkl", 'rb') as f:
+        pickle_data = pickle.load(f)
 
-batch_size = 32
-shuffle = True
-train_dataset = V1Dataset(pickle_data, data_type="train", device=device)
-test_dataset = V1Dataset(pickle_data, data_type="test", device=device)
-val_dataset = V1Dataset(pickle_data, data_type="val", device=device)
+    batch_size = 32
+    shuffle = True
+    train_dataset = V1Dataset(pickle_data, data_type="train", device=device)
+    test_dataset = V1Dataset(pickle_data, data_type="test", device=device)
+    val_dataset = V1Dataset(pickle_data, data_type="val", device=device)
 
-train_data_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle)
-test_data_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
-val_data_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    train_data_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle)
+    test_data_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    val_data_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
-model = V1CNN().to(device)
-criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
-num_epochs = 100
-current_val_loss = 1000000
-patience = 2
+    model = V1CNN().to(device)
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    num_epochs = 100
+    current_val_loss = 1000000
+    patience = 2
 
-model.eval()
-running_loss = 0.0
-for batch in test_data_loader:
-    inputs = batch["input"]
-    targets = batch['target']
-    outputs = model.forward(inputs)
-    loss = criterion(outputs, targets)
-    running_loss += loss.item()
-
-print(f'\ntesting Loss: {running_loss / len(val_data_loader):.4f}\n')
-
-for epoch in range(num_epochs):
-    model.train()
-    running_loss = 0.0
-    running_total_loss = 0.0
-    for batch in train_data_loader:
-        inputs = batch["input"]
-        targets = batch['target']  # just the first value
-        
-        optimizer.zero_grad()
-        outputs = model.forward(inputs)
-        loss = criterion(outputs, targets)  # need to add the bessel val and weights normalisation layer
-        # bessel = validate_weight_matrix(outputs, device=device)
-        # total_loss = loss + bessel * 0.1  # for weighting  # Bessel val is NaN
-        # total_loss.backward()
-        loss.backward()
-        optimizer.step()
-        running_loss += loss.item()
-        # running_total_loss += total_loss.item()
-    print(f'Epoch [{epoch + 1}/{num_epochs}], Training MSE Loss: {running_loss / len(train_data_loader):.4f}')
-    # print(f'Epoch [{epoch + 1}/{num_epochs}], Training Total Loss: {running_total_loss / len(train_data_loader):.4f}')
-
-    # Get validation losses
     model.eval()
     running_loss = 0.0
-    for batch in val_data_loader:
+    for batch in test_data_loader:
         inputs = batch["input"]
         targets = batch['target']
         outputs = model.forward(inputs)
         loss = criterion(outputs, targets)
         running_loss += loss.item()
-    print(f'Epoch [{epoch + 1}/{num_epochs}], Eval MSE Loss: {running_loss / len(val_data_loader):.4f}\n')
-    if current_val_loss < running_loss / len(val_data_loader) and epoch > 20:
-        patience -= 1
-    else:
-        patience = 2
-    
-    if patience == 0:
-        print("Early stopping")
-        break
 
-    current_val_loss = running_loss / len(val_data_loader)
+    print(f'\ntesting Loss: {running_loss / len(val_data_loader):.4f}\n')
 
-model.eval()
-running_loss = 0.0
-for batch in test_data_loader:
-    inputs = batch["input"]
-    targets = batch['target']
-    outputs = model.forward(inputs)
-    loss = criterion(outputs, targets)
-    running_loss += loss.item()
+    for epoch in range(num_epochs):
+        model.train()
+        running_loss = 0.0
+        running_total_loss = 0.0
+        for batch in train_data_loader:
+            inputs = batch["input"]
+            targets = batch['target']  # just the first value
+            
+            optimizer.zero_grad()
+            outputs = model.forward(inputs)
+            loss = criterion(outputs, targets)  # need to add the bessel val and weights normalisation layer
+            # bessel = validate_weight_matrix(outputs, device=device)
+            # total_loss = loss + bessel * 0.1  # for weighting  # Bessel val is NaN
+            # total_loss.backward()
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()
+            # running_total_loss += total_loss.item()
+        print(f'Epoch [{epoch + 1}/{num_epochs}], Training MSE Loss: {running_loss / len(train_data_loader):.4f}')
+        # print(f'Epoch [{epoch + 1}/{num_epochs}], Training Total Loss: {running_total_loss / len(train_data_loader):.4f}')
 
-print(f'testing Loss: {running_loss / len(val_data_loader):.4f}\n')
-print(f"last test output: {outputs[-1]}")
-print(f"last test target: {targets[-1]}")
-print(f"last test output: {outputs[0]}")
-print(f"last test target: {targets[0]}")
+        # Get validation losses
+        model.eval()
+        running_loss = 0.0
+        for batch in val_data_loader:
+            inputs = batch["input"]
+            targets = batch['target']
+            outputs = model.forward(inputs)
+            loss = criterion(outputs, targets)
+            running_loss += loss.item()
+        print(f'Epoch [{epoch + 1}/{num_epochs}], Eval MSE Loss: {running_loss / len(val_data_loader):.4f}\n')
+        if current_val_loss < running_loss / len(val_data_loader) and epoch > 20:
+            patience -= 1
+        else:
+            patience = 2
+            torch.save(model.state_dict(), PATH)
+        
+        if patience == 0:
+            print("Early stopping")
+            break
+
+        current_val_loss = running_loss / len(val_data_loader)
+
+    model.eval()
+    running_loss = 0.0
+    for batch in test_data_loader:
+        inputs = batch["input"]
+        targets = batch['target']
+        outputs = model.forward(inputs)
+        loss = criterion(outputs, targets)
+        running_loss += loss.item()
+
+    print(f'testing Loss: {running_loss / len(val_data_loader):.4f}\n')
+    print(f"last test output: {outputs[-1]}")
+    print(f"last test target: {targets[-1]}")
+    print(f"last test output: {outputs[0]}")
+    print(f"last test target: {targets[0]}")
