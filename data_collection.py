@@ -143,4 +143,4 @@ def main(dataset_size=3000):
         print(count)
 
 
-main(dataset_size=4000)
+main(dataset_size=10000)
