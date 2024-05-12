@@ -37,37 +37,49 @@ def to_normalise_tensor(params_dict):
 
 def check_valid_range(params_dict):
     if params_dict['J_EE'] < 5:
+        # print(params_dict['J_EE'])
         return False
     if params_dict['J_EI'] < 5:
+        # print(params_dict['J_EI'])
         return False
     if params_dict['J_IE'] < 5:
+        # print(params_dict['J_IE'])
         return False
     if params_dict['J_II'] < 5:
+        # print(params_dict['J_II'])
         return False
 
     if params_dict['P_EE'] < 0.01:
+        # print(params_dict['P_EE'])
         return False
     if params_dict['P_EI'] < 0.01:
+        # print(params_dict['P_EI'])
         return False
     if params_dict['P_IE'] < 0.01:
+        # print(params_dict['P_IE'])
         return False
     if params_dict['P_II'] < 0.01:
+        # print(params_dict['P_II'])
         return False
 
-    if params_dict['w_EE'] < 10 or params_dict['w_EE'] > 165:
+    if params_dict['w_EE'] < 10 or params_dict['w_EE'] > 175:
+        # print(params_dict['w_EE'])
         return False
-    if params_dict['w_EI'] < 10 or params_dict['w_EI'] > 165:
+    if params_dict['w_EI'] < 10 or params_dict['w_EI'] > 175:
+        # print(params_dict['w_EI'])
         return False
-    if params_dict['w_IE'] < 10 or params_dict['w_IE'] > 165:
+    if params_dict['w_IE'] < 10 or params_dict['w_IE'] > 175:
+        # print(params_dict['w_IE'])
         return False
-    if params_dict['w_II'] < 10 or params_dict['w_II'] > 165:
+    if params_dict['w_II'] < 10 or params_dict['w_II'] > 175:
+        # print(params_dict['w_II'])
         return False
 
     return True
 
-data_directories = ["DATASET_bessel_1715341433.8128526", "DATASET_bessel_1715341541.757791", "DATASET_bessel_1715341542.6103182", "DATASET_bessel_1715341593.620646", "DATASET_bessel_1715341603.251537", "DATASET_bessel_1715341607.5874019", "DATASET_bessel_1715341610.1236033", "DATASET_bessel_1715341611.6014147", "DATASET_bessel_1715341627.3461742", "DATASET_bessel_1715390826.6967611", "DATASET_bessel_1715390828.301663", "DATASET_bessel_1715390830.7035437", "DATASET_bessel_1715390845.0148275", "DATASET_bessel_1715390848.9291334", "DATASET_bessel_1715390850.7687511", "DATASET_bessel_1715390870.609546", "DATASET_bessel_1715390874.2647386"]
+# data_directories = ["DATASET_bessel_1715341433.8128526", "DATASET_bessel_1715341541.757791", "DATASET_bessel_1715341542.6103182", "DATASET_bessel_1715341593.620646", "DATASET_bessel_1715341603.251537", "DATASET_bessel_1715341607.5874019", "DATASET_bessel_1715341610.1236033", "DATASET_bessel_1715341611.6014147", "DATASET_bessel_1715341627.3461742", "DATASET_bessel_1715390826.6967611", "DATASET_bessel_1715390828.301663", "DATASET_bessel_1715390830.7035437", "DATASET_bessel_1715390845.0148275", "DATASET_bessel_1715390848.9291334", "DATASET_bessel_1715390850.7687511", "DATASET_bessel_1715390870.609546", "DATASET_bessel_1715390874.2647386"]
 
-# data_directories = ["DATASET_bessel_1715379325.9177291"]
+data_directories = ["DATASET_bessel_1715379325.9177291"]
 
 full_dataset = []
 params = []
@@ -118,8 +130,8 @@ print(max_I)
 
 print(len(full_dataset))
 
-X_train, X_test, y_train, y_test = train_test_split(full_dataset, params, test_size=0, random_state=42)
-X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(full_dataset, params, test_size=0.1, random_state=42)
+X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
 
 all_data = {"max_E": max_E,
             "max_I": max_I,
