@@ -379,10 +379,13 @@ if __name__ == "__main__":
             # IE = Connection(16.97, 0.11, 32, N_E)
             # II = Connection(5.66, 0.45, 32, N_I)
 
-            EE = Connection(3.3078, 0.5981, 3.0048, N_E)  # 1000
-            EI = Connection(11.8794, 0.0284, 76.7624, N_I)
-            IE = Connection(85.7555, 0.9737, 1.8743, N_E)
-            II = Connection(45.3848, 0.1831, 174.1751, N_I)
+            EE = Connection(2.0207, 7.5261e-10, 2.1200e+00, N_E)  # from V1CNN
+            EI = Connection(1.7934e-02, 1.4565e-02, 1.7537e+02, N_I)
+            IE = Connection(2.0298e-043, 3.1166e-03, 5.8430e+01, N_E)
+            II = Connection(2.2963e+00, 5.7761e-01, 1.3438e+02, N_I)
+
+            [2.0207e+00, 1.7934e-02, 2.0298e-04, 2.2963e+00, 7.5261e-10, 1.4565e-02,
+         3.1166e-03, 5.7761e-01, 2.1200e+00, 1.7537e+02, 5.8430e+01, 1.3438e+02]
 
             # EE = Connection(15, 0.22, 45, N_E)  # 1000
             # EI = Connection(7, 0.35, 45, N_I)

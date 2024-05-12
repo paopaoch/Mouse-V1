@@ -36,16 +36,16 @@ def to_normalise_tensor(params_dict):
 
 
 def check_valid_range(params_dict):
-    if params_dict['J_EE'] < 2:
+    if params_dict['J_EE'] < 1 and params_dict['J_EE'] > 90:
         # print(params_dict['J_EE'])
         return False
-    if params_dict['J_EI'] < 2:
+    if params_dict['J_EI'] < 1 and params_dict['J_EE'] > 90:
         # print(params_dict['J_EI'])
         return False
-    if params_dict['J_IE'] < 2:
+    if params_dict['J_IE'] < 1 and params_dict['J_EE'] > 90:
         # print(params_dict['J_IE'])
         return False
-    if params_dict['J_II'] < 2:
+    if params_dict['J_II'] < 1 and params_dict['J_EE'] > 90:
         # print(params_dict['J_II'])
         return False
 
