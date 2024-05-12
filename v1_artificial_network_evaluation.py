@@ -7,8 +7,8 @@ from data_collection import trim_data
 torch.manual_seed(69)
 n = 1000
 
-executer = NetworkExecuterParallel(n)
 device = get_device("cuda:0")
+executer = NetworkExecuterParallel(n, device=device)
 
 scale = torch.tensor([100, 100, 100, 100, 1, 1, 1, 1, 180, 180, 180, 180])
 
@@ -28,7 +28,7 @@ y_E = torch.unsqueeze(y_E, 0)
 y_I = torch.unsqueeze(y_I, 0)
 
 PATH = "V1CNN.pth"
-model = V1CNN()
+model = V1CNN().to(device)
 model.load_state_dict(torch.load(PATH))
 model.eval()
 
