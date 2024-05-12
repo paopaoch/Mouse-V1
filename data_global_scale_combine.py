@@ -62,16 +62,16 @@ def check_valid_range(params_dict):
         # print(params_dict['P_II'])
         return False
 
-    if params_dict['w_EE'] < 10 or params_dict['w_EE'] > 175:
+    if params_dict['w_EE'] < 5 or params_dict['w_EE'] > 175:
         # print(params_dict['w_EE'])
         return False
-    if params_dict['w_EI'] < 10 or params_dict['w_EI'] > 175:
+    if params_dict['w_EI'] < 5 or params_dict['w_EI'] > 175:
         # print(params_dict['w_EI'])
         return False
-    if params_dict['w_IE'] < 10 or params_dict['w_IE'] > 175:
+    if params_dict['w_IE'] < 5 or params_dict['w_IE'] > 175:
         # print(params_dict['w_IE'])
         return False
-    if params_dict['w_II'] < 10 or params_dict['w_II'] > 175:
+    if params_dict['w_II'] < 5 or params_dict['w_II'] > 175:
         # print(params_dict['w_II'])
         return False
 
