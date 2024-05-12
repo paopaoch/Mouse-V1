@@ -22,7 +22,7 @@ w_array = torch.tensor(w_array, device=device)
 wg = WeightsGenerator(J_array, P_array, w_array, n, device=device, forward_mode=True)
 W = wg.generate_weight_matrix()
 tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W)
-y_E, y_I = tuning_curves[:800], tuning_curves[800:]
+y_E, y_I = tuning_curves[:800] / 100, tuning_curves[800:] / 100
 y_E, y_I = trim_data(y_E, y_I)
 y_E = torch.unsqueeze(y_E, 0)
 y_I = torch.unsqueeze(y_I, 0)
