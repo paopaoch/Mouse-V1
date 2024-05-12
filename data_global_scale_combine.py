@@ -36,29 +36,29 @@ def to_normalise_tensor(params_dict):
 
 
 def check_valid_range(params_dict):
-    if params_dict['J_EE'] < 5:
+    if params_dict['J_EE'] < 2:
         # print(params_dict['J_EE'])
         return False
-    if params_dict['J_EI'] < 5:
+    if params_dict['J_EI'] < 2:
         # print(params_dict['J_EI'])
         return False
-    if params_dict['J_IE'] < 5:
+    if params_dict['J_IE'] < 2:
         # print(params_dict['J_IE'])
         return False
-    if params_dict['J_II'] < 5:
+    if params_dict['J_II'] < 2:
         # print(params_dict['J_II'])
         return False
 
-    if params_dict['P_EE'] < 0.01:
+    if params_dict['P_EE'] < 0.001:
         # print(params_dict['P_EE'])
         return False
-    if params_dict['P_EI'] < 0.01:
+    if params_dict['P_EI'] < 0.001:
         # print(params_dict['P_EI'])
         return False
-    if params_dict['P_IE'] < 0.01:
+    if params_dict['P_IE'] < 0.001:
         # print(params_dict['P_IE'])
         return False
-    if params_dict['P_II'] < 0.01:
+    if params_dict['P_II'] < 0.001:
         # print(params_dict['P_II'])
         return False
 
