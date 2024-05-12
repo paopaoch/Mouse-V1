@@ -35,9 +35,39 @@ def to_normalise_tensor(params_dict):
     ])
 
 
-data_directories = ["DATASET_bessel_1715341433.8128526", "DATASET_bessel_1715341541.757791", "DATASET_bessel_1715341542.6103182", "DATASET_bessel_1715341593.620646", "DATASET_bessel_1715341603.251537", "DATASET_bessel_1715341607.5874019", "DATASET_bessel_1715341610.1236033", "DATASET_bessel_1715341611.6014147", "DATASET_bessel_1715341627.3461742", "DATASET_bessel_1715390826.6967611", "DATASET_bessel_1715390828.301663", "DATASET_bessel_1715390830.7035437", "DATASET_bessel_1715390845.0148275", "DATASET_bessel_1715390848.9291334", "DATASET_bessel_1715390850.7687511", "DATASET_bessel_1715390870.609546", "DATASET_bessel_1715390874.2647386"]
+def check_valid_range(params_dict):
+    if params_dict['J_EE'] < 5:
+        return False
+    if params_dict['J_EI'] < 5:
+        return False
+    if params_dict['J_IE'] < 5:
+        return False
+    if params_dict['J_II'] < 5:
+        return False
 
-# data_directories = ["DATASET_bessel_1715379325.9177291"]
+    if params_dict['P_EE'] < 0.01:
+        return False
+    if params_dict['P_EI'] < 0.01:
+        return False
+    if params_dict['P_IE'] < 0.01:
+        return False
+    if params_dict['P_II'] < 0.01:
+        return False
+
+    if params_dict['w_EE'] < 10 or params_dict['w_EE'] > 165:
+        return False
+    if params_dict['w_EI'] < 10 or params_dict['w_EI'] > 165:
+        return False
+    if params_dict['w_IE'] < 10 or params_dict['w_IE'] > 165:
+        return False
+    if params_dict['w_II'] < 10 or params_dict['w_II'] > 165:
+        return False
+
+    return True
+
+# data_directories = ["DATASET_bessel_1715341433.8128526", "DATASET_bessel_1715341541.757791", "DATASET_bessel_1715341542.6103182", "DATASET_bessel_1715341593.620646", "DATASET_bessel_1715341603.251537", "DATASET_bessel_1715341607.5874019", "DATASET_bessel_1715341610.1236033", "DATASET_bessel_1715341611.6014147", "DATASET_bessel_1715341627.3461742", "DATASET_bessel_1715390826.6967611", "DATASET_bessel_1715390828.301663", "DATASET_bessel_1715390830.7035437", "DATASET_bessel_1715390845.0148275", "DATASET_bessel_1715390848.9291334", "DATASET_bessel_1715390850.7687511", "DATASET_bessel_1715390870.609546", "DATASET_bessel_1715390874.2647386"]
+
+data_directories = ["DATASET_bessel_1715379325.9177291"]
 
 full_dataset = []
 params = []
@@ -54,6 +84,9 @@ for directory in data_directories:
     metadata = df.to_dict(orient="index")
 
     for subdir in tqdm(subdirs):
+        if not check_valid_range(metadata[subdir]):
+            continue
+
         dataset = [None, None]
         with open(f'{directory}/{subdir}/y_E.pkl', 'rb') as f:
             data_E: torch.Tensor = pk.load(f)
@@ -69,7 +102,7 @@ for directory in data_directories:
         
         if current_data_max_E > 100 or current_data_max_I > 100:
             continue
-        
+
         max_E = max(max_E, current_data_max_E)
         dataset[0] = data_E
 
@@ -83,8 +116,10 @@ for directory in data_directories:
 print(max_E)
 print(max_I)
 
-X_train, X_test, y_train, y_test = train_test_split(full_dataset, params, test_size=0.1, random_state=42)
-X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
+print(len(full_dataset))
+
+X_train, X_test, y_train, y_test = train_test_split(full_dataset, params, test_size=0, random_state=42)
+X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0, random_state=42)
 
 all_data = {"max_E": max_E,
             "max_I": max_I,
@@ -95,6 +130,10 @@ all_data = {"max_E": max_E,
             "y_test": y_test,
             "y_val": y_val,
             "params": params}
+
+print("train length:", len(X_train))
+print("val length:", len(X_val))
+print("test length:", len(X_test))
 
 with open("dataset_full_for_training.pkl", 'wb') as f:
     pk.dump(all_data, f)
