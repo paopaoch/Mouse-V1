@@ -169,3 +169,5 @@ nohup*
 ignore*
 
 DATASET*
+
+*.pth
