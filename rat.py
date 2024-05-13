@@ -302,6 +302,13 @@ class RandomWeightsGenerator(WeightsGenerator):
         J_single = self._sigmoid(self.J_parameters[index], self.J_steep, self.J_scale) / torch.sqrt(torch.tensor(diff.shape[1]))
         prob_matrix = torch.ones_like(diff) * self._sigmoid(self.P_parameters[index], self.P_steep, self.P_scale)
         return J_single * torch.bernoulli(prob_matrix)
+    
+
+class OSDependentWeightsGenerator(WeightsGenerator):
+    def _get_sub_weight_matrix(self, diff: torch.Tensor, index: int):
+        J_single = self._sigmoid(self.J_parameters[index], self.J_steep, self.J_scale) / torch.sqrt(torch.tensor(diff.shape[1]))
+        circ_matrix = self._cric_gauss(diff, self._sigmoid(self.w_parameters[index], self.w_steep, self.w_scale))
+        return J_single * self._cric_gauss(diff, self._sigmoid(self.w_parameters[index], self.w_steep, self.w_scale))
 
 
 class NetworkExecuter(Rodents):
@@ -627,10 +634,10 @@ if __name__ == "__main__":
 
     J_array = [0.5, -0.5, -0.5, 0.5]
     P_array = [-0.5, -0.5, -0.5, -0.5]
-    w_array = [-275.66574677358994, -275.66574677358994, -275.66574677358994, -275.66574677358994]
+    w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886]
 
     n = 100
 
-    keen = RandomWeightsGenerator(J_array, P_array, w_array, n, 100, device="cpu")
+    keen = OSDependentWeightsGenerator(J_array, P_array, w_array, n, 100, device="cpu")
     W = keen.generate_weight_matrix()
     plot_weights(W, title="")
