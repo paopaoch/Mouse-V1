@@ -9,6 +9,8 @@ from scipy.stats import circvar
 import os
 import pickle
 
+plt.rcParams.update({'font.size': 13})
+
 if __name__ == "__main__":
     SHOW = bool(input("Enter for save plots: "))
     FOLDER_NAME = f"./plots/ignore_plots_{time.time()}"
@@ -19,13 +21,17 @@ else:
     FOLDER_NAME = None
 
 
-def plot_weights(W: torch.Tensor):
+def plot_weights(W: torch.Tensor, title=None):
+    if title is None:
+        title = f"Connection weight matrix for {len(W)} by {len(W[0])} neurons"
     W = W.clone().detach().cpu()
     plt.imshow(W, cmap="seismic", vmin=-np.max(np.abs(np.array(W))), vmax=np.max(np.abs(np.array(W))), interpolation='nearest', aspect='auto')
     plt.colorbar()
-    plt.title(f"Connection weight matrix for {len(W)} by {len(W[0])} neurons")
+    plt.title(title)
     plt.xlabel("Neuron index")
     plt.ylabel("Neuron index")
+    # plt.xticks([0,200,400,600,800,1000], [0, 45, 90, 135, 0, 180])
+    # plt.yticks([0,200,400,600,800,1000], [0, 45, 90, 135, 0, 180])
     if SHOW:
         plt.show()
     else:
@@ -36,28 +42,37 @@ def plot_weights(W: torch.Tensor):
 def print_tuning_curve(tuning_curve, title=""):
     if type(tuning_curve) == torch.Tensor:
         tuning_curve = np.array(tuning_curve.data)
-
+    # [0, 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.] 
+    # [.3, .4, .5, .6, .7, .8, .9, 1.]
+    # contrast_val = ["30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%"]
+    contrast_val = ["0%", "4%", "10%", "19%", "30%", "46%", "68%", "100%"]
+    orientation = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]
+    orientatio_gap = [0, '', 30, '', 60, '', 90, '', 120, '', 150, '']
     plt.imshow(tuning_curve, cmap='viridis')
     plt.colorbar()
     plt.title(title)
-    plt.xlabel("orientation index")
-    plt.ylabel("contrast index")
+    plt.xticks([0,1,2,3,4,5,6,7,8,9,10,11], orientatio_gap)
+    plt.yticks([0,1,2,3,4,5,6,7], contrast_val)
+    plt.xlabel("orientation")
+    plt.ylabel("contrast")
     if SHOW:
         plt.show()
     else:
-        plt.savefig(f"{FOLDER_NAME}/tuning_curve_image_{time.time()}.png")
+        plt.savefig(f"{FOLDER_NAME}/tuning_curve_image_{time.time()}.png", bbox_inches='tight')
         plt.close()
 
-    for c in tuning_curve:
-        plt.plot(c)
+    for c, val in zip(tuning_curve, contrast_val):
+        plt.plot(orientation, c, label=f"{val} contrast")
         plt.title(title)
-        plt.xlabel("orientation index")
+        plt.xlabel("orientation")
         plt.ylabel("Responses")
+
+    plt.legend()
 
     if SHOW:
         plt.show()
     else:
-        plt.savefig(f"{FOLDER_NAME}/tuning_curve_{time.time()}.png")
+        plt.savefig(f"{FOLDER_NAME}/tuning_curve_{time.time()}.png", bbox_inches='tight')
         plt.close()
 
 
@@ -275,15 +290,15 @@ if __name__ == "__main__":
 
     not_data = bool(input("Enter for plotting data: "))
 
+    neuron_num = 1000
+    ratio = 0.8
+    E_index = int(ratio * neuron_num)
+    feed_forward_num = 1000 
+    scaling_g = 0.15  # without ff use 0.15
 
     if not_data:
         responses_path = input("Path to response file: ")
         if responses_path == "":
-            neuron_num = 1000
-            ratio = 0.8
-            E_index = int(ratio * neuron_num)
-            feed_forward_num = 1000 
-            scaling_g = 0.15  # without ff use 0.15
 
             # Get the network response
 
@@ -323,9 +338,9 @@ if __name__ == "__main__":
             # P_array = [-2.8618, 1.3553000000000004, -3.4474, 0.45609999999999995]
             # w_array = [-3.5758, -2.2744999999999997, -1.5745, -0.4125] 
 
-            J_array = [-3.881312245832428, -8.626047756357032, -102.90839191869948, -3.750640297422737]
-            P_array = [-21.007473949834083, -4.214461777638834, -5.767891148240619, 0.31296984257875005]
-            w_array = [-4.429693076958575, 3.63434115958306, -0.7326607720013568, 1.080325390635762] 
+            J_array = [-2.049232063411831, 0.2100488969778921, -0.3205447247284159, -0.3005378768073264]
+            P_array = [-1.1330428009485605, -1.8531796648035894, -0.030802435189193577, 0.4142228270375192]
+            w_array = [-0.09809413885119918, -0.2526780720394058, 0.70672052464565, -0.4950461103349122] 
 
             generator = WeightsGeneratorExact(J_array, P_array, w_array, neuron_num, feed_forward_num)
             W = generator.generate_weight_matrix()
@@ -383,6 +398,8 @@ if __name__ == "__main__":
 
         print_tuning_curve(data[100], title="Example Excitatory Neuron Tuning Curve From Model")
         print_tuning_curve(data[-100], title="Example Inhibitory Neuron Tuning Curve From Model")
+
+        print_tuning_curve(data[100], title="")
         
         print_activity(responses[:E_index], title="Example Response Plot for the Model \n Excitatory (High contrast)", contrast_index=7)
         print_activity(responses[E_index:], title="Example Response Plot for the Model \n Inhibitory (High contrast)", contrast_index=7)
@@ -412,31 +429,36 @@ if __name__ == "__main__":
         plot_hist(get_max_firing_rate, data_I, title="Histogram of the max firing rate of the model I tuning curves")
         plot_hist(get_mean_firing_rate, data_I, title="Histogram of the mean firing rate of the model I tuning curves")
 
-    # else:
-        # # Get the data
-        # data_E, data_I = get_data()
-        # responses = np.concatenate((np.array(data_E.data), np.array(data_I.data)), axis=0)
-        # data_E = centralise_all_curves(np.array(data_E.data))
-        # data_I = centralise_all_curves(np.array(data_I.data))
-        # data = np.concatenate((data_E, data_I), axis=0)
+    else:
+        # Get the data
+        data_E, data_I = get_data()
+        responses = np.concatenate((np.array(data_E.data), np.array(data_I.data)), axis=0)
+        data_E = centralise_all_curves(np.array(data_E.data))
+        data_I = centralise_all_curves(np.array(data_I.data))
+        data = np.concatenate((data_E, data_I), axis=0)
 
-        # print_tuning_curve(data[5], title="Example Excitatory Neuron Tuning Curve From Data")
-        # print_tuning_curve(data[-5], title="Example Inhibitory Neuron Tuning Curve From Data")
+        print_tuning_curve(data[10], title="Example Excitatory Neuron Tuning Curve From Data")
+        print_tuning_curve(data[-5], title="Example Inhibitory Neuron Tuning Curve From Data")
+
+        print_tuning_curve(data[68], title="")
+
+        # for i in range(80):
+        #     print_tuning_curve(data[i], title=f"Example Neuron Tuning Curve From Data {i}")
         
-        # print_activity(responses, title="Response Plot for the data")
+        print_activity(responses, title="Response Plot for the data")
 
-        # print_tuning_curve(neuro_SVD(data[5])[0], title="Example SVD of Excitatory Neuron Tuning Curve From Data")
-        # print_tuning_curve(neuro_SVD(data[-5])[0], title="Example SVD of Inhibitory Neuron Tuning Curve From Data")
+        print_tuning_curve(neuro_SVD(data[5])[0], title="Example SVD of Excitatory Neuron Tuning Curve From Data")
+        print_tuning_curve(neuro_SVD(data[-5])[0], title="Example SVD of Inhibitory Neuron Tuning Curve From Data")
 
-        # plot_percentage_explained(data, title="Histogram of the percentage that the residue is left after SVD")
+        plot_percentage_explained(data, title="Histogram of the percentage that the residue is left after SVD")
 
-        # plot_frac_of_var(data_E, title="Fraction of explained variance (degree of contrast invariance) - Excitatory")
-        # plot_frac_of_var(data_I, title="Fraction of explained variance (degree of contrast invariance) - Inhibitory")
+        plot_frac_of_var(data_E, title="Fraction of explained variance (degree of contrast invariance) - Excitatory")
+        plot_frac_of_var(data_I, title="Fraction of explained variance (degree of contrast invariance) - Inhibitory")
 
-        # plot_hist(get_circ_var, data_E, title="Histogram of the circular variance of the data E tuning curves")
-        # plot_hist(get_max_firing_rate, data_E, title="Histogram of the max firing rate of the data E tuning curves")
-        # plot_hist(get_mean_firing_rate, data_E, title="Histogram of the mean firing rate of the data E tuning curves")
+        plot_hist(get_circ_var, data_E, title="Histogram of the circular variance of the data E tuning curves")
+        plot_hist(get_max_firing_rate, data_E, title="Histogram of the max firing rate of the data E tuning curves")
+        plot_hist(get_mean_firing_rate, data_E, title="Histogram of the mean firing rate of the data E tuning curves")
 
-        # plot_hist(get_circ_var, data_I, title="Histogram of the circular variance of the data I tuning curves")
-        # plot_hist(get_max_firing_rate, data_I, title="Histogram of the max firing rate of the data I tuning curves")
-        # plot_hist(get_mean_firing_rate, data_I, title="Histogram of the mean firing rate of the data I tuning curves")
+        plot_hist(get_circ_var, data_I, title="Histogram of the circular variance of the data I tuning curves")
+        plot_hist(get_max_firing_rate, data_I, title="Histogram of the max firing rate of the data I tuning curves")
+        plot_hist(get_mean_firing_rate, data_I, title="Histogram of the mean firing rate of the data I tuning curves")

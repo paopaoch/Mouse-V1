@@ -219,15 +219,6 @@ class WeightsGenerator(Rodents):
         self.w_steep = 1
         self.w_scale = 180
 
-    
-    def generate_feed_forward_weight_matrix(self):
-        if len(self.J_parameters) == 4:
-            return None
-        prob_EF = self._get_sub_weight_matrix(self._pref_diff(self.pref_E, self.pref_F), 4)
-        prob_IF = self._get_sub_weight_matrix(self._pref_diff(self.pref_I, self.pref_F), 5)
-        weights = torch.cat((prob_EF, prob_IF), dim=0)
-        return weights
-
 
     def generate_weight_matrix(self):
         prob_EE = self._get_sub_weight_matrix(self._pref_diff(self.pref_E, self.pref_E), 0)
@@ -304,6 +295,13 @@ class WeightsGeneratorExact(WeightsGenerator):
         J_single = self._sigmoid(self.J_parameters[index], self.J_steep, self.J_scale) / torch.sqrt(torch.tensor(diff.shape[1]))
         return J_single * torch.bernoulli(self._sigmoid(self.P_parameters[index], self.P_steep, self.P_scale) 
                                           * self._cric_gauss(diff, self._sigmoid(self.w_parameters[index], self.w_steep, self.w_scale)))
+
+
+class RandomWeightsGenerator(WeightsGenerator):
+    def _get_sub_weight_matrix(self, diff: torch.Tensor, index: int):
+        J_single = self._sigmoid(self.J_parameters[index], self.J_steep, self.J_scale) / torch.sqrt(torch.tensor(diff.shape[1]))
+        prob_matrix = torch.ones_like(diff) * self._sigmoid(self.P_parameters[index], self.P_steep, self.P_scale)
+        return J_single * torch.bernoulli(prob_matrix)
 
 
 class NetworkExecuter(Rodents):
@@ -627,12 +625,12 @@ if __name__ == "__main__":
     # P_array = [-6.591673732008658, 1.8571176252186712, -4.1588830833596715, 4.549042468104266]
     # w_array = [-167.03761889472233, -187.23627477210516, -143.08737747657977, -167.03761889472233]
 
-    J_array = [-4.054651081081644, -7.5377180237638015, 4.0546510810816425, -4.054651081081644]
-    P_array = [-6.272223290801309, -0.6020120863864538, -6.272223290801309, -0.6020120863864538]
+    J_array = [0.5, -0.5, -0.5, 0.5]
+    P_array = [-0.5, -0.5, -0.5, -0.5]
     w_array = [-275.66574677358994, -275.66574677358994, -275.66574677358994, -275.66574677358994]
 
-    n = 10000
+    n = 100
 
-    keen = WeightsGeneratorExact(J_array, P_array, w_array, n, 100, device="cpu")
+    keen = RandomWeightsGenerator(J_array, P_array, w_array, n, 100, device="cpu")
     W = keen.generate_weight_matrix()
-    W_FF = keen.generate_feed_forward_weight_matrix()
+    plot_weights(W, title="")
