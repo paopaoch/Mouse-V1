@@ -11,6 +11,8 @@ if __name__ == "__main__":
     E_index = 800
     device = get_device("cuda:0")
     executer = NetworkExecuterParallel(N, device=device)
+    executer.contrasts = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]
+    executer.orientations = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170]
     loss_func = MouseLossFunctionOptimised(device=device)
 
     config13 = {
@@ -24,7 +26,7 @@ if __name__ == "__main__":
     tuning_curves, _ = executer.run_all_orientation_and_contrast(W)
     config_E, config_I = tuning_curves[:E_index], tuning_curves[E_index:]
 
-    dir_name = f"DATASET_bessel_{time.time()}"
+    dir_name = f"DATASET_bessel_large_{time.time()}"
     create_directory_if_not_exists(dir_name)
     metadata_file = f"{dir_name}/metadata.csv"
     with open(metadata_file, 'w') as f:
@@ -134,15 +136,10 @@ def main(dataset_size=3000):
         wg = WeightsGenerator(J_array, P_array, w_array, N, device=device)
         W = wg.generate_weight_matrix()
         y_E, y_I, _ = execute_network(W)
-        # print(y_E)
-        # print(torch.max(y_E))
         y_E, y_I = trim_data(y_E, y_I)
-        # print(y_E)
-        # print(torch.max(y_E))
-        # print(J_array, P_array, w_array)
         save_data(y_E, y_I, J_array, P_array, w_array)
         count += 1
         print(count)
 
 if __name__ == "__main__":
-    main(dataset_size=4000)
+    main(dataset_size=10000)
