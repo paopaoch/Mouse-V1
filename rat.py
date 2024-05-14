@@ -571,7 +571,7 @@ class NetworkExecuterParallel(NetworkExecuter):
             self.update_weight_matrix(weights, weights_FF)
 
         rate, avg_step = self._get_steady_state_output()
-        rate = rate.view(self.neuron_num, 8, 12)
+        rate = rate.view(self.neuron_num, len(self.contrasts), len(self.orientations))
         return self._add_noise_to_rate(rate), avg_step
     
 
