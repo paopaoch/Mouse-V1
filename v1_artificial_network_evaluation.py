@@ -1,8 +1,11 @@
 import torch
-from v1_artificial_network import V1CNN
+from torch import nn
+from torch.utils.data import DataLoader
+from v1_artificial_network import V1CNN, V1Dataset
 from rat import NetworkExecuterParallel, WeightsGenerator
 from utils.rodents_routine import get_device
 from data_collection import trim_data
+import pickle
 
 torch.manual_seed(69)
 n = 1000
@@ -35,3 +38,34 @@ model.eval()
 predicted = model.forward([y_E, y_I])
 
 print(predicted * scale)
+
+# -------------------------------
+
+criterion = nn.MSELoss()
+
+with open("dataset_full_for_training.pkl", 'rb') as f:
+    pickle_data = pickle.load(f)
+
+batch_size = 1
+shuffle = True
+test_dataset = V1Dataset(pickle_data, data_type="test", device=device)
+test_data_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+model.eval()
+running_loss = 0.0
+all_targets = []
+all_outpus = []
+for batch in test_data_loader:
+    inputs = batch["input"]
+    targets = batch['target']
+    outputs = model.forward(inputs)
+    loss = criterion(outputs, targets)
+    running_loss += loss.item()
+
+    all_targets.append(targets.clone().detach().to("cpu"))
+    all_outpus.append(outputs.clone().detach().to("cpu"))
+
+data = [all_targets, all_outpus]
+
+with open("CNN_predicted_values.pkl", 'wb') as f:
+    pickle.dump(data, f)
