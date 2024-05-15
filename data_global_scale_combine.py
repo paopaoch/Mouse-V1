@@ -96,7 +96,10 @@ for directory in data_directories:
     metadata = df.to_dict(orient="index")
 
     for subdir in tqdm(subdirs):
-        if not check_valid_range(metadata[subdir]):
+        try:
+            if not check_valid_range(metadata[subdir]):
+                continue
+        except KeyError:
             continue
 
         dataset = [None, None]
