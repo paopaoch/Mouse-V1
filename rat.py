@@ -211,10 +211,10 @@ class WeightsGenerator(Rodents):
 
         # Sigmoid values for parameters
         self.J_steep = 1
-        self.J_scale = 100
+        self.J_scale = 40
 
         self.P_steep = 1
-        self.P_scale = 1
+        self.P_scale = 0.6
 
         self.w_steep = 1
         self.w_scale = 180
