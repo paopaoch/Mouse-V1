@@ -118,10 +118,10 @@ if __name__ == "__main__":
                     break
 
                 if trial_loss < lowest_lost:
-                    lowest_lost = trial_loss.clone().detach()
-                    J_lowest = J_array.clone().detach()
-                    P_lowest = P_array.clone().detach()
-                    w_lowest = w_array.clone().detach()
+                    lowest_lost = trial_loss.clone().detach().to("cpu")
+                    J_lowest = J_array.clone().detach().to("cpu")
+                    P_lowest = P_array.clone().detach().to("cpu")
+                    w_lowest = w_array.clone().detach().to("cpu")
 
         if J_lowest is not None:
             trial_result["J_predicted"] = J_lowest
