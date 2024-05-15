@@ -26,10 +26,10 @@ if __name__ == "__main__":
     config_E, config_I = tuning_curves[:E_index], tuning_curves[E_index:]
 
     dir_name = f"DATASET_bessel_large_{time.time()}"
-    # create_directory_if_not_exists(dir_name)
-    # metadata_file = f"{dir_name}/metadata.csv"
-    # with open(metadata_file, 'w') as f:
-    #     f.write('dir,J_EE,J_EI,J_IE,J_II,P_EE,P_EI,P_IE,P_II,w_EE,w_EI,w_IE,w_II')
+    create_directory_if_not_exists(dir_name)
+    metadata_file = f"{dir_name}/metadata.csv"
+    with open(metadata_file, 'w') as f:
+        f.write('dir,J_EE,J_EI,J_IE,J_II,P_EE,P_EI,P_IE,P_II,w_EE,w_EI,w_IE,w_II')
 
     def execute_network(W):
         tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W)
@@ -110,11 +110,11 @@ def save_data(y_E, y_I, J_array, P_array, w_array):
     P_array = round_1D_tensor_to_list(P_array)
     w_array = round_1D_tensor_to_list(w_array)
 
-    # with open(metadata_file, 'a') as f:
-    #     f.write(f"\n{sub_dir_name}"
-    #             + f",{round(params_to_J_scalar(J_array[0]), 4)},{round(params_to_J_scalar(J_array[1]), 4)},{round(params_to_J_scalar(J_array[2]), 4)},{round(params_to_J_scalar(J_array[3]), 4)}"
-    #             + f",{round(params_to_P_scalar(P_array[0]), 4)},{round(params_to_P_scalar(P_array[1]), 4)},{round(params_to_P_scalar(P_array[2]), 4)},{round(params_to_P_scalar(P_array[3]), 4)}"
-    #             + f",{round(params_to_w_scalar(w_array[0]), 4)},{round(params_to_w_scalar(w_array[1]), 4)},{round(params_to_w_scalar(w_array[2]), 4)},{round(params_to_w_scalar(w_array[3]), 4)}")
+    with open(metadata_file, 'a') as f:
+        f.write(f"\n{sub_dir_name}"
+                + f",{round(params_to_J_scalar(J_array[0]), 4)},{round(params_to_J_scalar(J_array[1]), 4)},{round(params_to_J_scalar(J_array[2]), 4)},{round(params_to_J_scalar(J_array[3]), 4)}"
+                + f",{round(params_to_P_scalar(P_array[0]), 4)},{round(params_to_P_scalar(P_array[1]), 4)},{round(params_to_P_scalar(P_array[2]), 4)},{round(params_to_P_scalar(P_array[3]), 4)}"
+                + f",{round(params_to_w_scalar(w_array[0]), 4)},{round(params_to_w_scalar(w_array[1]), 4)},{round(params_to_w_scalar(w_array[2]), 4)},{round(params_to_w_scalar(w_array[3]), 4)}")
 
 
 def main(dataset_size=3000):
@@ -137,7 +137,7 @@ def main(dataset_size=3000):
         y_E, y_I, _ = execute_network(W)
         y_E, y_I = trim_data(y_E, y_I)
         print(y_E.shape)
-        # save_data(y_E, y_I, J_array, P_array, w_array)
+        save_data(y_E, y_I, J_array, P_array, w_array)
         count += 1
         print(count)
 
