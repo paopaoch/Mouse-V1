@@ -51,6 +51,8 @@ class V1CNN(nn.Module):
             image: torch.Tensor = image.unsqueeze(1)
             image = self.features_excit(image)
             image = torch.flatten(image, 1)
+            print(image.shape)
+            print(h_E.shape)
             h_E = h_E + image
         h_E = h_E / count
 
