@@ -32,7 +32,7 @@ class V1CNN(nn.Module):
 
 
         self.regressor = nn.Sequential(
-            nn.Linear(5 * 4 * 16 * 2, 64),  # nuber of images * number of output channel * image width * image height
+            nn.Linear(5 * 4 * 16 * 60, 64),  # nuber of images * number of output channel * image width * image height
             nn.ReLU(),
             nn.Linear(64, 12),
             nn.ReLU(),
@@ -43,27 +43,43 @@ class V1CNN(nn.Module):
 
 
     def forward(self, x):  # input is a len 2 list of torch vector of size (batch_size, 48 (or 12), 21, 18)
-        h_E = torch.zeros((len(x[0]), 320), device=x[0].device)
-        count = 0
+        # h_E = torch.zeros((len(x[0]), 320), device=x[0].device)
+        # count = 0
+        # for image in x[0].permute(1, 0, 2, 3):
+        #     count += 1
+        #     image: torch.Tensor = image.unsqueeze(1)
+        #     image = self.features_excit(image)
+        #     image = torch.flatten(image, 1)
+            # h_E = h_E + image
+        # h_E = h_E / count
+
+        # h_I = torch.zeros((len(x[1]), 320), device=x[0].device)
+        # count = 0
+        # for image in x[1].permute(1, 0, 2, 3):
+        #     count += 1
+        #     image: torch.Tensor = image.unsqueeze(1)
+        #     image = self.features_inhib(image)
+        #     image = torch.flatten(image, 1)
+            # h_I = h_I + image
+        # h_I = h_I / count
+        
+        # h = torch.concatenate([h_E, h_I], dim=1)
+
+        cnn_output_list = []
         for image in x[0].permute(1, 0, 2, 3):
-            count += 1
             image: torch.Tensor = image.unsqueeze(1)
             image = self.features_excit(image)
             image = torch.flatten(image, 1)
-            h_E = h_E + image
-        h_E = h_E / count
+            cnn_output_list.append(image)
 
-        h_I = torch.zeros((len(x[1]), 320), device=x[0].device)
-        count = 0
         for image in x[1].permute(1, 0, 2, 3):
-            count += 1
             image: torch.Tensor = image.unsqueeze(1)
             image = self.features_inhib(image)
             image = torch.flatten(image, 1)
-            h_I = h_I + image
-        h_I = h_I / count
+            cnn_output_list.append(image)
         
-        h = torch.concatenate([h_E, h_I], dim=1)
+        h = torch.concatenate(cnn_output_list, dim=1)
+
         h = self.regressor(h)
         
         return h
