@@ -312,11 +312,13 @@ class OSDependentWeightsGenerator(WeightsGenerator):
 
 
 class NetworkExecuter(Rodents):
-    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=0.15, w_ff=30, sig_ext=5, device="cpu", plot_overtime=False):
+    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=0.15, w_ff=30, sig_ext=5, device="cpu", plot_overtime=False, 
+                 contrasts=[0, 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.],
+                 orientations=[0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]):
         super().__init__(neuron_num, ratio, device, feed_forward_num)
 
-        self.orientations = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]  # 12  # NOTE: we can reduce this for experimental runs, we can change this as we move closer to the optimal during optimisation
-        self.contrasts = [0, 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.]  # 8
+        self.orientations = orientations  # 12  # NOTE: we can reduce this for experimental runs, we can change this as we move closer to the optimal during optimisation
+        self.contrasts = contrasts  # 8
         # self.contrasts = [0., 1/7, 2/7, 3/7, 4/7, 5/7, 6/7, 1.]  # 8
         # self.contrasts = [.3, .4, .5, .6, .7, .8, .9, 1.]  # 8
 
@@ -552,8 +554,10 @@ class NetworkExecuter(Rodents):
 
 class NetworkExecuterParallel(NetworkExecuter):
 
-    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=0.15, w_ff=30, sig_ext=5, device="cpu", plot_overtime=False):
-        super().__init__(neuron_num, feed_forward_num, ratio, scaling_g, w_ff, sig_ext, device, plot_overtime)
+    def __init__(self, neuron_num, feed_forward_num=100, ratio=0.8, scaling_g=0.15, w_ff=30, sig_ext=5, device="cpu", plot_overtime=False,
+                 contrasts=[0, 0.0432773, 0.103411, 0.186966, 0.303066, 0.464386, 0.68854, 1.],
+                 orientations=[0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165]):
+        super().__init__(neuron_num, feed_forward_num, ratio, scaling_g, w_ff, sig_ext, device, plot_overtime, contrasts, orientations)
         self.tau = self.tau.unsqueeze(0)
         self.tau = self.tau.repeat(len(self.orientations) * len(self.contrasts), 1).T
 
