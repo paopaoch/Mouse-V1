@@ -118,7 +118,7 @@ if __name__ == "__main__":
     with open("dataset_full_for_training.pkl", 'rb') as f:
         pickle_data = pickle.load(f)
 
-    batch_size = 8
+    batch_size = 32
     shuffle = True
     train_dataset = V1Dataset(pickle_data, data_type="train", device=device)
     test_dataset = V1Dataset(pickle_data, data_type="test", device=device)
