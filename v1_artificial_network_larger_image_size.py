@@ -11,10 +11,10 @@ class V1CNN(nn.Module):
         self.features_excit = nn.Sequential(
             nn.Conv2d(1, 4, kernel_size=3, stride=1, padding=1), # (21 x 18 x 1) -> (21 x 18 x 4)
             nn.ReLU(),
-            nn.Conv2d(4, 8, kernel_size=3, stride=1, padding=1), # (21 x 18 x 4) -> (21 x 18 x 8)
+            nn.Conv2d(4, 32, kernel_size=3, stride=1, padding=1), # (21 x 18 x 4) -> (21 x 18 x 8)
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2), # (21 x 18 x 8) -> (10 x 9 x 8)
-            nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1), # (10 x 9 x 8) -> (10 x 9 x 16)
+            nn.Conv2d(32, 128, kernel_size=3, stride=1, padding=1), # (10 x 9 x 8) -> (10 x 9 x 16)
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2) # (10 x 9 x 16) -> (5 x 4 x 16)
         )
@@ -22,17 +22,17 @@ class V1CNN(nn.Module):
         self.features_inhib = nn.Sequential(
             nn.Conv2d(1, 4, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(4, 8, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(4, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(32, 128, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2) # -> (5 x 4 x 16)
         )
 
 
         self.regressor = nn.Sequential(
-            nn.Linear(5 * 4 * 16 * 60, 128),  # nuber of images * number of output channel * image width * image height
+            nn.Linear(5 * 4 * 16 * 2, 128),  # nuber of images * number of output channel * image width * image height
             nn.ReLU(),
             nn.Linear(128, 12),
             nn.ReLU(),
@@ -43,42 +43,27 @@ class V1CNN(nn.Module):
 
 
     def forward(self, x):  # input is a len 2 list of torch vector of size (batch_size, 48 (or 12), 21, 18)
-        # h_E = torch.zeros((len(x[0]), 320), device=x[0].device)
-        # count = 0
-        # for image in x[0].permute(1, 0, 2, 3):
-        #     count += 1
-        #     image: torch.Tensor = image.unsqueeze(1)
-        #     image = self.features_excit(image)
-        #     image = torch.flatten(image, 1)
-            # h_E = h_E + image
-        # h_E = h_E / count
-
-        # h_I = torch.zeros((len(x[1]), 320), device=x[0].device)
-        # count = 0
-        # for image in x[1].permute(1, 0, 2, 3):
-        #     count += 1
-        #     image: torch.Tensor = image.unsqueeze(1)
-        #     image = self.features_inhib(image)
-        #     image = torch.flatten(image, 1)
-            # h_I = h_I + image
-        # h_I = h_I / count
-        
-        # h = torch.concatenate([h_E, h_I], dim=1)
-
-        cnn_output_list = []
+        h_E = torch.zeros((len(x[0]), 320), device=x[0].device)
+        count = 0
         for image in x[0].permute(1, 0, 2, 3):
+            count += 1
             image: torch.Tensor = image.unsqueeze(1)
             image = self.features_excit(image)
             image = torch.flatten(image, 1)
-            cnn_output_list.append(image)
+            h_E = h_E + image
+        h_E = h_E / count
 
+        h_I = torch.zeros((len(x[1]), 320), device=x[0].device)
+        count = 0
         for image in x[1].permute(1, 0, 2, 3):
+            count += 1
             image: torch.Tensor = image.unsqueeze(1)
             image = self.features_inhib(image)
             image = torch.flatten(image, 1)
-            cnn_output_list.append(image)
+            h_I = h_I + image
+        h_I = h_I / count
         
-        h = torch.concatenate(cnn_output_list, dim=1)
+        h = torch.concatenate([h_E, h_I], dim=1)
 
         h = self.regressor(h)
         
