@@ -43,20 +43,17 @@ class V1CNN(nn.Module):
 
 
     def forward(self, x):  # input is a len 2 list of torch vector of size (batch_size, 48 (or 12), 21, 18)
-        print(x[0].shape)
-        h_E = torch.zeros((len(x), 320), device=x[0].device)
+        h_E = torch.zeros((len(x[0]), 320), device=x[0].device)
         count = 0
         for image in x[0].permute(1, 0, 2, 3):
             count += 1
             image: torch.Tensor = image.unsqueeze(1)
             image = self.features_excit(image)
             image = torch.flatten(image, 1)
-            print(image.shape)
-            print(h_E.shape)
             h_E = h_E + image
         h_E = h_E / count
 
-        h_I = torch.zeros((len(x), 320), device=x[0].device)
+        h_I = torch.zeros((len(x[1]), 320), device=x[0].device)
         count = 0
         for image in x[1].permute(1, 0, 2, 3):
             count += 1
