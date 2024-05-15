@@ -32,7 +32,7 @@ class V1CNN(nn.Module):
 
 
         self.regressor = nn.Sequential(
-            nn.Linear(5 * 4 * 16 * 2, 128),  # nuber of images * number of output channel * image width * image height
+            nn.Linear(5 * 4 * 128 * 2, 128),  # nuber of images * number of output channel * image width * image height
             nn.ReLU(),
             nn.Linear(128, 12),
             nn.ReLU(),
