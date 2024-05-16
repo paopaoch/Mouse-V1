@@ -119,5 +119,5 @@ class OSDependentWeightsGenerator(WeightsGenerator):
     def _get_sub_weight_matrix(self, diff: torch.Tensor, index: int):
         J_single = self._sigmoid(self.J_parameters[index], self.J_steep, self.J_scale) / torch.sqrt(torch.tensor(diff.shape[1]))
         circ_matrix = self._cric_gauss(diff, self._sigmoid(self.w_parameters[index], self.w_steep, self.w_scale))
-        return J_single * self._cric_gauss(diff, self._sigmoid(self.w_parameters[index], self.w_steep, self.w_scale))
+        return J_single * circ_matrix
 
