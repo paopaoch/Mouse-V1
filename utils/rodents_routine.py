@@ -4,10 +4,10 @@ import random
 import math
 
 J_steep = 1
-J_scale = 100
+J_scale = 40
 
 P_steep = 1
-P_scale = 1
+P_scale = 0.6
 
 w_steep = 1
 w_scale = 180

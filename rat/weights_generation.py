@@ -22,13 +22,16 @@ class WeightsGenerator(Rodents):
 
         # Sigmoid values for parameters
         self.J_steep = 1
-        self.J_scale = 40
+        # self.J_scale = 40
+        self.J_scale = 20
 
         self.P_steep = 1
-        self.P_scale = 0.6
+        # self.P_scale = 0.6
+        self.P_scale = 0.3
 
         self.w_steep = 1
-        self.w_scale = 180
+        # self.w_scale = 180
+        self.w_scale = 90
 
 
     def generate_weight_matrix(self):

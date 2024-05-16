@@ -5,13 +5,13 @@ import numpy as np
 from tqdm import tqdm
 
 J_steep = 1
-J_scale = 40
+J_scale = 20
 
 P_steep = 1
 P_scale = 0.6
 
 w_steep = 1
-w_scale = 180
+w_scale = 90
 
 class Connection:
     def __init__(self, J: float, P: float, w: float, N: int):
