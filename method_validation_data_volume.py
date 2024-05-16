@@ -76,6 +76,7 @@ if __name__ == "__main__":
                 wg = WeightsGenerator(J_array, P_array, w_array, 1000, device=device, forward_mode=True)
 
                 W = wg.generate_weight_matrix()
+                executer.update_heter_ff(heter_ff)
                 tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W)
                 x_E, x_I = tuning_curves[:800], tuning_curves[800:]
                 bessel_val = wg.validate_weight_matrix()
@@ -90,11 +91,12 @@ if __name__ == "__main__":
                 J_array: torch.Tensor = (J_array - 1 * wg.J_parameters.grad).clone().detach().requires_grad_(True)
                 P_array: torch.Tensor = (P_array - 1 * wg.P_parameters.grad).clone().detach().requires_grad_(True)
                 w_array: torch.Tensor = (w_array - 1 * wg.w_parameters.grad).clone().detach().requires_grad_(True)
+                heter_ff: torch.Tensor  = (heter_ff - 1 * heter_ff.grad).clone().detach().requires_grad_(True)
 
                 f.write(f"{round_1D_tensor_to_list(J_array)}\n")
                 f.write(f"{round_1D_tensor_to_list(P_array)}\n")
                 f.write(f"{round_1D_tensor_to_list(w_array)}\n")
-
+                f.write(f"heter_ff: {round_1D_tensor_to_list(heter_ff)}\n")
 
                 loss_diffs.append(prev_loss - trial_mmd_loss.clone().detach())
                 f.write(f"loss_diff: {torch.tensor(loss_diffs[-10:], device=device).mean()}\n")
