@@ -1,5 +1,5 @@
 import torch
-from rat import WeightsGenerator, NetworkExecuterParallel, MouseLossFunctionOptimised
+from rat import WeightsGenerator, NetworkExecuterWithSimplifiedFF, MouseLossFunctionHomogeneous
 import time
 import sys
 import socket
@@ -21,21 +21,22 @@ if __name__ == "__main__":
         device = "cpu"
         print("GPU not available. Model will be created on CPU.")
     
-    sample_sizes = [1000, 900, 800, 700, 600, 500, 400, 300, 200, 100, 50]
+    sample_sizes = [1000, 900, 800, 700, 600, 500, 400, 300, 200, 100, 50, 5, 2]
 
-    executer = NetworkExecuterParallel(1000, device=device, scaling_g=0.15)
-    loss_function = MouseLossFunctionOptimised(device=device)
+    executer = NetworkExecuterWithSimplifiedFF(1000, device=device, scaling_g=0.15)
+    loss_function = MouseLossFunctionHomogeneous(device=device)
 
     # Create dataset
-    J_array = [-2.059459853260332, -3.0504048076264896, -1.5877549090278045, -2.813481385641024]  # n = 1000
-    P_array = [-2.0907410969337694, -0.20067069546215124, -2.0907410969337694, -0.20067069546215124]
+    J_array = [-0.9308613398652443, -2.0604571635972393, -0.30535063458645906, -1.802886963254238]
+    P_array = [-1.493925025312256, 1.09861228866811, -1.493925025312256, 1.09861228866811]
     w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
-
+    heter_ff = 0.2
     J_array = torch.tensor(J_array, device= device)
     P_array = torch.tensor(P_array, device= device)
     w_array = torch.tensor(w_array, device= device)
     wg = WeightsGenerator(J_array, P_array, w_array, 1000, device=device, forward_mode=True)
     W = wg.generate_weight_matrix()
+    executer.update_heter_ff(heter_ff)
     tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W)
     y_E_all, y_I_all = tuning_curves[:800], tuning_curves[800:]
 
@@ -57,12 +58,13 @@ if __name__ == "__main__":
         y_E = subsample_tensor_uniform(y_E_all, int(sample_size * 0.8))
         y_I = subsample_tensor_uniform(y_I_all, int(sample_size * 0.2))
 
-        J_array = [-1.7346010553881064, -2.586689344097943, -1.3862943611198906, -3.1780538303479458]  # pre-determined start
-        P_array = [-1.265666373331276, -0.6190392084062235, -1.265666373331276, -0.6190392084062235]
-        w_array = [-1.0986122886681098, -1.0986122886681098, -1.0986122886681098, -1.0986122886681098]
+        J_array = [-0.5108256237659906, -1.550597412411167, -0.0, -2.1972245773362196]
+        P_array = [-0.5465437063680698, 0.33647223662121273, -0.5465437063680698, 0.33647223662121273]
+        w_array = [-1.0986122886681098, -1.0986122886681098, -1.0986122886681098, -1.0986122886681098] 
         J_array = torch.tensor(J_array, device= device, requires_grad=True)
         P_array = torch.tensor(P_array, device= device, requires_grad=True)
         w_array = torch.tensor(w_array, device= device, requires_grad=True)
+        heter_ff = torch.tensor([0.3], device=device, requires_grad=True)
 
         loss_diffs = []
         prev_loss = torch.tensor(10000, device=device)
