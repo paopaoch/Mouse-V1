@@ -4,7 +4,7 @@ import numpy as np
 import time
 from datetime import datetime
 from tqdm import tqdm
-from rat import get_data, WeightsGeneratorExact, NetworkExecuterParallel
+from rat import get_data, WeightsGeneratorExact, NetworkExecuterWithSimplifiedFF
 from scipy.stats import circvar
 import os
 import pickle
@@ -76,7 +76,7 @@ def print_tuning_curve(tuning_curve, title=""):
         plt.close()
 
 
-def print_feed_forward_input(executer: NetworkExecuterParallel, W, W_FF):
+def print_feed_forward_input(executer: NetworkExecuterWithSimplifiedFF, W, W_FF):
     executer.update_weight_matrix(W, W_FF)
     # mean, sigma = executer._stim_to_inputs_with_ff(1, 45)
     mean, sigma = executer._stim_to_inputs_with_ff()
@@ -338,9 +338,15 @@ if __name__ == "__main__":
             # P_array = [-2.8618, 1.3553000000000004, -3.4474, 0.45609999999999995]
             # w_array = [-3.5758, -2.2744999999999997, -1.5745, -0.4125] 
 
-            J_array = [-2.049232063411831, 0.2100488969778921, -0.3205447247284159, -0.3005378768073264]
-            P_array = [-1.1330428009485605, -1.8531796648035894, -0.030802435189193577, 0.4142228270375192]
-            w_array = [-0.09809413885119918, -0.2526780720394058, 0.70672052464565, -0.4950461103349122] 
+            J_array = [-2.008051, -2.915398, -3.576522, -3.498692]
+            P_array = [-3.489173, -3.361498, 1.9793670000000005, -2.9004659999999998]
+            w_array = [3.3151170000000003, -1.306025, 1.7146030000000003, 2.265844999999999] 
+            heter_ff = 0.07592
+
+            J_array = [-0.9308613398652443, -2.0604571635972393, -0.30535063458645906, -1.802886963254238]  # config 13: n = 1000
+            P_array = [-1.493925025312256, 1.09861228866811, -1.493925025312256, 1.09861228866811]
+            w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
+            heter_ff = 0.2
 
             generator = WeightsGeneratorExact(J_array, P_array, w_array, neuron_num, feed_forward_num)
             W = generator.generate_weight_matrix()
@@ -351,7 +357,8 @@ if __name__ == "__main__":
             else:
                 W_FF = None
 
-            executer = NetworkExecuterParallel(neuron_num, feed_forward_num, scaling_g=scaling_g, device="cpu", sig_ext=5, w_ff=30)
+            executer = NetworkExecuterWithSimplifiedFF(neuron_num, feed_forward_num, scaling_g=scaling_g, device="cpu", sig_ext=5, w_ff=30)
+            executer.update_heter_ff(heter_ff)
             if len(J_array) == 6:
                 print_feed_forward_input(executer, W, W_FF)
 
