@@ -16,9 +16,9 @@ if __name__ == "__main__":
 
     desc = "Method validation"
 
-    device = get_device("cuda:1")
+    device = get_device("cuda:0")
     
-    restart_num = 40
+    restart_num = 50
 
     executer = NetworkExecuterWithSimplifiedFF(1000, device=device, scaling_g=0.15)
     loss_function = MouseLossFunctionHomogeneous(device=device)
