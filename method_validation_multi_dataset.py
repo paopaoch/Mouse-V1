@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     desc = "Method validation multi dataset"
 
-    device = get_device("cuda:0")
+    device = get_device("cuda:1")
     
     restart_num = 40
     dataset_trials = 30
