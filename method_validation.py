@@ -88,7 +88,7 @@ if __name__ == "__main__":
                 f.write(f"{round_1D_tensor_to_list(J_array)}\n")
                 f.write(f"{round_1D_tensor_to_list(P_array)}\n")
                 f.write(f"{round_1D_tensor_to_list(w_array)}\n")
-                f.write(f"{round_1D_tensor_to_list(heter_ff)}\n")
+                f.write(f"heter_ff: {round_1D_tensor_to_list(heter_ff)}\n")
 
 
                 loss_diffs.append(prev_loss - trial_mmd_loss.clone().detach())
