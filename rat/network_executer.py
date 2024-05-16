@@ -332,7 +332,7 @@ class NetworkExecuterWithSimplifiedFF(NetworkExecuterParallel):
             raise ValueError("heter_ff is None.")
         input_mean = []
         mu_BL = self.Vt - 2.71 * self.sig_ext
-        random_term = (1 + self.heter_ff * ((2 * torch.rand(len(self.orientations), self.neuron_num)) - 1))
+        random_term = (1 + self.heter_ff * ((2 * torch.rand((len(self.orientations), self.neuron_num), device=self.device)) - 1))
         for contrast in self.contrasts:
             for i, orientation in enumerate(self.orientations):
                 input_mean.append(random_term[i] * mu_BL * contrast * (self.Vt - self.Vr) * self.scaling_g * self._cric_gauss(orientation - self.pref, self.w_ff))  # NOTE: replace 20 with v_t - v_r
