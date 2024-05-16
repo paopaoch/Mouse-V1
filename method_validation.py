@@ -57,7 +57,7 @@ if __name__ == "__main__":
         J_array = [-0.9308613398652443, -2.0604571635972393, -0.30535063458645906, -1.802886963254238]
         P_array = [-1.493925025312256, 1.09861228866811, -1.493925025312256, 1.09861228866811]
         w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
-        heter_ff = torch.tensor(0.2, device=device, requires_grad=True)
+        heter_ff = torch.tensor([0.2], device=device, requires_grad=True)
         J_array = torch.tensor(J_array, device= device, requires_grad=True)
         P_array = torch.tensor(P_array, device= device, requires_grad=True)
         w_array = torch.tensor(w_array, device= device, requires_grad=True)
