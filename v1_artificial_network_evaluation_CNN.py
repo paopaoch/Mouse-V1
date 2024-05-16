@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
-from v1_artificial_network import V1CNN, V1Dataset
+from v1_artificial_network_CNN import V1CNN, V1Dataset
 from rat import NetworkExecuterParallel, WeightsGenerator
 from utils.rodents_routine import get_device
 from data_collection import trim_data
