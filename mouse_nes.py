@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 import sys
 from tqdm import tqdm
-from rat import MouseLossFunctionOptimised, WeightsGeneratorExact, NetworkExecuterParallel, get_data
+from rat import MouseLossFunctionHomogeneous, WeightsGeneratorExact, NetworkExecuterWithSimplifiedFF, get_data
 import socket
 import pickle
 
@@ -40,11 +40,13 @@ def make_torch_params(mean_list, var_list, device="cpu"):
 
 def mean_to_params(mean):
     if len(mean) == 12:  # No feed forward
-        return mean[0:4], mean[4:8], mean[8:12]
+        return mean[0:4], mean[4:8], mean[8:12], None
+    elif len(mean) == 13:  # heter_ff
+        return mean[0:4], mean[4:8], mean[8:12], [mean[-1]]
     elif len(mean) == 18:  # With feed forward
-        return mean[0:6], mean[6:12], mean[12:18]
+        return mean[0:6], mean[6:12], mean[12:18], None
     else:
-        raise IndexError(f"Expected an array of size 12 or 18 but found size {len(mean)}")
+        raise IndexError(f"Expected an array of size 12, 13, or 18 but found size {len(mean)}")
 
 
 def get_utilities(length: int, device="cpu"):  # samples are sorted in ascending order as we want lower loss
@@ -68,9 +70,9 @@ def sort_two_arrays(losses: list, samples: list, device="cpu"):  # sort accordin
 
 def calc_loss(trials,
              weights_generator: WeightsGeneratorExact, 
-             network_executer: NetworkExecuterParallel, 
-             loss_function: MouseLossFunctionOptimised,
-             y_E, y_I, feed_forward=False):
+             network_executer: NetworkExecuterWithSimplifiedFF, 
+             loss_function: MouseLossFunctionHomogeneous,
+             y_E, y_I, feed_forward=False, heter_ff=None):
     loss_sum = 0
     mmd_sum = 0
     for _ in range(trials):
@@ -79,6 +81,8 @@ def calc_loss(trials,
         else:
             weights_FF = None
         weights = weights_generator.generate_weight_matrix()
+        if heter_ff is not None:
+            network_executer.update_heter_ff(heter_ff)
         preds, avg_step = network_executer.run_all_orientation_and_contrast(weights, weights_FF)
         preds_E = preds[:weights_generator.neuron_num_e]
         preds_I = preds[weights_generator.neuron_num_e:]
@@ -99,15 +103,15 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
     # local variable setup
     alpha = torch.tensor(alpha, device=device)
     beta = torch.tensor(beta, device=device)
-    J, P, w = mean_to_params(mean)
+    J, P, w, heter_ff = mean_to_params(mean)
     if len(mean) == 18:
         feed_forward = True
     else:
         feed_forward = False
     
     # Init model and loss function
-    loss_function = MouseLossFunctionOptimised(device=device, avg_step_weighting=avg_step_weighting)
-    network_executer = NetworkExecuterParallel(neuron_num, device=device, feed_forward_num=feed_forward_num)
+    loss_function = MouseLossFunctionHomogeneous(device=device, avg_step_weighting=avg_step_weighting)
+    network_executer = NetworkExecuterWithSimplifiedFF(neuron_num, device=device, feed_forward_num=feed_forward_num)
     weights_generator = WeightsGeneratorExact(J, P, w, neuron_num, feed_forward_num=feed_forward_num, device=device)
     weights_valid = weights_generator.validate_weight_matrix()
 
@@ -153,6 +157,9 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         f.write("\n")
         f.write(f"w\n")
         f.write(str(weights_generator.w_parameters))
+        f.write("\n")
+        f.write(f"heter_ff\n")
+        f.write(str(heter_ff))
         f.write("\n\n")
         f.write("Covariance Matrix\n")
         f.write(str(cov))
@@ -212,9 +219,9 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
             print(f"Number of samples reused: {len(samples)}")
             f.write(f"Number of samples reused: {len(samples)}\n")
 
-            J, P, w = mean_to_params(mean)
+            J, P, w, heter_ff = mean_to_params(mean)
             weights_generator.set_parameters(J, P, w)
-            mean_loss, mean_MMD_loss = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I, feed_forward=feed_forward)
+            mean_loss, mean_MMD_loss = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I, feed_forward=feed_forward, heter_ff=heter_ff)
             
             print("current_mean_loss: ", mean_loss, mean_MMD_loss)
             print("mean: ", mean)
@@ -234,11 +241,11 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
                 p = torch.maximum(alpha, 1 - prob / previous_prob)
                 accept_p = torch.rand(1)[0]
                 if accept_p < p:
-                    J, P, w = mean_to_params(zk)
+                    J, P, w, heter_ff = mean_to_params(zk)
                     weights_generator.set_parameters(J, P, w)
                     weights_valid = weights_generator.validate_weight_matrix()
                     if weights_valid == torch.tensor(0, device=device):
-                        current_loss, _ = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I, feed_forward=feed_forward)
+                        current_loss, _ = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I, feed_forward=feed_forward, heter_ff=heter_ff)
                         accepted_loss.append(current_loss.clone().detach())
                         accepted = True
                     else:
@@ -346,9 +353,9 @@ def nes_multigaussian_optim(mean: torch.Tensor, cov: torch.Tensor, max_iter: int
         A_optimised = B * sigma
         cov_optimised = A_optimised.t() @ A_optimised
 
-        J, P, w = mean_to_params(mean)
+        J, P, w, heter_ff = mean_to_params(mean)
         weights_generator.set_parameters(J, P, w)
-        mean_loss, mean_MMD_loss = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I, feed_forward=feed_forward)
+        mean_loss, mean_MMD_loss = calc_loss(trials, weights_generator, network_executer, loss_function, y_E, y_I, feed_forward=feed_forward, heter_ff=heter_ff)
 
         end = time.time()
 
@@ -388,7 +395,7 @@ if __name__ == "__main__":
     mean_list = [-1.7346010553881064, -2.586689344097943, -1.3862943611198906, -3.1780538303479458, -1.265666373331276, -0.6190392084062235, -1.265666373331276, -0.6190392084062235, -1.0986122886681098, -1.0986122886681098, -1.0986122886681098, -1.0986122886681098]
     n = 1000
 
-    executer = NetworkExecuterParallel(n, device=device, scaling_g=0.15)
+    executer = NetworkExecuterWithSimplifiedFF(n, device=device, scaling_g=0.15)
 
     # Create dataset
     J_array = [-2.059459853260332, -3.0504048076264896, -1.5877549090278045, -2.813481385641024]  # n = 1000
