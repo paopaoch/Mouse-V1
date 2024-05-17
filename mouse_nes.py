@@ -42,7 +42,7 @@ def mean_to_params(mean):
     if len(mean) == 12:  # No feed forward
         return mean[0:4], mean[4:8], mean[8:12], None
     elif len(mean) == 13:  # heter_ff
-        return mean[0:4], mean[4:8], mean[8:12], [mean[-1]]
+        return mean[0:4], mean[4:8], mean[8:12], mean[-1]
     elif len(mean) == 18:  # With feed forward
         return mean[0:6], mean[6:12], mean[12:18], None
     else:
