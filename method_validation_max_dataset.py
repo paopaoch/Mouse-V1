@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     desc = "Method validation"
 
-    device = get_device("cuda:1")
+    device = get_device("cuda:0")
     
     restart_num = 120
 
