@@ -43,8 +43,10 @@ if __name__ == "__main__":
 
     for _ in range(11):
         file_name = f"{dir_name}/log_nes_run_{datetime.now()}"
-        mean_array = np.random.rand(13) * 9 - 4.5
-        mean_list = mean_array.tolist()
+        mean_array = np.random.rand(12) * 9 - 4.5
+        mean_list: list = mean_array.tolist()
+        heter_ff_rand = np.random.rand(1)[0]
+        mean_list.append(heter_ff)
         mean, cov = make_torch_params(mean_list, var_list, device=device)
 
         nes_multigaussian_optim(mean, cov, 200, 24, y_E, y_I, device=device, neuron_num=n, desc=desc, trials=1, alpha=0.1, eta_delta=1, avg_step_weighting=0.1, stopping_criterion_step=0.0000001, adaptive_lr=False, file_name=file_name)
