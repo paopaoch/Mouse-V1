@@ -47,9 +47,9 @@ if __name__ == "__main__":
         f.write(f"OS: {sys.platform}\n")
         f.write(f"Machine: {socket.gethostname()}\n")
         f.write(f"{desc}\n\n")
-        f.write(f"{round_1D_tensor_to_list(J_config)}\n")
-        f.write(f"{round_1D_tensor_to_list(P_config)}\n")
-        f.write(f"{round_1D_tensor_to_list(w_config)}\n")
+        f.write(f"{J_config}\n")
+        f.write(f"{P_config}\n")
+        f.write(f"{w_config}\n")
         f.write(f"{round_1D_tensor_to_list(heter_ff_config)}\n")
 
     for _ in range(restart_num):
