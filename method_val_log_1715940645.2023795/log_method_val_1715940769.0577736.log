@@ -1,0 +1,10 @@
+0
+bessel_val: nan
+loss: nan
+[nan, -4.301693, nan, 3.152628]
+[nan, -3.506513, nan, -0.775954]
+[nan, -0.53062, nan, 0.476446]
+heter_ff: [0.683064]
+loss_diff: 9998.0625
+
+
