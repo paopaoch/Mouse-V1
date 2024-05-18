@@ -15,8 +15,8 @@ if __name__ == "__main__":
 
     device = get_device("cuda:1")
     
-    restart_num = 40
-    dataset_trials = 30
+    restart_num = 30
+    dataset_trials = 8
 
     executer = NetworkExecuterWithSimplifiedFF(1000, device=device, scaling_g=0.15)
     loss_function = MouseLossFunctionHomogeneous(device=device)
@@ -81,7 +81,8 @@ if __name__ == "__main__":
         J_lowest = None
         P_lowest = None
         w_lowest = None
-        for _ in range(restart_num):
+        for win in range(restart_num):
+            print(f"MULTIDATA SET SMALL: {win}")
             J_array = torch.rand(4) * 9 - 4.5
             P_array = torch.rand(4) * 9 - 4.5
             w_array = torch.rand(4) * 9 - 4.5
@@ -141,5 +142,5 @@ if __name__ == "__main__":
 
         results.append(trial_result)
     
-    with open("method_validation_multi_dataset.pkl", 'wb') as f:
+    with open("method_validation_multi_dataset_smaller.pkl", 'wb') as f:
         pickle.dump(results, f)
