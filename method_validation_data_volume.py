@@ -15,7 +15,7 @@ if __name__ == "__main__":
     desc = "Method validation"
 
     if torch.cuda.is_available():
-        device = "cuda:0"
+        device = "cuda:1"
         print("Model will be created on GPU")
     else:
         device = "cpu"
@@ -30,10 +30,10 @@ if __name__ == "__main__":
     J_array = [-0.9308613398652443, -2.0604571635972393, -0.30535063458645906, -1.802886963254238]
     P_array = [-1.493925025312256, 1.09861228866811, -1.493925025312256, 1.09861228866811]
     w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
-    heter_ff = -1.3862943611198906
-    J_array = torch.tensor(J_array, device= device)
-    P_array = torch.tensor(P_array, device= device)
-    w_array = torch.tensor(w_array, device= device)
+    heter_ff = torch.tensor([-1.3862943611198906], device=device)
+    J_array = torch.tensor(J_array, device=device)
+    P_array = torch.tensor(P_array, device=device)
+    w_array = torch.tensor(w_array, device=device)
     wg = WeightsGenerator(J_array, P_array, w_array, 1000, device=device, forward_mode=True)
     W = wg.generate_weight_matrix()
     executer.update_heter_ff(heter_ff)
