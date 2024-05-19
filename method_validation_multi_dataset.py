@@ -15,8 +15,8 @@ if __name__ == "__main__":
 
     device = get_device("cuda:1")
     
-    restart_num = 30
-    dataset_trials = 8
+    restart_num = 25
+    dataset_trials = 15
 
     executer = NetworkExecuterWithSimplifiedFF(1000, device=device, scaling_g=0.15)
     loss_function = MouseLossFunctionHomogeneous(device=device)

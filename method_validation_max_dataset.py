@@ -25,7 +25,7 @@ if __name__ == "__main__":
     directory_name = f"method_val_log_{time.time()}"
     create_directory_if_not_exists(directory_name)
 
-    desc = "Method validation"
+    desc = "Method validation max dataset"
 
     device = get_device("cuda:1")
     
