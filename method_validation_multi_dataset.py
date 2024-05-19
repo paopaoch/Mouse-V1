@@ -89,7 +89,9 @@ if __name__ == "__main__":
             J_array = torch.tensor(J_array, device=device, requires_grad=True)
             P_array = torch.tensor(P_array, device=device, requires_grad=True)
             w_array = torch.tensor(w_array, device=device, requires_grad=True)
-            heter_ff = torch.rand(1, device=device, requires_grad=True) * 9 - 4.5
+
+            heter_ff = torch.rand((1)) * 9 - 4.5
+            heter_ff = torch.tensor(heter_ff, device=device, requires_grad=True)
 
             loss_diffs = []
             prev_loss = torch.tensor(10000, device=device)

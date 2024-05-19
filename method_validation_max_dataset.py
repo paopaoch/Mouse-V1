@@ -58,10 +58,11 @@ if __name__ == "__main__":
         J_array = torch.rand((4)) * 9 - 4.5
         P_array = torch.rand((4)) * 9 - 4.5
         w_array = torch.rand((4)) * 9 - 4.5
-        heter_ff = torch.rand((1), device=device, requires_grad=True) * 9 - 4.5
-        J_array = torch.tensor(J_array, device= device, requires_grad=True)
-        P_array = torch.tensor(P_array, device= device, requires_grad=True)
-        w_array = torch.tensor(w_array, device= device, requires_grad=True)
+        heter_ff = torch.rand((1)) * 9 - 4.5
+        heter_ff = torch.tensor(heter_ff, device=device, requires_grad=True)
+        J_array = torch.tensor(J_array, device=device, requires_grad=True)
+        P_array = torch.tensor(P_array, device=device, requires_grad=True)
+        w_array = torch.tensor(w_array, device=device, requires_grad=True)
 
         loss_diffs = []
         prev_loss = torch.tensor(10000, device=device)
@@ -89,7 +90,7 @@ if __name__ == "__main__":
                 P_array: torch.Tensor = (P_array - 1 * wg.P_parameters.grad).clone().detach().requires_grad_(True)
                 w_array: torch.Tensor = (w_array - 1 * wg.w_parameters.grad).clone().detach().requires_grad_(True)
                 heter_ff: torch.Tensor  = (heter_ff - 1 * heter_ff.grad).clone().detach().requires_grad_(True)
-
+                print(heter_ff)
                 f.write(f"{round_1D_tensor_to_list(J_array)}\n")
                 f.write(f"{round_1D_tensor_to_list(P_array)}\n")
                 f.write(f"{round_1D_tensor_to_list(w_array)}\n")
