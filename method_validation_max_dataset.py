@@ -38,7 +38,7 @@ if __name__ == "__main__":
     J_config = [-0.9308613398652443, -2.0604571635972393, -0.30535063458645906, -1.802886963254238]
     P_config = [-1.493925025312256, 1.09861228866811, -1.493925025312256, 1.09861228866811]
     w_config = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
-    heter_ff_config = torch.tensor([0.2], device=device)
+    heter_ff_config = torch.tensor([-1.3862943611198906], device=device)
 
     with open(f"{directory_name}/metadata.log", "w") as f:
         f.write("#####METHOD VALIDATION#####\n")
@@ -58,7 +58,7 @@ if __name__ == "__main__":
         J_array = torch.rand((4)) * 9 - 4.5
         P_array = torch.rand((4)) * 9 - 4.5
         w_array = torch.rand((4)) * 9 - 4.5
-        heter_ff = torch.rand((1), device=device, requires_grad=True)
+        heter_ff = torch.rand((1), device=device, requires_grad=True) * 9 - 4.5
         J_array = torch.tensor(J_array, device= device, requires_grad=True)
         P_array = torch.tensor(P_array, device= device, requires_grad=True)
         w_array = torch.tensor(w_array, device= device, requires_grad=True)

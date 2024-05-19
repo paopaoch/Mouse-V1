@@ -25,7 +25,7 @@ if __name__ == "__main__":
     config_J_array = torch.tensor([-0.9308613398652443, -2.0604571635972393, -0.30535063458645906, -1.802886963254238], device=device)  # n = 1000
     config_P_array = torch.tensor([-1.493925025312256, 1.09861228866811, -1.493925025312256, 1.09861228866811], device=device)
     config_w_array = torch.tensor([-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886], device=device)
-    config_heter_ff = torch.tensor([0.2], device=device)
+    config_heter_ff = torch.tensor([-1.3862943611198906], device=device)
 
     # Create a lower and upper bound
     lower_J = config_J_array * 0.8
@@ -86,10 +86,10 @@ if __name__ == "__main__":
             J_array = torch.rand(4) * 9 - 4.5
             P_array = torch.rand(4) * 9 - 4.5
             w_array = torch.rand(4) * 9 - 4.5
-            J_array = torch.tensor(J_array, device= device, requires_grad=True)
-            P_array = torch.tensor(P_array, device= device, requires_grad=True)
-            w_array = torch.tensor(w_array, device= device, requires_grad=True)
-            heter_ff = torch.rand((1), device=device, requires_grad=True)
+            J_array = torch.tensor(J_array, device=device, requires_grad=True)
+            P_array = torch.tensor(P_array, device=device, requires_grad=True)
+            w_array = torch.tensor(w_array, device=device, requires_grad=True)
+            heter_ff = torch.rand(1, device=device, requires_grad=True) * 9 - 4.5
 
             loss_diffs = []
             prev_loss = torch.tensor(10000, device=device)
