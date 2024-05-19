@@ -342,5 +342,5 @@ class NetworkExecuterWithSimplifiedFF(NetworkExecuterParallel):
     
 
     def update_heter_ff(self, heter_ff):
-        self.heter_ff = heter_ff
+        self.heter_ff = self._sigmoid(heter_ff)
         

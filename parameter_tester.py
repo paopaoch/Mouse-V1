@@ -379,6 +379,8 @@ if __name__ == "__main__":
             IE = Connection(16.97, 0.11, 32, N_E)
             II = Connection(5.66, 0.45, 32, N_I)
 
+            hetter_ff = 0.3
+
             # EE = Connection(11.4130, 0.2436, 85.5893, N_E)  # from V1CNN
             # EI = Connection(55.2320, 0.1355, 78.6896, N_I)
             # IE = Connection(42.0543, 0.4923, 120.5417, N_E)
@@ -417,3 +419,6 @@ if __name__ == "__main__":
     cc = ConstraintChecker(EE, EI, IE, II, EF, IF)
     cc.check_bounds()
     print_values_in_code(EE, EI, IE, II, EF, IF)
+
+    print(_inverse_sigmoid(hetter_ff))
+    print(hetter_ff)

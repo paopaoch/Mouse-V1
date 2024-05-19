@@ -30,7 +30,7 @@ if __name__ == "__main__":
     J_array = [-0.9308613398652443, -2.0604571635972393, -0.30535063458645906, -1.802886963254238]
     P_array = [-1.493925025312256, 1.09861228866811, -1.493925025312256, 1.09861228866811]
     w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
-    heter_ff = 0.2
+    heter_ff = -1.3862943611198906
     J_array = torch.tensor(J_array, device= device)
     P_array = torch.tensor(P_array, device= device)
     w_array = torch.tensor(w_array, device= device)
@@ -61,10 +61,10 @@ if __name__ == "__main__":
         J_array = [-0.5108256237659906, -1.550597412411167, -0.0, -2.1972245773362196]
         P_array = [-0.5465437063680698, 0.33647223662121273, -0.5465437063680698, 0.33647223662121273]
         w_array = [-1.0986122886681098, -1.0986122886681098, -1.0986122886681098, -1.0986122886681098] 
-        J_array = torch.tensor(J_array, device= device, requires_grad=True)
-        P_array = torch.tensor(P_array, device= device, requires_grad=True)
-        w_array = torch.tensor(w_array, device= device, requires_grad=True)
-        heter_ff = torch.tensor([0.3], device=device, requires_grad=True)
+        J_array = torch.tensor(J_array, device=device, requires_grad=True)
+        P_array = torch.tensor(P_array, device=device, requires_grad=True)
+        w_array = torch.tensor(w_array, device=device, requires_grad=True)
+        heter_ff = torch.tensor([-0.8472978603872037], device=device, requires_grad=True)
 
         loss_diffs = []
         prev_loss = torch.tensor(10000, device=device)
