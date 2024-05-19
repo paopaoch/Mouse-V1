@@ -1,7 +1,7 @@
 import torch
 
 class MouseLossFunction:
-    def __init__(self, avg_step_weighting=0.002, high_contrast_index=7, device="cpu"):
+    def __init__(self, avg_step_weighting=0.02, high_contrast_index=7, device="cpu"):
         self.device = device
         self.one = torch.tensor(1)
         self.avg_step_weighting = avg_step_weighting

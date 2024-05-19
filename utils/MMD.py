@@ -41,6 +41,8 @@ def individual_terms_vanilla(x: torch.Tensor, y: torch.Tensor, device="cpu") -> 
         accum_output = torch.tensor(0, device=device)
         for i in range(N):
             for j in range(M):
+                    print(x[i])
+                    print(kernel(x[i], y[j]))
                     accum_output = accum_output + kernel(x[i], y[j])
 
         return accum_output / (N * M)
