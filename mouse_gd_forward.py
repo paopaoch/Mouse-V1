@@ -67,7 +67,7 @@ if __name__ == __name__:
     start = time.time()
 
     device = get_device("cuda:1")
-    torch.manual_seed(69)
+    # torch.manual_seed(69)
 
     dir_name = f"method_validation_forward_{time.time()}"
     create_directory_if_not_exists(dir_name)
@@ -123,6 +123,10 @@ if __name__ == __name__:
                 f.write(f"params: {params_to_list(params)}\n")
                 f.write("----------------------------\n\n\n")
                 f.flush()
+
+                for item in params:
+                    if torch.isnan(item).any():
+                        break
 
                 loss_diffs.append(prev_loss - loss.clone().detach())
                 print(torch.tensor(loss_diffs[-10:], device=device).mean())
