@@ -8,10 +8,8 @@ from utils.rodents_routine import get_device
 class V1Transformer(nn.Module):
     def __init__(self, v1_model_params=13):
         super(V1Transformer, self).__init__()
-        # Init positional embeddings size (104, 5)
-        self.pos_embeddings = torch.randn((104, 5))  # same for both E and I?
-        # cls_emb_ex = torch.randn(49)
-        # cls_emb_in = torch.randn(13)
+        pos_embeddings = torch.randn((104, 5))  # same for both E and I
+        self.pos_embeddings = nn.Parameter(pos_embeddings)
 
         cls_emb_ex = torch.randn(53)  # Pos embedding of size 5
         cls_emb_in = torch.randn(17)
