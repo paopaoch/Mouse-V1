@@ -94,7 +94,7 @@ if __name__ == __name__:
         params = draw_new_parameters(device=device)
         
         file_name = f"log_forward_diff_{time.time()}.log"
-
+        break_loop = False
         with open(f"{dir_name}/{file_name}", "w") as f:
             f.write("#####Forward mode mouse v1 log file#####\n\n\n")
             f.write(f"Code ran on the {datetime.now()}\n\n")
@@ -125,7 +125,7 @@ if __name__ == __name__:
                 f.flush()
 
                 for item in params:
-                    if torch.isnan(item).any():
+                    if torch.isnan(item).any().item():
                         break_loop = True
                         break
                 if break_loop:
