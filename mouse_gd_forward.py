@@ -90,7 +90,7 @@ if __name__ == __name__:
     
     lr = [1 for _ in range(13)]
 
-    for _ in range(14):
+    for _ in range(30):
         params = draw_new_parameters(device=device)
         
         file_name = f"log_forward_diff_{time.time()}.log"
