@@ -312,7 +312,7 @@ class NetworkExecuterParallel(NetworkExecuter):
 
     def _update_mu_sigma(self, rate):
         # Find net input mean and variance given inputs
-        self.mu = self.tau * (self.weights @ rate) + self.input_mean  # TODO: Check why tau is there mathematically
+        self.mu = self.tau * (self.weights @ rate) + self.input_mean
         self.sigma = torch.sqrt(self.tau * (self.weights2 @ rate) + torch.square(self.input_sd))
         return self.mu, self.sigma
 

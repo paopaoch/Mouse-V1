@@ -12,6 +12,9 @@ P_scale = 0.6
 w_steep = 1
 w_scale = 180
 
+heter_steep = 1
+heter_scale = 1
+
 def round_1D_tensor_to_list(a, decimals=6):
     """
     Round each element of a tensor to the specified number of decimal places
@@ -98,3 +101,7 @@ params_to_w = lambda x: _sigmoid(x, w_steep, w_scale)
 params_to_J_scalar = lambda x: _sigmoid_scalar(x, J_steep, J_scale)
 params_to_P_scalar = lambda x: _sigmoid_scalar(x, P_steep, P_scale)
 params_to_w_scalar = lambda x: _sigmoid_scalar(x, w_steep, w_scale)
+
+params_to_heter = lambda x: _sigmoid(x, heter_steep, heter_scale)
+heter_to_params = lambda x: _inverse_sigmoid(x, heter_steep, heter_scale)
+params_to_heter_scalar = lambda x: _sigmoid_scalar(x, heter_steep, heter_scale)
