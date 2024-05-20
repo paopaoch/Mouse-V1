@@ -66,7 +66,7 @@ def params_to_list(params):
 if __name__ == __name__:
     start = time.time()
 
-    device = get_device("cuda:1")
+    device = get_device("cuda:0")
     # torch.manual_seed(69)
 
     dir_name = f"method_validation_forward_{time.time()}"
