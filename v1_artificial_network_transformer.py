@@ -168,7 +168,7 @@ if __name__ == "__main__":
             patience -= 1
         else:
             patience = 2
-            torch.save(model.state_dict(), PATH)
+            # torch.save(model.state_dict(), PATH)
         
         if patience == 0:
             print("Early stopping")
