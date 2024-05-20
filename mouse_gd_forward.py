@@ -88,7 +88,7 @@ if __name__ == __name__:
     tuning_curves, avg_step = executer.run_all_orientation_and_contrast(W)
     y_E, y_I = tuning_curves[:8000], tuning_curves[8000:]
     
-    lr = [1 for _ in range(13)]
+    lr = [0.1 for _ in range(13)]
 
     for _ in range(30):
         params = draw_new_parameters(device=device)
