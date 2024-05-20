@@ -7,7 +7,7 @@ import numpy as np
 
 if __name__ == "__main__":
 
-    torch.manual_seed(69)
+    torch.manual_seed(96)
 
     dir_name = f"method_validation_{datetime.now()}"
     create_directory_if_not_exists(dir_name)
