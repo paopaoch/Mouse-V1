@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 
 J_steep = 1
-J_scale = 40
+J_scale = 126  #40, 126
 
 P_steep = 1
 P_scale = 0.6
@@ -359,10 +359,10 @@ if __name__ == "__main__":
         print("\nInitial: ", INITIAL, '\n')
 
         if INITIAL:
-            # EE = Connection(35.78, 0.11, 32, N_E)  # 10000
-            # EI = Connection(14.31, 0.45, 32, N_I)
-            # IE = Connection(53.67, 0.11, 32, N_E)
-            # II = Connection(17.89, 0.45, 32, N_I)
+            EE = Connection(35.78, 0.11, 32, N_E)  # 10000
+            EI = Connection(14.31, 0.45, 32, N_I)
+            IE = Connection(53.67, 0.11, 32, N_E)
+            II = Connection(17.89, 0.45, 32, N_I)
 
             # EE = Connection(19.60, 0.11, 32, N_E)  # 3000
             # EI = Connection(7.84, 0.45, 32, N_I)
@@ -374,10 +374,10 @@ if __name__ == "__main__":
             # IE = Connection(24, 0.11, 32, N_E)
             # II = Connection(8, 0.45, 32, N_I)
 
-            EE = Connection(11.31, 0.11, 32, N_E)  # 1000
-            EI = Connection(4.52, 0.45, 32, N_I)
-            IE = Connection(16.97, 0.11, 32, N_E)
-            II = Connection(5.66, 0.45, 32, N_I)
+            # EE = Connection(11.31, 0.11, 32, N_E)  # 1000
+            # EI = Connection(4.52, 0.45, 32, N_I)
+            # IE = Connection(16.97, 0.11, 32, N_E)
+            # II = Connection(5.66, 0.45, 32, N_I)
 
             hetter_ff = 0.2
 
