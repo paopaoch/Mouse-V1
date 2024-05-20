@@ -1,0 +1,32 @@
+#####Forward mode mouse v1 log file#####
+
+
+Code ran on the 2024-05-20 15:03:33.300502
+
+Run from xNES minima
+Device: cuda:1
+OS: linux
+Machine: cblgpu06
+
+
+Metadata:
+learning rates: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+
+initial params: [tensor(0.5935, device='cuda:1'), tensor(-0.5592, device='cuda:1'), tensor(-2.9309, device='cuda:1'), tensor(-3.4539, device='cuda:1'), tensor(-3.5991, device='cuda:1'), tensor(-0.8048, device='cuda:1'), tensor(-0.0017, device='cuda:1'), tensor(-2.9851, device='cuda:1'), tensor(1.1726, device='cuda:1'), tensor(-3.0859, device='cuda:1'), tensor(-0.0183, device='cuda:1'), tensor(-3.4116, device='cuda:1'), tensor(-2.9492, device='cuda:1')]
+
+----------------------------
+0
+loss: 103.80512237548828
+params: [0.5936341964988969, -67.22964784551982, -2.932694365270436, 98.12143017705299, -3.5989829663012642, -73.21064532074385, -0.00268754456192255, 96.75970422026239, 1.172557954033664, -105.34297144969467, -0.018353336869040504, 99.09260780005769, -2.949320931744296]
+----------------------------
+
+
+1
+loss: nan
+params: [nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan]
+----------------------------
+
+
+time taken: 40983.456221580505
+number of iterations: 2
+average time per iter: 20491.728110790253
