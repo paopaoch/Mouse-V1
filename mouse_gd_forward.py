@@ -126,7 +126,10 @@ if __name__ == __name__:
 
                 for item in params:
                     if torch.isnan(item).any():
+                        break_loop = True
                         break
+                if break_loop:
+                    break
 
                 loss_diffs.append(prev_loss - loss.clone().detach())
                 print(torch.tensor(loss_diffs[-10:], device=device).mean())
