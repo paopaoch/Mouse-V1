@@ -9,7 +9,7 @@ from tqdm import tqdm
 if __name__ == "__main__":
     N = 1000
     E_index = 800
-    device = get_device("cuda:1")
+    device = get_device("cuda:0")
 
     dir_name = f"DATASET_bessel_large_{time.time()}"
     create_directory_if_not_exists(dir_name)
