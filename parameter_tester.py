@@ -379,7 +379,7 @@ if __name__ == "__main__":
             IE = Connection(16.97, 0.11, 32, N_E)
             II = Connection(5.66, 0.45, 32, N_I)
 
-            hetter_ff = 0.3
+            hetter_ff = 0.2
 
             # EE = Connection(11.4130, 0.2436, 85.5893, N_E)  # from V1CNN
             # EI = Connection(55.2320, 0.1355, 78.6896, N_I)
@@ -395,6 +395,9 @@ if __name__ == "__main__":
             # IF = Connection(5, 0.11, 30, N_F)
             EF = None
             IF = None
+
+            print(_inverse_sigmoid(hetter_ff))
+            print(hetter_ff)
         else:
             mean_list = [-2.008051, -2.915398, -3.576522, -3.498692, -3.489173, -3.361498, 1.979367, -2.900466, 3.315117, -1.306025, 1.714603, 2.265845]
 
@@ -414,11 +417,8 @@ if __name__ == "__main__":
                 EF = None
                 IF = None
             else:
-                raise ValueError(f"Expected an array of lenth 12 of 18 but found {len(mean_list)}.")
+                raise ValueError(f"Expected an array of lenth 12 or 18 but found {len(mean_list)}.")
 
     cc = ConstraintChecker(EE, EI, IE, II, EF, IF)
     cc.check_bounds()
     print_values_in_code(EE, EI, IE, II, EF, IF)
-
-    print(_inverse_sigmoid(hetter_ff))
-    print(hetter_ff)
