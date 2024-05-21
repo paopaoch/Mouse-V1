@@ -11,30 +11,30 @@ class V1CNN(nn.Module):
         self.features_excit = nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            # nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
+            # nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
         )
 
         self.features_inhib = nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            # nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
+            # nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
         )
 
 
         self.regressor = nn.Sequential(
-            nn.Linear(3072 * 2, 128),  # nuber of images * number of output channel * image width * image height
+            nn.Linear(1536 * 2, 128),  # nuber of images * number of output channel * image width * image height
             nn.ReLU(),
-            nn.Linear(128, 12),
-            nn.ReLU(),
-            nn.Dropout(p=0.2),
+            # nn.Linear(128, 12),
+            # nn.ReLU(),
+            nn.Dropout(p=0.1),
             nn.Linear(12, num_classes),  # 12 classes
             nn.Sigmoid()
         )
@@ -57,7 +57,7 @@ class V1CNN(nn.Module):
 
         # h = torch.concatenate(cnn_output_list, dim=1)
 
-        h_E = torch.zeros((len(x[0]), 3072), device=x[0].device)
+        h_E = torch.zeros((len(x[0]), 1536), device=x[0].device)
         count = 0
         for image in x[0].permute(1, 0, 2, 3):
             count += 1
@@ -67,7 +67,7 @@ class V1CNN(nn.Module):
             h_E = h_E + image
         h_E = h_E / count
 
-        h_I = torch.zeros((len(x[1]), 3072), device=x[0].device)
+        h_I = torch.zeros((len(x[1]), 1536), device=x[0].device)
         count = 0
         for image in x[1].permute(1, 0, 2, 3):
             count += 1
