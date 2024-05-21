@@ -9,26 +9,26 @@ class V1CNN(nn.Module):
     def __init__(self, num_classes=12):
         super(V1CNN, self).__init__()
         self.features_excit = nn.Sequential(
-            nn.Conv2d(1, 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(4, 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(4, 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
 
         self.features_inhib = nn.Sequential(
-            nn.Conv2d(1, 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(4, 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(4, 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
 
 
         self.regressor = nn.Sequential(
-            nn.Linear(60 * 4 * 4 * 6, 128),  # nuber of images * number of output channel * image width * image height
+            nn.Linear(3072 * 2, 128),  # nuber of images * number of output channel * image width * image height
             nn.ReLU(),
             nn.Linear(128, 12),
             nn.ReLU(),
@@ -40,20 +40,42 @@ class V1CNN(nn.Module):
 
     def forward(self, x):  # input is a len 2 list of torch vector of size (batch_size, 48 (or 12), 8, 12)
 
-        cnn_output_list = []
+        # cnn_output_list = []
+        # for image in x[0].permute(1, 0, 2, 3):
+        #     image: torch.Tensor = image.unsqueeze(1)  # image is now (batch_size, 1, 8, 12)
+        #     image = self.features_excit(image)
+        #     image = torch.flatten(image, 1)
+        #     cnn_output_list.append(image)
+
+        # for image in x[1].permute(1, 0, 2, 3):
+        #     image: torch.Tensor = image.unsqueeze(1)  # image is now (batch_size, 1, 8, 12)
+        #     image = self.features_inhib(image)
+        #     image = torch.flatten(image, 1)
+        #     cnn_output_list.append(image)
+
+        # h = torch.concatenate(cnn_output_list, dim=1)
+
+        h_E = torch.zeros((len(x[0]), 3072), device=x[0].device)
+        count = 0
         for image in x[0].permute(1, 0, 2, 3):
-            image: torch.Tensor = image.unsqueeze(1)  # image is now (batch_size, 1, 8, 12)
+            count += 1
+            image: torch.Tensor = image.unsqueeze(1)
             image = self.features_excit(image)
             image = torch.flatten(image, 1)
-            cnn_output_list.append(image)
+            h_E = h_E + image
+        h_E = h_E / count
 
+        h_I = torch.zeros((len(x[1]), 3072), device=x[0].device)
+        count = 0
         for image in x[1].permute(1, 0, 2, 3):
-            image: torch.Tensor = image.unsqueeze(1)  # image is now (batch_size, 1, 8, 12)
+            count += 1
+            image: torch.Tensor = image.unsqueeze(1)
             image = self.features_inhib(image)
             image = torch.flatten(image, 1)
-            cnn_output_list.append(image)
+            h_I = h_I + image
+        h_I = h_I / count
         
-        h = torch.concatenate(cnn_output_list, dim=1)
+        h = torch.concatenate([h_E, h_I], dim=1)
         h = self.regressor(h)
         
         return h
@@ -108,7 +130,7 @@ if __name__ == "__main__":
     with open("dataset_full_for_training.pkl", 'rb') as f:
         pickle_data = pickle.load(f)
 
-    batch_size = 8
+    batch_size = 32
     shuffle = True
     train_dataset = V1Dataset(pickle_data, data_type="train", device=device)
     test_dataset = V1Dataset(pickle_data, data_type="test", device=device)
@@ -147,15 +169,10 @@ if __name__ == "__main__":
             optimizer.zero_grad()
             outputs = model.forward(inputs)
             loss = criterion(outputs, targets)  # need to add the bessel val and weights normalisation layer
-            # bessel = validate_weight_matrix(outputs, device=device)
-            # total_loss = loss + bessel * 0.1  # for weighting  # Bessel val is NaN
-            # total_loss.backward()
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-            # running_total_loss += total_loss.item()
         print(f'Epoch [{epoch + 1}/{num_epochs}], Training MSE Loss: {running_loss / len(train_data_loader):.4f}')
-        # print(f'Epoch [{epoch + 1}/{num_epochs}], Training Total Loss: {running_total_loss / len(train_data_loader):.4f}')
 
         # Get validation losses
         model.eval()

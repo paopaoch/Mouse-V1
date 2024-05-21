@@ -19,15 +19,15 @@ from rat import MouseLossFunctionHomogeneous
 
 def to_normalise_tensor(params_dict):
     return torch.tensor([
-        params_dict['J_EE']/100,
-        params_dict['J_EI']/100,
-        params_dict['J_IE']/100,
-        params_dict['J_II']/100,
+        params_dict['J_EE']/40,
+        params_dict['J_EI']/40,
+        params_dict['J_IE']/40,
+        params_dict['J_II']/40,
 
-        params_dict['P_EE'],
-        params_dict['P_EI'],
-        params_dict['P_IE'],
-        params_dict['P_II'],
+        params_dict['P_EE']/0.6,
+        params_dict['P_EI']/0.6,
+        params_dict['P_IE']/0.6,
+        params_dict['P_II']/0.6,
 
         params_dict['w_EE']/180,
         params_dict['w_EI']/180,

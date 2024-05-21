@@ -4,8 +4,8 @@ import random
 import math
 
 J_steep = 1
-# J_scale = 40
-J_scale = 126.5
+J_scale = 40
+# J_scale = 126.5
 
 P_steep = 1
 P_scale = 0.6

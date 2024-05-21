@@ -18,15 +18,15 @@ from sklearn.model_selection import train_test_split
 
 def to_normalise_tensor(params_dict):
     return torch.tensor([
-        params_dict['J_EE']/100,
-        params_dict['J_EI']/100,
-        params_dict['J_IE']/100,
-        params_dict['J_II']/100,
+        params_dict['J_EE']/40,
+        params_dict['J_EI']/40,
+        params_dict['J_IE']/40,
+        params_dict['J_II']/40,
 
-        params_dict['P_EE'],
-        params_dict['P_EI'],
-        params_dict['P_IE'],
-        params_dict['P_II'],
+        params_dict['P_EE']/0.6,
+        params_dict['P_EI']/0.6,
+        params_dict['P_IE']/0.6,
+        params_dict['P_II']/0.6,
 
         params_dict['w_EE']/180,
         params_dict['w_EI']/180,
@@ -78,8 +78,10 @@ def check_valid_range(params_dict):
     return True
 
 # data_directories = ["DATASET_bessel_1715341433.8128526", "DATASET_bessel_1715341541.757791", "DATASET_bessel_1715341542.6103182", "DATASET_bessel_1715341593.620646", "DATASET_bessel_1715341603.251537", "DATASET_bessel_1715341607.5874019", "DATASET_bessel_1715341610.1236033", "DATASET_bessel_1715341611.6014147", "DATASET_bessel_1715341627.3461742", "DATASET_bessel_1715390826.6967611", "DATASET_bessel_1715390828.301663", "DATASET_bessel_1715390830.7035437", "DATASET_bessel_1715390845.0148275", "DATASET_bessel_1715390848.9291334", "DATASET_bessel_1715390850.7687511", "DATASET_bessel_1715390870.609546", "DATASET_bessel_1715390874.2647386", "DATASET_bessel_1715477976.4489124", "DATASET_bessel_1715477978.126739", "DATASET_bessel_1715477980.562683", "DATASET_bessel_1715477982.479733", "DATASET_bessel_1715477984.690376", "DATASET_bessel_1715477985.8544126", "DATASET_bessel_1715478002.6127565"]
-data_directories =  ["DATASET_bessel_large_1715784155.5120544", "DATASET_bessel_large_1715784155.585425", "DATASET_bessel_large_1715784157.623016", "DATASET_bessel_large_1715784159.9759786", "DATASET_bessel_large_1715784162.2602618", "DATASET_bessel_large_1715784163.6065583", "DATASET_bessel_large_1715784191.6599987", "DATASET_bessel_large_1715784194.9939306", "DATASET_bessel_large_1715784224.8111737", "DATASET_bessel_large_1715784226.5055614", "DATASET_bessel_large_1715784229.0195346", "DATASET_bessel_large_1715784229.3999553", "DATASET_bessel_large_1715784245.415284", "DATASET_bessel_large_1715784247.3760035", "DATASET_bessel_large_1715784254.8295689", "DATASET_bessel_large_1715784264.0894055"]
+# data_directories =  ["DATASET_bessel_large_1715784155.5120544", "DATASET_bessel_large_1715784155.585425", "DATASET_bessel_large_1715784157.623016", "DATASET_bessel_large_1715784159.9759786", "DATASET_bessel_large_1715784162.2602618", "DATASET_bessel_large_1715784163.6065583", "DATASET_bessel_large_1715784191.6599987", "DATASET_bessel_large_1715784194.9939306", "DATASET_bessel_large_1715784224.8111737", "DATASET_bessel_large_1715784226.5055614", "DATASET_bessel_large_1715784229.0195346", "DATASET_bessel_large_1715784229.3999553", "DATASET_bessel_large_1715784245.415284", "DATASET_bessel_large_1715784247.3760035", "DATASET_bessel_large_1715784254.8295689", "DATASET_bessel_large_1715784264.0894055"]
 # data_directories = ["DATASET_bessel_1715379325.9177291"]
+
+data_directories = ["DATASET_bessel_large_CNN_1716313983.985343", "DATASET_bessel_large_CNN_1716313996.184155", "DATASET_bessel_large_CNN_1716314005.419113", "DATASET_bessel_large_CNN_1716314012.959075", "DATASET_bessel_large_CNN_1716314019.666704", "DATASET_bessel_large_CNN_1716314026.5545568", "DATASET_bessel_large_CNN_1716314031.117074"]
 
 full_dataset = []
 params = []
