@@ -79,8 +79,18 @@ def check_valid_range(params_dict):
         return False
 
     return True
-data_directories = ["DATASET_bessel_large_1716242894.3428445", "DATASET_bessel_large_1716242895.7269793", "DATASET_bessel_large_1716242897.6255867", "DATASET_bessel_large_1716242898.365569", "DATASET_bessel_large_1716242899.197585", "DATASET_bessel_large_1716242931.5143545"]
-# data_directories = ["DATASET_bessel_large_1716224919.619017"]
+
+data_directories = [ "DATASET_bessel_large_1716244462.946338"
+, "DATASET_bessel_large_1716244464.3948903"
+, "DATASET_bessel_large_1716244467.3820353"
+, "DATASET_bessel_large_1716244468.8485663"
+, "DATASET_bessel_large_1716244469.969146"
+, "DATASET_bessel_large_1716244470.8195784"
+, "DATASET_bessel_large_1716244471.4252684"
+, "DATASET_bessel_large_1716244471.905603"
+, "DATASET_bessel_large_1716244472.636885"
+]
+# data_directories = ["DATASET_bessel_large_1716224919.619017", "DATASET_bessel_large_1716244969.294642", "DATASET_bessel_large_1716244993.482489", "DATASET_bessel_large_1716244993.482489", "DATASET_bessel_large_1716245868.050762", "DATASET_bessel_large_1716245873.863752"]
 
 loss_function = MouseLossFunctionHomogeneous()
 

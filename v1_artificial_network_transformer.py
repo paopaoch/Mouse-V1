@@ -109,7 +109,7 @@ if __name__ == "__main__":
     with open("dataset_full_for_transformer_training.pkl", 'rb') as f:
         pickle_data = pickle.load(f)
 
-    batch_size = 8
+    batch_size = 32
     shuffle = True
     train_dataset = V1TransformerDataset(pickle_data, data_type="train", device=device)
     test_dataset = V1TransformerDataset(pickle_data, data_type="test", device=device)
@@ -168,7 +168,7 @@ if __name__ == "__main__":
             patience -= 1
         else:
             patience = 2
-            # torch.save(model.state_dict(), PATH)
+            torch.save(model.state_dict(), PATH)
         
         if patience == 0:
             print("Early stopping")
