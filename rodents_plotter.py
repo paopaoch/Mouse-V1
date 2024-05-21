@@ -411,10 +411,8 @@ if __name__ == "__main__":
         print_tuning_curve(data[10], title="Example Excitatory Neuron Tuning Curve From Data")
         print_tuning_curve(data[-5], title="Example Inhibitory Neuron Tuning Curve From Data")
 
-        print_tuning_curve(data[68], title="")
-
-        # for i in range(80):
-        #     print_tuning_curve(data[i], title=f"Example Neuron Tuning Curve From Data {i}")
+        for i in range(80):
+            print_tuning_curve(data[i], title=f"Example Neuron Tuning Curve From Data {i}")
         
         print_activity(responses, title="Response Plot for the data")
 
