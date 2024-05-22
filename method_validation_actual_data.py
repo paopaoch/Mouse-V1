@@ -7,7 +7,7 @@ import socket
 from datetime import datetime
 from utils.rodents_routine import round_1D_tensor_to_list, create_directory_if_not_exists, get_device
 
-torch.manual_seed(69)
+# torch.manual_seed(69)
 
 if __name__ == "__main__":
 

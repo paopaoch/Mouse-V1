@@ -8,14 +8,14 @@ import time
 
 if __name__ == "__main__":
 
-    torch.manual_seed(96)
+    # torch.manual_seed(96)
 
     dir_name = f"method_validation_{time.time()}"
     create_directory_if_not_exists(dir_name)
 
     desc = "NES with MMD"
 
-    device = get_device("cuda:0")
+    device = get_device("cuda:1")
 
     n = 10000
 
