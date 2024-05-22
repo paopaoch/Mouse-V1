@@ -1,0 +1,1495 @@
+#### Mouse V1 Project log file ####
+
+Code ran on the 2024-05-22 08:50:10.602963
+
+Device: cuda:1
+OS: linux
+Machine: cblgpu06
+Trainer type: xNES
+
+NES with MMD
+
+Metadata:
+Number of neurons: 10000
+Number of feedforward neurons: 100
+Number of Euler steps: 300
+Record average step after 280 steps
+Average step weighting: 0.1
+Valid weight weighting: 100000.0
+
+Max_number of xNES optimisation step: 200
+Min_number of xNES optimisation step: 20
+Stopping criterion step condition for xNES optimisation: 1e-07
+Stopping criterion step tolerance: 2
+Number of samples per optimisation step: 12
+Number of trials per full simulation: 1
+Alpha for important mixing: 0.10000000149011612
+Learning Rates: eta_delta=1, eta_sigma=0.08, eta_B=0.08
+adaptive_lr: False
+beta: 0.20000000298023224
+---------------------------------------------------
+
+Initial parameters
+J
+tensor([-2.4217,  3.0932, -2.0453,  0.5584], device='cuda:1')
+P
+tensor([ 3.8074,  1.1517, -1.6952, -2.5694], device='cuda:1')
+w
+tensor([-1.0643, -2.1148, -1.3816, -3.2825], device='cuda:1')
+heter_ff
+tensor(4.2281, device='cuda:1')
+
+Covariance Matrix
+tensor([[0.5000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
+         0.0000, 0.0000, 0.0000, 0.0000],
+        [0.0000, 0.5000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
+         0.0000, 0.0000, 0.0000, 0.0000],
+        [0.0000, 0.0000, 0.5000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
+         0.0000, 0.0000, 0.0000, 0.0000],
+        [0.0000, 0.0000, 0.0000, 0.5000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
+         0.0000, 0.0000, 0.0000, 0.0000],
+        [0.0000, 0.0000, 0.0000, 0.0000, 0.5000, 0.0000, 0.0000, 0.0000, 0.0000,
+         0.0000, 0.0000, 0.0000, 0.0000],
+        [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.5000, 0.0000, 0.0000, 0.0000,
+         0.0000, 0.0000, 0.0000, 0.0000],
+        [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.5000, 0.0000, 0.0000,
+         0.0000, 0.0000, 0.0000, 0.0000],
+        [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.5000, 0.0000,
+         0.0000, 0.0000, 0.0000, 0.0000],
+        [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.5000,
+         0.0000, 0.0000, 0.0000, 0.0000],
+        [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
+         0.5000, 0.0000, 0.0000, 0.0000],
+        [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
+         0.0000, 0.5000, 0.0000, 0.0000],
+        [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
+         0.0000, 0.0000, 0.5000, 0.0000],
+        [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
+         0.0000, 0.0000, 0.0000, 0.5000]], device='cuda:1')
+
+---------------------------------------------------
+
+
+ITERATION: 0
+Number of samples reused: 0
+Mean: tensor([-2.4217,  3.0932, -2.0453,  0.5584,  3.8074,  1.1517, -1.6952, -2.5694,
+        -1.0643, -2.1148, -1.3816, -3.2825,  4.2281], device='cuda:1')
+Mean loss: 0.979277491569519
+MMD Mean loss: 0.979277491569519
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.0
+Min_accepted loss 0.0
+Max_accepted loss 0.0
+Rejected 12
+
+
+ITERATION: 1
+Number of samples reused: 6
+Mean: tensor([-2.8623,  3.3886, -2.2102,  1.1121,  3.4274,  0.9461, -1.8960, -1.8533,
+        -0.7571, -2.2060, -1.2234, -2.9111,  3.9671], device='cuda:1')
+Mean loss: 0.9948623180389404
+MMD Mean loss: 0.9948623180389404
+Avg loss 3158695.0
+Min loss 1037643.625
+Max loss 8012144.5
+Avg_accepted loss 0.0
+Min_accepted loss 0.0
+Max_accepted loss 0.0
+Rejected 6
+
+
+ITERATION: 2
+Number of samples reused: 0
+Mean: tensor([-3.4504,  3.2358, -1.9946,  1.5746,  3.0852,  0.6656, -2.0258, -1.7894,
+        -0.5780, -2.2043, -1.2490, -2.6925,  3.7882], device='cuda:1')
+Mean loss: 1.002022624015808
+MMD Mean loss: 1.002022624015808
+Avg loss 2045766.75
+Min loss 243851.5625
+Max loss 6183074.0
+Avg_accepted loss 0.0
+Min_accepted loss 0.0
+Max_accepted loss 0.0
+Rejected 12
+
+
+ITERATION: 3
+Number of samples reused: 2
+Mean: tensor([-3.8340,  3.0243, -2.1972,  1.9821,  3.1342,  1.1826, -1.8285, -1.5895,
+        -0.7241, -2.6128, -0.6331, -2.4758,  3.9838], device='cuda:1')
+Mean loss: 1.0112838745117188
+MMD Mean loss: 1.0112838745117188
+Avg loss 572755.875
+Min loss 84901.953125
+Max loss 3020074.25
+Avg_accepted loss 0.0
+Min_accepted loss 0.0
+Max_accepted loss 0.0
+Rejected 10
+
+
+ITERATION: 4
+Number of samples reused: 3
+Mean: tensor([-3.8397,  3.0732, -2.0334,  2.2657,  3.3830,  1.2319, -2.1495, -1.2924,
+        -0.4979, -3.0148, -0.6095, -2.1602,  4.0617], device='cuda:1')
+Mean loss: 1.006314992904663
+MMD Mean loss: 1.006314992904663
+Avg loss 235536.6875
+Min loss 84901.953125
+Max loss 505905.71875
+Avg_accepted loss 0.0
+Min_accepted loss 0.0
+Max_accepted loss 0.0
+Rejected 9
+
+
+ITERATION: 5
+Number of samples reused: 1
+Mean: tensor([-3.7094,  3.3127, -2.0865,  2.2673,  3.5700,  1.3399, -2.1281, -1.3442,
+        -0.6403, -3.1499, -0.3700, -1.7868,  4.3526], device='cuda:1')
+Mean loss: 1.6033333539962769
+MMD Mean loss: 1.6033333539962769
+Avg loss 149199.0
+Min loss 53047.8828125
+Max loss 340333.1875
+Avg_accepted loss 0.0
+Min_accepted loss 0.0
+Max_accepted loss 0.0
+Rejected 11
+
+
+ITERATION: 6
+Number of samples reused: 3
+Mean: tensor([-4.0064,  3.2523, -1.9506,  2.3050,  3.5695,  1.5078, -2.2489, -1.3455,
+        -0.7392, -3.2274, -0.2100, -1.6903,  4.3785], device='cuda:1')
+Mean loss: 0.988490104675293
+MMD Mean loss: 0.988490104675293
+Avg loss 89909.109375
+Min loss 1.017809271812439
+Max loss 316263.59375
+Avg_accepted loss 1.017809271812439
+Min_accepted loss 1.017809271812439
+Max_accepted loss 1.017809271812439
+Rejected 8
+
+
+ITERATION: 7
+Number of samples reused: 2
+Mean: tensor([-4.2439,  3.2251, -1.7408,  2.4402,  3.6232,  1.3619, -2.2031, -1.2589,
+        -0.6848, -3.2118,  0.0222, -1.5313,  4.4181], device='cuda:1')
+Mean loss: 0.9901771545410156
+MMD Mean loss: 0.9901771545410156
+Avg loss 36003.46875
+Min loss 0.9845011234283447
+Max loss 180878.765625
+Avg_accepted loss 0.9985955953598022
+Min_accepted loss 0.9845011234283447
+Max_accepted loss 1.017809271812439
+Rejected 8
+
+
+ITERATION: 8
+Number of samples reused: 2
+Mean: tensor([-4.2991,  3.0962, -1.5027,  2.4906,  3.9754,  1.4063, -2.1505, -1.1474,
+        -0.6850, -3.2069,  0.0637, -1.4149,  4.4272], device='cuda:1')
+Mean loss: 0.9909577369689941
+MMD Mean loss: 0.9909577369689941
+Avg loss 20737.9140625
+Min loss 0.9686065912246704
+Max loss 104946.375
+Avg_accepted loss 0.9900379180908203
+Min_accepted loss 0.9686065912246704
+Max_accepted loss 1.0035303831100464
+Rejected 4
+
+
+ITERATION: 9
+Number of samples reused: 1
+Mean: tensor([-4.4907,  3.1434, -1.4035,  2.5527,  4.0016,  1.5583, -1.9995, -1.1371,
+        -0.6138, -3.3809, -0.0994, -1.4483,  4.3836], device='cuda:1')
+Mean loss: 0.9851541519165039
+MMD Mean loss: 0.9851541519165039
+Avg loss 5919.75537109375
+Min loss 0.9686065912246704
+Max loss 52576.41796875
+Avg_accepted loss 0.9880741834640503
+Min_accepted loss 0.9686065912246704
+Max_accepted loss 1.0080050230026245
+Rejected 3
+
+
+ITERATION: 10
+Number of samples reused: 2
+Mean: tensor([-4.5787,  3.2342, -1.3320,  2.5933,  3.8841,  1.4569, -1.9545, -1.1467,
+        -0.5874, -3.5377, -0.0844, -1.5283,  4.4284], device='cuda:1')
+Mean loss: 0.9758434295654297
+MMD Mean loss: 0.9758434295654297
+Avg loss 2252.19873046875
+Min loss 0.9568501710891724
+Max loss 27015.638671875
+Avg_accepted loss 0.9766147136688232
+Min_accepted loss 0.9568501710891724
+Max_accepted loss 0.990269660949707
+Rejected 1
+
+
+ITERATION: 11
+Number of samples reused: 5
+Mean: tensor([-4.5548,  3.3008, -1.4017,  2.6761,  3.7356,  1.5097, -1.8049, -1.0808,
+        -0.4571, -3.6597, -0.0767, -1.8003,  4.4269], device='cuda:1')
+Mean loss: 0.966494083404541
+MMD Mean loss: 0.966494083404541
+Avg loss 0.9671947956085205
+Min loss 0.9510815143585205
+Max loss 0.98503577709198
+Avg_accepted loss 0.9671949148178101
+Min_accepted loss 0.9510815143585205
+Max_accepted loss 0.98503577709198
+Rejected 0
+
+
+ITERATION: 12
+Number of samples reused: 3
+Mean: tensor([-4.5604,  3.4481, -1.4956,  2.6461,  3.7089,  1.5986, -1.7995, -1.1246,
+        -0.4526, -3.8924, -0.1715, -1.9873,  4.4602], device='cuda:1')
+Mean loss: 0.9530607461929321
+MMD Mean loss: 0.9530607461929321
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9568473100662231
+Min_accepted loss 0.9367809295654297
+Max_accepted loss 0.9791136980056763
+Rejected 4
+
+
+ITERATION: 13
+Number of samples reused: 1
+Mean: tensor([-4.6813,  3.4711, -1.4967,  2.7522,  3.7072,  1.5111, -1.8970, -1.0708,
+        -0.4248, -3.9483, -0.3875, -1.9445,  4.4663], device='cuda:1')
+Mean loss: 0.952092170715332
+MMD Mean loss: 0.952092170715332
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9640204310417175
+Min_accepted loss 0.9552810192108154
+Max_accepted loss 0.9767975807189941
+Rejected 5
+
+
+ITERATION: 14
+Number of samples reused: 3
+Mean: tensor([-4.8880,  3.4977, -1.5882,  2.7408,  3.6757,  1.3762, -1.7660, -1.0971,
+        -0.5831, -3.9186, -0.5874, -1.9036,  4.4383], device='cuda:1')
+Mean loss: 0.9563474655151367
+MMD Mean loss: 0.9563474655151367
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9643769264221191
+Min_accepted loss 0.9442074298858643
+Max_accepted loss 0.9767975807189941
+Rejected 5
+
+
+ITERATION: 15
+Number of samples reused: 1
+Mean: tensor([-4.8135,  3.5524, -1.6595,  2.7934,  3.6030,  1.4380, -1.6697, -1.0369,
+        -0.5663, -3.9181, -0.4838, -2.0377,  4.4312], device='cuda:1')
+Mean loss: 0.9549169540405273
+MMD Mean loss: 0.9549169540405273
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9611735939979553
+Min_accepted loss 0.9442074298858643
+Max_accepted loss 0.9908884763717651
+Rejected 5
+
+
+ITERATION: 16
+Number of samples reused: 3
+Mean: tensor([-4.7704,  3.5842, -1.6201,  2.7744,  3.5747,  1.4517, -1.7354, -1.1383,
+        -0.4754, -3.9605, -0.5088, -2.1501,  4.4535], device='cuda:1')
+Mean loss: 0.951460599899292
+MMD Mean loss: 0.951460599899292
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9542856216430664
+Min_accepted loss 0.9457398653030396
+Max_accepted loss 0.9734398126602173
+Rejected 3
+
+
+ITERATION: 17
+Number of samples reused: 3
+Mean: tensor([-4.7324,  3.5006, -1.6449,  2.7830,  3.7134,  1.4875, -1.6572, -1.2064,
+        -0.5426, -4.0251, -0.5252, -2.2005,  4.3839], device='cuda:1')
+Mean loss: 0.9475274085998535
+MMD Mean loss: 0.9475274085998535
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9472293853759766
+Min_accepted loss 0.9432982206344604
+Max_accepted loss 0.9523546695709229
+Rejected 6
+
+
+ITERATION: 18
+Number of samples reused: 3
+Mean: tensor([-4.7032,  3.3695, -1.6100,  2.7833,  3.7221,  1.5605, -1.6040, -1.1425,
+        -0.5334, -3.9923, -0.5201, -2.1213,  4.4473], device='cuda:1')
+Mean loss: 0.9483762979507446
+MMD Mean loss: 0.9483762979507446
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.952798068523407
+Min_accepted loss 0.9432982206344604
+Max_accepted loss 0.9684134721755981
+Rejected 3
+
+
+ITERATION: 19
+Number of samples reused: 2
+Mean: tensor([-4.6472,  3.4206, -1.5773,  2.8291,  3.7597,  1.5617, -1.5955, -1.1503,
+        -0.5405, -4.0448, -0.4957, -2.1137,  4.5026], device='cuda:1')
+Mean loss: 0.945189356803894
+MMD Mean loss: 0.945189356803894
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9531204700469971
+Min_accepted loss 0.9419890642166138
+Max_accepted loss 0.9726028442382812
+Rejected 3
+
+
+ITERATION: 20
+Number of samples reused: 4
+Mean: tensor([-4.5441,  3.4306, -1.6023,  2.8495,  3.8158,  1.5308, -1.6481, -1.1403,
+        -0.5811, -4.0331, -0.3768, -2.0737,  4.4647], device='cuda:1')
+Mean loss: 0.9430317878723145
+MMD Mean loss: 0.9430317878723145
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9493111371994019
+Min_accepted loss 0.9418923854827881
+Max_accepted loss 0.9590611457824707
+Rejected 2
+
+
+ITERATION: 21
+Number of samples reused: 6
+Mean: tensor([-4.6121,  3.3491, -1.6583,  2.8683,  3.8068,  1.4795, -1.5444, -1.1010,
+        -0.6272, -4.1293, -0.3862, -2.0139,  4.4703], device='cuda:1')
+Mean loss: 0.9391404390335083
+MMD Mean loss: 0.9391404390335083
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9468255639076233
+Min_accepted loss 0.9418923854827881
+Max_accepted loss 0.9533361196517944
+Rejected 6
+
+
+ITERATION: 22
+Number of samples reused: 3
+Mean: tensor([-4.6280,  3.4246, -1.7004,  2.8781,  3.7344,  1.4623, -1.5994, -1.1698,
+        -0.6065, -4.0599, -0.3481, -2.0869,  4.5475], device='cuda:1')
+Mean loss: 0.9432995319366455
+MMD Mean loss: 0.9432995319366455
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9476749897003174
+Min_accepted loss 0.9401851892471313
+Max_accepted loss 0.9579193592071533
+Rejected 3
+
+
+ITERATION: 23
+Number of samples reused: 2
+Mean: tensor([-4.5714,  3.3448, -1.7098,  2.9425,  3.8078,  1.4054, -1.5168, -1.1733,
+        -0.6667, -4.0956, -0.4544, -2.1777,  4.5162], device='cuda:1')
+Mean loss: 0.9386194944381714
+MMD Mean loss: 0.9386194944381714
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9472661018371582
+Min_accepted loss 0.943020224571228
+Max_accepted loss 0.9519238471984863
+Rejected 6
+
+
+ITERATION: 24
+Number of samples reused: 7
+Mean: tensor([-4.5503,  3.3954, -1.6934,  2.8409,  3.8095,  1.4056, -1.6020, -1.2200,
+        -0.7155, -4.1022, -0.4091, -2.2160,  4.4687], device='cuda:1')
+Mean loss: 0.9370505809783936
+MMD Mean loss: 0.9370505809783936
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9490795135498047
+Min_accepted loss 0.9442298412322998
+Max_accepted loss 0.9519238471984863
+Rejected 4
+
+
+ITERATION: 25
+Number of samples reused: 1
+Mean: tensor([-4.4386,  3.3765, -1.8018,  2.8243,  3.8397,  1.3534, -1.6488, -1.3282,
+        -0.8107, -4.2010, -0.4517, -2.2995,  4.5711], device='cuda:1')
+Mean loss: 0.9303714036941528
+MMD Mean loss: 0.9303714036941528
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9429144859313965
+Min_accepted loss 0.9390007257461548
+Max_accepted loss 0.9468282461166382
+Rejected 9
+
+
+ITERATION: 26
+Number of samples reused: 4
+Mean: tensor([-4.5445,  3.2950, -1.6963,  2.9384,  3.7968,  1.3201, -1.4776, -1.2887,
+        -0.8078, -4.1540, -0.4430, -2.3063,  4.4246], device='cuda:1')
+Mean loss: 0.9337680339813232
+MMD Mean loss: 0.9337680339813232
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9468282461166382
+Min_accepted loss 0.9468282461166382
+Max_accepted loss 0.9468282461166382
+Rejected 8
+
+
+ITERATION: 27
+Number of samples reused: 1
+Mean: tensor([-4.5554,  3.4589, -1.8202,  2.8667,  3.8630,  1.3312, -1.5936, -1.2674,
+        -0.8061, -4.1404, -0.4522, -2.2964,  4.3161], device='cuda:1')
+Mean loss: 0.9355381727218628
+MMD Mean loss: 0.9355381727218628
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.954878568649292
+Min_accepted loss 0.954878568649292
+Max_accepted loss 0.954878568649292
+Rejected 10
+
+
+ITERATION: 28
+Number of samples reused: 5
+Mean: tensor([-4.4978,  3.3277, -1.8732,  2.9199,  3.7912,  1.2542, -1.5202, -1.1890,
+        -0.7540, -4.1908, -0.4031, -2.4114,  4.2904], device='cuda:1')
+Mean loss: 0.9315018653869629
+MMD Mean loss: 0.9315018653869629
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9425054788589478
+Min_accepted loss 0.9301323890686035
+Max_accepted loss 0.954878568649292
+Rejected 6
+
+
+ITERATION: 29
+Number of samples reused: 0
+Mean: tensor([-4.4571,  3.3320, -1.9172,  2.8529,  3.6600,  1.2522, -1.6940, -1.0770,
+        -0.8709, -4.2095, -0.3283, -2.4908,  4.2253], device='cuda:1')
+Mean loss: 0.9322408437728882
+MMD Mean loss: 0.9322408437728882
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9399045705795288
+Min_accepted loss 0.9399045705795288
+Max_accepted loss 0.9399045705795288
+Rejected 11
+
+
+ITERATION: 30
+Number of samples reused: 4
+Mean: tensor([-4.4756,  3.2832, -1.9993,  2.8674,  3.7631,  1.2845, -1.8167, -0.9825,
+        -0.8361, -4.1321, -0.2763, -2.2414,  4.2624], device='cuda:1')
+Mean loss: 0.9577594995498657
+MMD Mean loss: 0.9577594995498657
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.0
+Min_accepted loss 0.0
+Max_accepted loss 0.0
+Rejected 8
+
+
+ITERATION: 31
+Number of samples reused: 1
+Mean: tensor([-4.5227,  3.3888, -2.0020,  2.8359,  3.7892,  1.4238, -1.8236, -0.8954,
+        -0.9187, -4.0669, -0.1552, -2.1887,  4.3194], device='cuda:1')
+Mean loss: 0.9558432102203369
+MMD Mean loss: 0.9558432102203369
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9476566314697266
+Min_accepted loss 0.9380689859390259
+Max_accepted loss 0.9572442770004272
+Rejected 9
+
+
+ITERATION: 32
+Number of samples reused: 7
+Mean: tensor([-4.5117,  3.4037, -1.9658,  2.9180,  3.8463,  1.4711, -1.8000, -0.8933,
+        -1.1310, -3.9573, -0.1948, -2.3439,  4.3246], device='cuda:1')
+Mean loss: 0.9500043392181396
+MMD Mean loss: 0.9500043392181396
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.95148104429245
+Min_accepted loss 0.9380689859390259
+Max_accepted loss 0.9591296911239624
+Rejected 4
+
+
+ITERATION: 33
+Number of samples reused: 0
+Mean: tensor([-4.4812,  3.5415, -1.8564,  2.9176,  3.8487,  1.5302, -1.7458, -0.9267,
+        -1.2243, -3.8693, -0.2192, -2.4276,  4.3573], device='cuda:1')
+Mean loss: 0.956527590751648
+MMD Mean loss: 0.956527590751648
+Avg loss inf
+Min loss 0.9451766014099121
+Max loss inf
+Avg_accepted loss 0.9527372121810913
+Min_accepted loss 0.9451766014099121
+Max_accepted loss 0.9613401889801025
+Rejected 4
+
+
+ITERATION: 34
+Number of samples reused: 4
+Mean: tensor([-4.5409,  3.4154, -1.8131,  2.8978,  3.9430,  1.4743, -1.6203, -0.9200,
+        -1.3194, -3.9070, -0.1272, -2.3228,  4.3341], device='cuda:1')
+Mean loss: 0.9525156021118164
+MMD Mean loss: 0.9525156021118164
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9526609778404236
+Min_accepted loss 0.9451766014099121
+Max_accepted loss 0.9613401889801025
+Rejected 2
+
+
+ITERATION: 35
+Number of samples reused: 0
+Mean: tensor([-4.6193,  3.3482, -1.7523,  2.9115,  3.9820,  1.5293, -1.5278, -0.8567,
+        -1.2808, -3.9928, -0.1594, -2.2807,  4.2957], device='cuda:1')
+Mean loss: 0.9480440616607666
+MMD Mean loss: 0.9480440616607666
+Avg loss inf
+Min loss 0.9483799934387207
+Max loss inf
+Avg_accepted loss 0.9565742015838623
+Min_accepted loss 0.9483799934387207
+Max_accepted loss 0.969750165939331
+Rejected 1
+
+
+ITERATION: 36
+Number of samples reused: 4
+Mean: tensor([-4.5801,  3.2948, -1.8097,  2.9764,  3.9616,  1.6411, -1.4345, -0.8619,
+        -1.2884, -4.0573, -0.1130, -2.1872,  4.2724], device='cuda:1')
+Mean loss: 0.9449907541275024
+MMD Mean loss: 0.9449907541275024
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9518133401870728
+Min_accepted loss 0.9364566802978516
+Max_accepted loss 0.9628840684890747
+Rejected 4
+
+
+ITERATION: 37
+Number of samples reused: 1
+Mean: tensor([-4.4660,  3.2912, -1.8249,  3.0762,  3.9108,  1.5955, -1.2258, -0.8812,
+        -1.2540, -4.0610, -0.0852, -2.1338,  4.1918], device='cuda:1')
+Mean loss: 0.9406571388244629
+MMD Mean loss: 0.9406571388244629
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9463050365447998
+Min_accepted loss 0.9364566802978516
+Max_accepted loss 0.9559541940689087
+Rejected 6
+
+
+ITERATION: 38
+Number of samples reused: 2
+Mean: tensor([-4.4017,  3.3086, -1.7660,  3.1434,  3.9078,  1.6072, -1.1650, -0.8318,
+        -1.2144, -4.0541, -0.1660, -2.1562,  4.1965], device='cuda:1')
+Mean loss: 0.9385377168655396
+MMD Mean loss: 0.9385377168655396
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9415357112884521
+Min_accepted loss 0.9355263710021973
+Max_accepted loss 0.9471067190170288
+Rejected 3
+
+
+ITERATION: 39
+Number of samples reused: 10
+Mean: tensor([-4.4003,  3.3201, -1.7580,  3.1293,  3.8930,  1.5831, -1.1956, -0.9125,
+        -1.1358, -4.0420, -0.2059, -2.1620,  4.1825], device='cuda:1')
+Mean loss: 0.9390056133270264
+MMD Mean loss: 0.9390056133270264
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.941778302192688
+Min_accepted loss 0.9355263710021973
+Max_accepted loss 0.9474486112594604
+Rejected 0
+
+
+ITERATION: 40
+Number of samples reused: 1
+Mean: tensor([-4.3650,  3.3264, -1.8255,  3.0989,  3.9068,  1.4775, -1.1547, -0.8750,
+        -1.1283, -4.0256, -0.2208, -2.1914,  4.1942], device='cuda:1')
+Mean loss: 0.9382357597351074
+MMD Mean loss: 0.9382357597351074
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.942309558391571
+Min_accepted loss 0.933965802192688
+Max_accepted loss 0.9476642608642578
+Rejected 4
+
+
+ITERATION: 41
+Number of samples reused: 5
+Mean: tensor([-4.2908,  3.3642, -1.8434,  3.0515,  3.9157,  1.4837, -1.1190, -0.8885,
+        -1.0987, -3.9941, -0.1400, -2.2457,  4.2089], device='cuda:1')
+Mean loss: 0.9373185634613037
+MMD Mean loss: 0.9373185634613037
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9402773380279541
+Min_accepted loss 0.933965802192688
+Max_accepted loss 0.9466359615325928
+Rejected 2
+
+
+ITERATION: 42
+Number of samples reused: 1
+Mean: tensor([-4.2496,  3.3175, -1.7978,  3.0371,  3.8856,  1.5437, -1.1052, -0.9177,
+        -1.0522, -3.9624, -0.1038, -2.2935,  4.1742], device='cuda:1')
+Mean loss: 0.9403834342956543
+MMD Mean loss: 0.9403834342956543
+Avg loss inf
+Min loss 0.937117338180542
+Max loss inf
+Avg_accepted loss 0.946527361869812
+Min_accepted loss 0.937117338180542
+Max_accepted loss 0.9600105285644531
+Rejected 1
+
+
+ITERATION: 43
+Number of samples reused: 2
+Mean: tensor([-4.2450,  3.2981, -1.8689,  2.9956,  3.8936,  1.5461, -1.1520, -0.9423,
+        -1.0588, -4.0396, -0.0963, -2.2773,  4.1388], device='cuda:1')
+Mean loss: 0.9342504739761353
+MMD Mean loss: 0.9342504739761353
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9416742324829102
+Min_accepted loss 0.9347515106201172
+Max_accepted loss 0.949150800704956
+Rejected 2
+
+
+ITERATION: 44
+Number of samples reused: 4
+Mean: tensor([-4.1887,  3.2101, -1.9245,  3.0031,  3.8794,  1.4032, -1.1914, -0.9369,
+        -1.0760, -4.0180, -0.1008, -2.2859,  4.1390], device='cuda:1')
+Mean loss: 0.9337730407714844
+MMD Mean loss: 0.9337730407714844
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9409300088882446
+Min_accepted loss 0.930133581161499
+Max_accepted loss 0.949150800704956
+Rejected 5
+
+
+ITERATION: 45
+Number of samples reused: 1
+Mean: tensor([-4.1741,  3.1607, -1.9485,  3.0123,  3.8409,  1.4025, -1.2010, -0.9689,
+        -1.0870, -3.9524, -0.0724, -2.2957,  4.1529], device='cuda:1')
+Mean loss: 0.9364824295043945
+MMD Mean loss: 0.9364824295043945
+Avg loss inf
+Min loss 0.9353806972503662
+Max loss inf
+Avg_accepted loss 0.9458929300308228
+Min_accepted loss 0.9353806972503662
+Max_accepted loss 0.9562627077102661
+Rejected 1
+
+
+ITERATION: 46
+Number of samples reused: 2
+Mean: tensor([-4.1608,  3.1997, -1.9811,  3.0159,  3.8516,  1.4065, -1.2040, -0.8909,
+        -1.1098, -4.0199, -0.1345, -2.2081,  4.2161], device='cuda:1')
+Mean loss: 0.9360747337341309
+MMD Mean loss: 0.9360747337341309
+Avg loss inf
+Min loss 0.9319157600402832
+Max loss inf
+Avg_accepted loss 0.9371644258499146
+Min_accepted loss 0.9319157600402832
+Max_accepted loss 0.9427675008773804
+Rejected 4
+
+
+ITERATION: 47
+Number of samples reused: 2
+Mean: tensor([-4.1100,  3.2099, -1.9864,  2.9922,  3.8491,  1.4059, -1.1578, -0.8824,
+        -1.1108, -3.9994, -0.0954, -2.2664,  4.2497], device='cuda:1')
+Mean loss: 0.9335190057754517
+MMD Mean loss: 0.9335190057754517
+Avg loss inf
+Min loss 0.9311374425888062
+Max loss inf
+Avg_accepted loss 0.9364075064659119
+Min_accepted loss 0.9311374425888062
+Max_accepted loss 0.9409456253051758
+Rejected 2
+
+
+ITERATION: 48
+Number of samples reused: 1
+Mean: tensor([-4.0871,  3.1946, -1.9377,  2.9543,  3.8315,  1.3890, -1.1445, -0.8430,
+        -1.0700, -4.0144, -0.0797, -2.2947,  4.2705], device='cuda:1')
+Mean loss: 0.9316439628601074
+MMD Mean loss: 0.9316439628601074
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9340206384658813
+Min_accepted loss 0.930565595626831
+Max_accepted loss 0.94172203540802
+Rejected 6
+
+
+ITERATION: 49
+Number of samples reused: 0
+Mean: tensor([-4.0820,  3.2026, -1.9069,  2.9453,  3.8393,  1.3522, -1.1168, -0.8649,
+        -1.0916, -4.0122, -0.0664, -2.3130,  4.3106], device='cuda:1')
+Mean loss: 0.9295135736465454
+MMD Mean loss: 0.9295135736465454
+Avg loss inf
+Min loss 0.92595374584198
+Max loss inf
+Avg_accepted loss 0.932439923286438
+Min_accepted loss 0.92595374584198
+Max_accepted loss 0.9429582357406616
+Rejected 1
+
+
+ITERATION: 50
+Number of samples reused: 3
+Mean: tensor([-4.0587,  3.1725, -1.9168,  2.9125,  3.8531,  1.3116, -1.1019, -0.8685,
+        -1.0979, -4.0590, -0.0818, -2.3032,  4.2995], device='cuda:1')
+Mean loss: 0.9300793409347534
+MMD Mean loss: 0.9300793409347534
+Avg loss inf
+Min loss 0.9254034757614136
+Max loss inf
+Avg_accepted loss 0.928850531578064
+Min_accepted loss 0.9254034757614136
+Max_accepted loss 0.9325727224349976
+Rejected 3
+
+
+ITERATION: 51
+Number of samples reused: 2
+Mean: tensor([-4.0471,  3.1630, -1.8619,  2.9114,  3.8357,  1.3172, -1.0671, -0.8420,
+        -1.1006, -4.0453, -0.1083, -2.3323,  4.2765], device='cuda:1')
+Mean loss: 0.9248703718185425
+MMD Mean loss: 0.9248703718185425
+Avg loss inf
+Min loss 0.9231641292572021
+Max loss inf
+Avg_accepted loss 0.9275544881820679
+Min_accepted loss 0.9231641292572021
+Max_accepted loss 0.9320383071899414
+Rejected 4
+
+
+ITERATION: 52
+Number of samples reused: 2
+Mean: tensor([-4.0530,  3.1895, -1.8350,  2.9273,  3.8476,  1.3157, -1.0269, -0.8285,
+        -1.0767, -4.0327, -0.1056, -2.3364,  4.2826], device='cuda:1')
+Mean loss: 0.9253320693969727
+MMD Mean loss: 0.9253320693969727
+Avg loss inf
+Min loss 0.9231641292572021
+Max loss inf
+Avg_accepted loss 0.9280951619148254
+Min_accepted loss 0.9231641292572021
+Max_accepted loss 0.9323705434799194
+Rejected 3
+
+
+ITERATION: 53
+Number of samples reused: 1
+Mean: tensor([-4.0388,  3.1670, -1.8265,  2.9369,  3.8381,  1.3207, -1.0302, -0.8366,
+        -1.0111, -4.0557, -0.1201, -2.3220,  4.3088], device='cuda:1')
+Mean loss: 0.9254783391952515
+MMD Mean loss: 0.9254783391952515
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9249485731124878
+Min_accepted loss 0.9238623380661011
+Max_accepted loss 0.9259840250015259
+Rejected 6
+
+
+ITERATION: 54
+Number of samples reused: 6
+Mean: tensor([-4.0509,  3.1587, -1.8242,  2.9269,  3.8403,  1.3082, -1.0179, -0.8706,
+        -1.0048, -4.0836, -0.1254, -2.3113,  4.3311], device='cuda:1')
+Mean loss: 0.922935962677002
+MMD Mean loss: 0.922935962677002
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9278551340103149
+Min_accepted loss 0.9238623380661011
+Max_accepted loss 0.9377470016479492
+Rejected 3
+
+
+ITERATION: 55
+Number of samples reused: 1
+Mean: tensor([-4.0580,  3.1745, -1.8196,  2.9202,  3.8344,  1.2837, -1.0030, -0.8714,
+        -1.0121, -4.1079, -0.1226, -2.3212,  4.3335], device='cuda:1')
+Mean loss: 0.9221715927124023
+MMD Mean loss: 0.9221715927124023
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.0
+Min_accepted loss 0.0
+Max_accepted loss 0.0
+Rejected 11
+
+
+ITERATION: 56
+Number of samples reused: 6
+Mean: tensor([-4.0572,  3.1714, -1.8292,  2.9354,  3.8128,  1.2976, -1.0130, -0.8441,
+        -1.0162, -4.1146, -0.1362, -2.3315,  4.3597], device='cuda:1')
+Mean loss: 0.9234025478363037
+MMD Mean loss: 0.9234025478363037
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.0
+Min_accepted loss 0.0
+Max_accepted loss 0.0
+Rejected 6
+
+
+ITERATION: 57
+Number of samples reused: 5
+Mean: tensor([-4.0354,  3.1287, -1.8333,  2.9385,  3.8200,  1.3121, -1.0258, -0.8631,
+        -1.0004, -4.1170, -0.1382, -2.3072,  4.3579], device='cuda:1')
+Mean loss: 0.926044225692749
+MMD Mean loss: 0.926044225692749
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9251102209091187
+Min_accepted loss 0.9251102209091187
+Max_accepted loss 0.9251102209091187
+Rejected 6
+
+
+ITERATION: 58
+Number of samples reused: 3
+Mean: tensor([-4.0532,  3.1538, -1.8355,  2.9283,  3.8049,  1.3290, -1.0238, -0.8175,
+        -1.0266, -4.1100, -0.1352, -2.3122,  4.3395], device='cuda:1')
+Mean loss: 0.926361083984375
+MMD Mean loss: 0.926361083984375
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.924784779548645
+Min_accepted loss 0.924784779548645
+Max_accepted loss 0.924784779548645
+Rejected 8
+
+
+ITERATION: 59
+Number of samples reused: 6
+Mean: tensor([-4.0256,  3.1505, -1.8332,  2.9262,  3.8248,  1.3151, -1.0235, -0.8517,
+        -1.0112, -4.1331, -0.1584, -2.3019,  4.3544], device='cuda:1')
+Mean loss: 0.9288500547409058
+MMD Mean loss: 0.9288500547409058
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9250667095184326
+Min_accepted loss 0.9250667095184326
+Max_accepted loss 0.9250667095184326
+Rejected 5
+
+
+ITERATION: 60
+Number of samples reused: 2
+Mean: tensor([-4.0416,  3.1995, -1.8512,  2.9379,  3.8089,  1.3372, -1.0364, -0.8228,
+        -1.0078, -4.1103, -0.1292, -2.3192,  4.3592], device='cuda:1')
+Mean loss: 0.9270839691162109
+MMD Mean loss: 0.9270839691162109
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9250667095184326
+Min_accepted loss 0.9250667095184326
+Max_accepted loss 0.9250667095184326
+Rejected 10
+
+
+ITERATION: 61
+Number of samples reused: 0
+Mean: tensor([-4.0186,  3.1866, -1.8532,  2.9359,  3.8130,  1.2914, -1.0431, -0.8363,
+        -1.0378, -4.0979, -0.1506, -2.3354,  4.3406], device='cuda:1')
+Mean loss: 0.9260478019714355
+MMD Mean loss: 0.9260478019714355
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9258661866188049
+Min_accepted loss 0.9249114990234375
+Max_accepted loss 0.9265518188476562
+Rejected 8
+
+
+ITERATION: 62
+Number of samples reused: 6
+Mean: tensor([-3.9763,  3.1954, -1.8471,  2.9256,  3.7819,  1.3081, -1.0178, -0.8403,
+        -1.0507, -4.0920, -0.1613, -2.3619,  4.3255], device='cuda:1')
+Mean loss: 0.9242382049560547
+MMD Mean loss: 0.9242382049560547
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9250286221504211
+Min_accepted loss 0.9223775863647461
+Max_accepted loss 0.9265518188476562
+Rejected 5
+
+
+ITERATION: 63
+Number of samples reused: 1
+Mean: tensor([-3.9716,  3.1940, -1.8457,  2.9139,  3.7475,  1.3057, -1.0207, -0.8225,
+        -1.0296, -4.0895, -0.1827, -2.3623,  4.3169], device='cuda:1')
+Mean loss: 0.9255130290985107
+MMD Mean loss: 0.9255130290985107
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9242672324180603
+Min_accepted loss 0.9223775863647461
+Max_accepted loss 0.9252357482910156
+Rejected 9
+
+
+ITERATION: 64
+Number of samples reused: 5
+Mean: tensor([-3.9702,  3.1910, -1.8123,  2.8976,  3.7452,  1.3118, -0.9976, -0.8132,
+        -1.0183, -4.0665, -0.1731, -2.3556,  4.3077], device='cuda:1')
+Mean loss: 0.9227454662322998
+MMD Mean loss: 0.9227454662322998
+Avg loss nan
+Min loss nan
+Max loss nan
+Avg_accepted loss 0.9254230260848999
+Min_accepted loss 0.9209796190261841
+Max_accepted loss 0.9317034482955933
+Rejected 1
+
+
+ITERATION: 65
+Number of samples reused: 2
+Mean: tensor([-3.9668,  3.1998, -1.7713,  2.9126,  3.7404,  1.3088, -0.9903, -0.7969,
+        -1.0074, -4.0871, -0.1420, -2.3673,  4.3113], device='cuda:1')
+Mean loss: 0.9219659566879272
+MMD Mean loss: 0.9219659566879272
+Avg loss inf
+Min loss 0.9209796190261841
+Max loss inf
+Avg_accepted loss 0.9231041669845581
+Min_accepted loss 0.9209796190261841
+Max_accepted loss 0.9268697500228882
+Rejected 5
+
+
+ITERATION: 66
+Number of samples reused: 1
+Mean: tensor([-3.9386,  3.2198, -1.7410,  2.9189,  3.7596,  1.3463, -0.9893, -0.8176,
+        -1.0098, -4.0595, -0.1536, -2.3907,  4.3287], device='cuda:1')
+Mean loss: 0.9211853742599487
+MMD Mean loss: 0.9211853742599487
+Avg loss inf
+Min loss 0.9200954437255859
+Max loss inf
+Avg_accepted loss 0.9216259121894836
+Min_accepted loss 0.9200954437255859
+Max_accepted loss 0.9228644371032715
+Rejected 7
+
+
+ITERATION: 67
+Number of samples reused: 5
+Mean: tensor([-3.9312,  3.2121, -1.7222,  2.9255,  3.7730,  1.3601, -0.9920, -0.8320,
+        -1.0074, -4.0417, -0.1537, -2.4105,  4.3410], device='cuda:1')
+Mean loss: 0.9203618764877319
+MMD Mean loss: 0.9203618764877319
+Avg loss inf
+Min loss 0.9200954437255859
+Max loss inf
+Avg_accepted loss 0.9217074513435364
+Min_accepted loss 0.9200954437255859
+Max_accepted loss 0.9228644371032715
+Rejected 2
+
+
+ITERATION: 68
+Number of samples reused: 4
+Mean: tensor([-3.9182,  3.1959, -1.7181,  2.9249,  3.7696,  1.3589, -0.9913, -0.8397,
+        -1.0047, -4.0460, -0.1556, -2.4077,  4.3582], device='cuda:1')
+Mean loss: 0.9207643270492554
+MMD Mean loss: 0.9207643270492554
+Avg loss inf
+Min loss 0.9189479351043701
+Max loss inf
+Avg_accepted loss 0.921320378780365
+Min_accepted loss 0.9189479351043701
+Max_accepted loss 0.9230059385299683
+Rejected 2
+
+
+ITERATION: 69
+Number of samples reused: 6
+Mean: tensor([-3.8930,  3.1931, -1.6996,  2.9154,  3.7786,  1.3467, -0.9769, -0.8465,
+        -1.0263, -4.0448, -0.1589, -2.4163,  4.3444], device='cuda:1')
+Mean loss: 0.9203484058380127
+MMD Mean loss: 0.9203484058380127
+Avg loss inf
+Min loss 0.9189479351043701
+Max loss inf
+Avg_accepted loss 0.9205643534660339
+Min_accepted loss 0.9189479351043701
+Max_accepted loss 0.9230059385299683
+Rejected 1
+
+
+ITERATION: 70
+Number of samples reused: 2
+Mean: tensor([-3.8761,  3.1910, -1.6961,  2.8965,  3.7736,  1.3323, -0.9664, -0.8506,
+        -1.0323, -4.0484, -0.1776, -2.4373,  4.3450], device='cuda:1')
+Mean loss: 0.9205375909805298
+MMD Mean loss: 0.9205375909805298
+Avg loss inf
+Min loss 0.9174555540084839
+Max loss inf
+Avg_accepted loss 0.9199927449226379
+Min_accepted loss 0.9174555540084839
+Max_accepted loss 0.9232089519500732
+Rejected 5
+
+
+ITERATION: 71
+Number of samples reused: 6
+Mean: tensor([-3.8523,  3.1828, -1.6840,  2.9181,  3.7731,  1.3439, -0.9659, -0.8491,
+        -1.0177, -4.0422, -0.1717, -2.4437,  4.3565], device='cuda:1')
+Mean loss: 0.9183604717254639
+MMD Mean loss: 0.9183604717254639
+Avg loss inf
+Min loss 0.9174555540084839
+Max loss inf
+Avg_accepted loss 0.9197515845298767
+Min_accepted loss 0.9174555540084839
+Max_accepted loss 0.9232089519500732
+Rejected 1
+
+
+ITERATION: 72
+Number of samples reused: 2
+Mean: tensor([-3.8365,  3.1714, -1.6773,  2.9350,  3.7735,  1.3476, -0.9638, -0.8472,
+        -0.9957, -4.0468, -0.1754, -2.4591,  4.3635], device='cuda:1')
+Mean loss: 0.9177452325820923
+MMD Mean loss: 0.9177452325820923
+Avg loss inf
+Min loss 0.9180160760879517
+Max loss inf
+Avg_accepted loss 0.9195151925086975
+Min_accepted loss 0.9180160760879517
+Max_accepted loss 0.9205257892608643
+Rejected 3
+
+
+ITERATION: 73
+Number of samples reused: 1
+Mean: tensor([-3.8303,  3.1680, -1.6904,  2.9442,  3.7516,  1.3319, -0.9650, -0.8340,
+        -0.9719, -4.0396, -0.1588, -2.4592,  4.3671], device='cuda:1')
+Mean loss: 0.9186701774597168
+MMD Mean loss: 0.9186701774597168
+Avg loss inf
+Min loss 0.9176981449127197
+Max loss inf
+Avg_accepted loss 0.9195519685745239
+Min_accepted loss 0.9176981449127197
+Max_accepted loss 0.9217387437820435
+Rejected 1
+
+
+ITERATION: 74
+Number of samples reused: 2
+Mean: tensor([-3.8221,  3.1684, -1.7034,  2.9500,  3.7429,  1.3255, -0.9586, -0.8168,
+        -0.9742, -4.0537, -0.1573, -2.4592,  4.3735], device='cuda:1')
+Mean loss: 0.9187730550765991
+MMD Mean loss: 0.9187730550765991
+Avg loss inf
+Min loss 0.9176981449127197
+Max loss inf
+Avg_accepted loss 0.9192585945129395
+Min_accepted loss 0.9176981449127197
+Max_accepted loss 0.920904278755188
+Rejected 1
+
+
+ITERATION: 75
+Number of samples reused: 1
+Mean: tensor([-3.8259,  3.1722, -1.6894,  2.9505,  3.7529,  1.3227, -0.9367, -0.8161,
+        -0.9811, -4.0587, -0.1494, -2.4757,  4.3881], device='cuda:1')
+Mean loss: 0.9179025888442993
+MMD Mean loss: 0.9179025888442993
+Avg loss inf
+Min loss 0.9177054166793823
+Max loss inf
+Avg_accepted loss 0.9191283583641052
+Min_accepted loss 0.9177054166793823
+Max_accepted loss 0.9206269979476929
+Rejected 6
+
+
+ITERATION: 76
+Number of samples reused: 3
+Mean: tensor([-3.8226,  3.1927, -1.6878,  2.9387,  3.7418,  1.3357, -0.9488, -0.8061,
+        -0.9959, -4.0477, -0.1608, -2.4815,  4.4012], device='cuda:1')
+Mean loss: 0.91825270652771
+MMD Mean loss: 0.91825270652771
+Avg loss inf
+Min loss 0.9174022674560547
+Max loss inf
+Avg_accepted loss 0.9187087416648865
+Min_accepted loss 0.9174022674560547
+Max_accepted loss 0.9207978248596191
+Rejected 1
+
+
+ITERATION: 77
+Number of samples reused: 4
+Mean: tensor([-3.8232,  3.1875, -1.6947,  2.9318,  3.7361,  1.3289, -0.9518, -0.8150,
+        -0.9916, -4.0555, -0.1622, -2.4838,  4.4030], device='cuda:1')
+Mean loss: 0.9175945520401001
+MMD Mean loss: 0.9175945520401001
+Avg loss inf
+Min loss 0.9174022674560547
+Max loss inf
+Avg_accepted loss 0.9184399843215942
+Min_accepted loss 0.9174022674560547
+Max_accepted loss 0.9192436933517456
+Rejected 3
+
+
+ITERATION: 78
+Number of samples reused: 1
+Mean: tensor([-3.8178,  3.1802, -1.7000,  2.9243,  3.7428,  1.3192, -0.9644, -0.8133,
+        -0.9842, -4.0408, -0.1552, -2.4789,  4.4025], device='cuda:1')
+Mean loss: 0.9183086156845093
+MMD Mean loss: 0.9183086156845093
+Avg loss inf
+Min loss 0.9175593852996826
+Max loss inf
+Avg_accepted loss 0.9186844229698181
+Min_accepted loss 0.9175593852996826
+Max_accepted loss 0.9203699827194214
+Rejected 2
+
+
+ITERATION: 79
+Number of samples reused: 8
+Mean: tensor([-3.8264,  3.1755, -1.7042,  2.9348,  3.7393,  1.3224, -0.9623, -0.8189,
+        -0.9902, -4.0377, -0.1503, -2.4858,  4.4046], device='cuda:1')
+Mean loss: 0.9180862903594971
+MMD Mean loss: 0.9180862903594971
+Avg loss inf
+Min loss 0.9175593852996826
+Max loss inf
+Avg_accepted loss 0.9189847111701965
+Min_accepted loss 0.9175593852996826
+Max_accepted loss 0.9208000898361206
+Rejected 1
+
+
+ITERATION: 80
+Number of samples reused: 0
+Mean: tensor([-3.8269,  3.1676, -1.7133,  2.9482,  3.7376,  1.3269, -0.9666, -0.8292,
+        -0.9942, -4.0414, -0.1485, -2.4977,  4.4051], device='cuda:1')
+Mean loss: 0.9183206558227539
+MMD Mean loss: 0.9183206558227539
+Avg loss 0.9189671277999878
+Min loss 0.9173308610916138
+Max loss 0.9212002754211426
+Avg_accepted loss 0.9189670085906982
+Min_accepted loss 0.9173308610916138
+Max_accepted loss 0.9212002754211426
+Rejected 0
+
+
+ITERATION: 81
+Number of samples reused: 2
+Mean: tensor([-3.8214,  3.1743, -1.7096,  2.9444,  3.7339,  1.3210, -0.9562, -0.8215,
+        -0.9956, -4.0570, -0.1491, -2.5012,  4.3918], device='cuda:1')
+Mean loss: 0.9183565378189087
+MMD Mean loss: 0.9183565378189087
+Avg loss inf
+Min loss 0.9172922372817993
+Max loss inf
+Avg_accepted loss 0.918121337890625
+Min_accepted loss 0.9172922372817993
+Max_accepted loss 0.9191079139709473
+Rejected 1
+
+
+ITERATION: 82
+Number of samples reused: 2
+Mean: tensor([-3.8232,  3.1768, -1.7081,  2.9420,  3.7395,  1.3280, -0.9588, -0.8222,
+        -0.9947, -4.0563, -0.1530, -2.4991,  4.3955], device='cuda:1')
+Mean loss: 0.9185744524002075
+MMD Mean loss: 0.9185744524002075
+Avg loss inf
+Min loss 0.9172922372817993
+Max loss inf
+Avg_accepted loss 0.9184410572052002
+Min_accepted loss 0.9172922372817993
+Max_accepted loss 0.9209027290344238
+Rejected 4
+
+
+ITERATION: 83
+Number of samples reused: 1
+Mean: tensor([-3.8168,  3.1748, -1.7070,  2.9384,  3.7397,  1.3258, -0.9553, -0.8131,
+        -0.9923, -4.0518, -0.1595, -2.4956,  4.4022], device='cuda:1')
+Mean loss: 0.9184547662734985
+MMD Mean loss: 0.9184547662734985
+Avg loss 0.9184503555297852
+Min loss 0.9174904823303223
+Max loss 0.9197605848312378
+Avg_accepted loss 0.9184503555297852
+Min_accepted loss 0.9174904823303223
+Max_accepted loss 0.9197605848312378
+Rejected 0
+
+
+ITERATION: 84
+Number of samples reused: 5
+Mean: tensor([-3.8188,  3.1748, -1.7025,  2.9412,  3.7444,  1.3260, -0.9522, -0.8105,
+        -1.0002, -4.0543, -0.1545, -2.4930,  4.4015], device='cuda:1')
+Mean loss: 0.9180225133895874
+MMD Mean loss: 0.9180225133895874
+Avg loss inf
+Min loss 0.9174904823303223
+Max loss inf
+Avg_accepted loss 0.9183158874511719
+Min_accepted loss 0.9174904823303223
+Max_accepted loss 0.9190605878829956
+Rejected 1
+
+
+ITERATION: 85
+Number of samples reused: 0
+Mean: tensor([-3.8155,  3.1752, -1.7022,  2.9405,  3.7454,  1.3257, -0.9480, -0.8095,
+        -0.9999, -4.0511, -0.1527, -2.4940,  4.3988], device='cuda:1')
+Mean loss: 0.9177579879760742
+MMD Mean loss: 0.9177579879760742
+Avg loss 0.9184240698814392
+Min loss 0.9169659614562988
+Max loss 0.9195668697357178
+Avg_accepted loss 0.9184240698814392
+Min_accepted loss 0.9169659614562988
+Max_accepted loss 0.9195668697357178
+Rejected 0
+
+
+ITERATION: 86
+Number of samples reused: 8
+Mean: tensor([-3.8126,  3.1747, -1.7001,  2.9448,  3.7404,  1.3284, -0.9457, -0.8071,
+        -1.0008, -4.0527, -0.1521, -2.4974,  4.3951], device='cuda:1')
+Mean loss: 0.917534351348877
+MMD Mean loss: 0.917534351348877
+Avg loss inf
+Min loss 0.9169659614562988
+Max loss inf
+Avg_accepted loss 0.9181908965110779
+Min_accepted loss 0.9169659614562988
+Max_accepted loss 0.9195668697357178
+Rejected 1
+
+
+ITERATION: 87
+Number of samples reused: 2
+Mean: tensor([-3.8133,  3.1755, -1.6970,  2.9467,  3.7407,  1.3309, -0.9440, -0.8080,
+        -1.0021, -4.0519, -0.1507, -2.4994,  4.3913], device='cuda:1')
+Mean loss: 0.9175248146057129
+MMD Mean loss: 0.9175248146057129
+Avg loss inf
+Min loss 0.9167475700378418
+Max loss inf
+Avg_accepted loss 0.9179328680038452
+Min_accepted loss 0.9167475700378418
+Max_accepted loss 0.9188706874847412
+Rejected 0
+
+
+ITERATION: 88
+Number of samples reused: 6
+Mean: tensor([-3.8088,  3.1776, -1.6959,  2.9471,  3.7320,  1.3361, -0.9428, -0.8080,
+        -0.9996, -4.0505, -0.1522, -2.4937,  4.3932], device='cuda:1')
+Mean loss: 0.9180195331573486
+MMD Mean loss: 0.9180195331573486
+Avg loss 0.917794942855835
+Min loss 0.9167475700378418
+Max loss 0.9188706874847412
+Avg_accepted loss 0.917794942855835
+Min_accepted loss 0.9167475700378418
+Max_accepted loss 0.9188706874847412
+Rejected 0
+
+
+ITERATION: 89
+Number of samples reused: 2
+Mean: tensor([-3.8075,  3.1796, -1.6943,  2.9496,  3.7286,  1.3374, -0.9447, -0.8070,
+        -0.9988, -4.0515, -0.1534, -2.4930,  4.3947], device='cuda:1')
+Mean loss: 0.9183465242385864
+MMD Mean loss: 0.9183465242385864
+Avg loss 0.9179142713546753
+Min loss 0.9173669815063477
+Max loss 0.9187297821044922
+Avg_accepted loss 0.9179142713546753
+Min_accepted loss 0.9173669815063477
+Max_accepted loss 0.9187297821044922
+Rejected 0
+
+
+ITERATION: 90
+Number of samples reused: 5
+Mean: tensor([-3.8006,  3.1781, -1.6903,  2.9557,  3.7326,  1.3400, -0.9393, -0.8099,
+        -1.0020, -4.0527, -0.1546, -2.4927,  4.3990], device='cuda:1')
+Mean loss: 0.9184545278549194
+MMD Mean loss: 0.9184545278549194
+Avg loss 0.9177477359771729
+Min loss 0.9167171716690063
+Max loss 0.9190926551818848
+Avg_accepted loss 0.9177477359771729
+Min_accepted loss 0.9167171716690063
+Max_accepted loss 0.9190926551818848
+Rejected 0
+
+
+
+
+Early stopping 0.9181045889854431
+
+---------------------------------------------------
+
+
+Final loss and MMD loss:
+tensor(0.9176, device='cuda:1')
+tensor(0.9176, device='cuda:1')
+Final mean:
+tensor([-3.7991,  3.1785, -1.6915,  2.9542,  3.7392,  1.3421, -0.9387, -0.8098,
+        -1.0045, -4.0495, -0.1589, -2.4944,  4.4059], device='cuda:1')
+
+Final covariance matrix:
+tensor([[5.4070e-05, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00],
+        [0.0000e+00, 5.4070e-05, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00],
+        [0.0000e+00, 0.0000e+00, 5.4070e-05, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00],
+        [0.0000e+00, 0.0000e+00, 0.0000e+00, 5.4070e-05, 0.0000e+00, 0.0000e+00,
+         0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00],
+        [0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 5.4070e-05, 0.0000e+00,
+         0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00],
+        [0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 5.4070e-05,
+         0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00],
+        [0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         5.4070e-05, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00],
+        [0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00, 5.4070e-05, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00],
+        [0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00, 0.0000e+00, 5.4070e-05, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00],
+        [0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00, 0.0000e+00, 0.0000e+00, 5.4070e-05, 0.0000e+00, 0.0000e+00,
+         0.0000e+00],
+        [0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 5.4070e-05, 0.0000e+00,
+         0.0000e+00],
+        [0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 5.4070e-05,
+         0.0000e+00],
+        [0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00, 0.0000e+00,
+         5.4070e-05]], device='cuda:1')
+
+time taken: 4086.679454088211
+number of iterations: 91
+average time per iter: 44.90856542954078

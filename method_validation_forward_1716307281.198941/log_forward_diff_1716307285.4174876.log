@@ -1,0 +1,26 @@
+#####Forward mode mouse v1 log file#####
+
+
+Code ran on the 2024-05-21 17:01:25.418466
+
+Run from xNES minima
+Device: cuda:1
+OS: linux
+Machine: cblgpu06
+
+
+Metadata:
+learning rates: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+
+initial params: [tensor(1.8028, device='cuda:1'), tensor(3.6556, device='cuda:1'), tensor(0.3885, device='cuda:1'), tensor(0.9982, device='cuda:1'), tensor(-1.4948, device='cuda:1'), tensor(1.5408, device='cuda:1'), tensor(3.9706, device='cuda:1'), tensor(-3.6256, device='cuda:1'), tensor(4.4520, device='cuda:1'), tensor(3.0874, device='cuda:1'), tensor(-2.5326, device='cuda:1'), tensor(-1.7376, device='cuda:1'), tensor(-1.3885, device='cuda:1')]
+
+----------------------------
+0
+loss: 93.90322875976562
+params: [nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan]
+----------------------------
+
+
+time taken: 208.61838722229004
+number of iterations: 1
+average time per iter: 208.61838722229004
