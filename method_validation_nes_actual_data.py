@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     desc = "NES with MMD"
 
-    device = get_device("cuda:0")
+    device = get_device("cuda:1")
 
     n = 10000
 
