@@ -10,6 +10,7 @@ import os
 import pickle
 
 plt.rcParams.update({'font.size': 20})
+plt.rcParams.update({'figure.autolayout': True})
 
 if __name__ == "__main__":
     SHOW = bool(input("Enter for save plots: "))
@@ -168,8 +169,9 @@ def plot_frac_of_var(tuning_curves, title="", bin_size=0.0025, xlim=0.85):
     plt.xticks(np.arange(0, 1 + bin_size, bin_size * 20))
     plt.xlim(xlim, 1)
     plt.title(title)
-    plt.xlabel("Fraction of data explained by first SV")
+    plt.xlabel("Explained variance over first SV")
     plt.ylabel("Unit count")
+    plt.tight_layout()
     if SHOW:
         plt.show()
     else:
@@ -290,7 +292,7 @@ if __name__ == "__main__":
 
     not_data = bool(input("Enter for plotting data: "))
 
-    neuron_num = 1000
+    neuron_num = 10000
     ratio = 0.8
     E_index = int(ratio * neuron_num)
     feed_forward_num = 1000 
@@ -302,15 +304,30 @@ if __name__ == "__main__":
 
             # Get the network response
 
-            J_array = [-2.008051, -2.915398, -3.576522, -3.498692]
-            P_array = [-3.489173, -3.361498, 1.9793670000000005, -2.9004659999999998]
-            w_array = [3.3151170000000003, -1.306025, 1.7146030000000003, 2.265844999999999] 
-            heter_ff = 0.07592
+            # J_array = [-2.008051, -2.915398, -3.576522, -3.498692]
+            # P_array = [-3.489173, -3.361498, 1.9793670000000005, -2.9004659999999998]
+            # w_array = [3.3151170000000003, -1.306025, 1.7146030000000003, 2.265844999999999] 
+            # heter_ff = 0.07592
 
             J_array = [-0.9308613398652443, -2.0604571635972393, -0.30535063458645906, -1.802886963254238]  # config 13: n = 1000
             P_array = [-1.493925025312256, 1.09861228866811, -1.493925025312256, 1.09861228866811]
             w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
             heter_ff = torch.tensor([-1.3862943611198906])
+
+            # J_array = [-0.8656, 0.4346999999999994, 0.6030000000000004, 1.4744000000000004]
+            # P_array = [-2.0156, -1.2490000000000003, 0.6560999999999998, 0.06460000000000024]
+            # w_array = [-1.8434, -0.6849, -0.044200000000000045, -0.4698999999999998]
+            # heter_ff = torch.tensor([0.8502999999999998])
+
+            # J_array = [ 0.8031,  0.0952,  1.8234,  0.3603]  # n = 10000  # NES LOWEST ACTUAL DATA
+            # P_array = [2.9309, -0.2961,  2.0060, -0.0998] 
+            # w_array = [3.3356,  0.5527,  3.3324, -0.8895,]
+            # heter_ff = torch.tensor([-1.3264])
+
+            # J_array = [ 0.8031,  0.0952,  1.8234,  0.3603]  # Tryout
+            # P_array = [2.9309, 2.9309,  2.0060, 2.0060] 
+            # w_array = [-1.5314763709643886,  -1.5314763709643886,  -1.5314763709643886, -1.5314763709643886]
+            # heter_ff = torch.tensor([-1.3264])
 
             generator = WeightsGeneratorExact(J_array, P_array, w_array, neuron_num, feed_forward_num)
             W = generator.generate_weight_matrix()
@@ -371,9 +388,18 @@ if __name__ == "__main__":
         print_tuning_curve(data[-100], title="Example Inhibitory Neuron Tuning Curve From Model")
 
         print_tuning_curve(data[100], title="")
+
+        # for i in range(60):
+        #     print_tuning_curve(data_E[i], title="(E)")
+
+        # for i in range(60):
+        #     print_tuning_curve(data_I[i], title="(I)")
         
         print_activity(responses[:E_index], title="Example Response Plot for the Model \n Excitatory (High contrast)", contrast_index=7)
         print_activity(responses[E_index:], title="Example Response Plot for the Model \n Inhibitory (High contrast)", contrast_index=7)
+
+        print_activity(responses[:E_index], title="Excitatory", contrast_index=7)
+        print_activity(responses[E_index:], title="Inhibitory", contrast_index=7)
 
         print_activity(responses[:E_index], title="Example Response Plot for the Model \n Excitatory (Mid contrast)", contrast_index=5)
         print_activity(responses[E_index:], title="Example Response Plot for the Model \n Inhibitory (Mid contrast)", contrast_index=5)
@@ -386,8 +412,10 @@ if __name__ == "__main__":
 
         plot_percentage_explained(data, title="Histogram of the percentage that the residue is left after SVD")
 
-        plot_frac_of_var(data_E, title="Fraction of explained variance (degree of contrast invariance) - Excitatory")
-        plot_frac_of_var(data_I, title="Fraction of explained variance (degree of contrast invariance) - Inhibitory")
+        plot_frac_of_var(data_E, title="Fraction of explained variance Excitatory (degree of contrast invariance)")
+        plot_frac_of_var(data_I, title="Fraction of explained variance Inhibitory (degree of contrast invariance)")
+        plot_frac_of_var(data_E, title="Model tuning curve (E)")
+        plot_frac_of_var(data_I, title="Model tuning curve (I)")
 
         plot_frac_of_var(data_E, title="Full fraction of explained variance (degree of contrast invariance) - Excitatory", xlim=0)
         plot_frac_of_var(data_I, title="Full fraction of explained variance (degree of contrast invariance) - Inhibitory", xlim=0)
@@ -411,8 +439,11 @@ if __name__ == "__main__":
         print_tuning_curve(data[10], title="Example Excitatory Neuron Tuning Curve From Data")
         print_tuning_curve(data[-5], title="Example Inhibitory Neuron Tuning Curve From Data")
 
-        for i in range(80):
-            print_tuning_curve(data[i], title=f"Example Neuron Tuning Curve From Data {i}")
+        for tuning_curve in data_E:
+            print_tuning_curve(tuning_curve, title=f"(E)")
+
+        for tuning_curve in data_I:
+            print_tuning_curve(tuning_curve, title=f"(I)")
         
         print_activity(responses, title="Response Plot for the data")
 
@@ -423,6 +454,8 @@ if __name__ == "__main__":
 
         plot_frac_of_var(data_E, title="Fraction of explained variance (degree of contrast invariance) - Excitatory")
         plot_frac_of_var(data_I, title="Fraction of explained variance (degree of contrast invariance) - Inhibitory")
+        plot_frac_of_var(data_E, title="Data tuning curve (E)")
+        plot_frac_of_var(data_I, title="Data tuning curve (I)")
 
         plot_hist(get_circ_var, data_E, title="Histogram of the circular variance of the data E tuning curves")
         plot_hist(get_max_firing_rate, data_E, title="Histogram of the max firing rate of the data E tuning curves")

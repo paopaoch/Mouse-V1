@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 
 J_steep = 1
-J_scale = 126  #40, 126
+J_scale = 126.5  #40, 126
 
 P_steep = 1
 P_scale = 0.6
@@ -332,8 +332,8 @@ if __name__ == "__main__":
 
     SEARCH_INIT = bool(input("Search Params? (default False): "))
 
-    N_E = 800
-    N_I = 200
+    N_E = 8000
+    N_I = 2000
     N_F = 1000
 
     # N_E = 1600
@@ -359,10 +359,17 @@ if __name__ == "__main__":
         print("\nInitial: ", INITIAL, '\n')
 
         if INITIAL:
-            EE = Connection(35.78, 0.11, 32, N_E)  # 10000
-            EI = Connection(14.31, 0.45, 32, N_I)
-            IE = Connection(53.67, 0.11, 32, N_E)
-            II = Connection(17.89, 0.45, 32, N_I)
+            # EE = Connection(35.78, 0.11, 32, N_E)  # 10000
+            # EI = Connection(14.31, 0.45, 32, N_I)
+            # IE = Connection(53.67, 0.11, 32, N_E)
+            # II = Connection(17.89, 0.45, 32, N_I)
+
+            EE = Connection(37.46559032961823, 0.07054483637608842, 24.596941781725523, N_E)  # 10000
+            EI = Connection(76.78492123411348, 0.13372397496786956, 60.33033941149862, N_I)
+            IE = Connection(81.76230836910365, 0.39503025850545226, 88.01132375258055, N_E)
+            II = Connection(102.93624328177525, 0.309686631578989, 69.23518425733955, N_I)
+
+            hetter_ff = 0.7006300705335186
 
             # EE = Connection(19.60, 0.11, 32, N_E)  # 3000
             # EI = Connection(7.84, 0.45, 32, N_I)
@@ -379,7 +386,7 @@ if __name__ == "__main__":
             # IE = Connection(16.97, 0.11, 32, N_E)
             # II = Connection(5.66, 0.45, 32, N_I)
 
-            hetter_ff = 0.2
+            # hetter_ff = 0.2
 
             # EE = Connection(11.4130, 0.2436, 85.5893, N_E)  # from V1CNN
             # EI = Connection(55.2320, 0.1355, 78.6896, N_I)
