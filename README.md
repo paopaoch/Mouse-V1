@@ -11,4 +11,4 @@ Code to produce results for IIB Project at the University of Cambridge.
 7. `parameter_tester` test certain parameter conditions as well as format the parameter values to work which each script
 8. `rodents_plotter` will plot generic graphs and plots for quick analysis of parameter values.
 
-If you have any questions regarding this repo, please feel free to contact me.
+If you have any questions regarding this repo, please feel free to contact me at https://www.linkedin.com/in/chulabutra-chuenchoksan/.
