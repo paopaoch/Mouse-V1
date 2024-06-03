@@ -23,7 +23,7 @@ class WeightsGenerator(Rodents):
         # Sigmoid values for parameters
         self.J_steep = 1
         # self.J_scale = 40
-        self.J_scale = 126.5
+        self.J_scale = (self.neuron_num ** 0.5) * 126.5 / (10000 ** 0.5)
 
         self.P_steep = 1
         # self.P_scale = 0.6

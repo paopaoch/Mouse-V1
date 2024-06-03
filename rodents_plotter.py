@@ -4,7 +4,7 @@ import numpy as np
 import time
 from datetime import datetime
 from tqdm import tqdm
-from rat import get_data, WeightsGeneratorExact, NetworkExecuterWithSimplifiedFF
+from rat import get_data, WeightsGeneratorExact, NetworkExecuterWithSimplifiedFF, OSDependentWeightsGenerator
 from scipy.stats import circvar
 import os
 import pickle
@@ -62,18 +62,33 @@ def print_tuning_curve(tuning_curve, title=""):
         plt.savefig(f"{FOLDER_NAME}/tuning_curve_image_{time.time()}.png", bbox_inches='tight')
         plt.close()
 
-    for c, val in zip(tuning_curve, contrast_val):
+    for c, val in zip(tuning_curve[-3:], contrast_val[-3:]):
         plt.plot(orientation, c, label=f"{val} contrast")
         plt.title(title)
         plt.xlabel("orientation")
         plt.ylabel("Responses")
 
-    plt.legend()
+    # plt.legend()
 
     if SHOW:
         plt.show()
     else:
         plt.savefig(f"{FOLDER_NAME}/tuning_curve_{time.time()}.png", bbox_inches='tight')
+        plt.close()
+
+
+    for c, val in zip(tuning_curve[-1:], contrast_val[-1:]):
+        plt.plot(orientation, c, label=f"{val} contrast")
+        plt.title(title)
+        plt.xlabel("orientation")
+        plt.ylabel("Responses")
+
+    # plt.legend()
+
+    if SHOW:
+        plt.show()
+    else:
+        plt.savefig(f"{FOLDER_NAME}/tuning_curve_max_contrast_{time.time()}.png", bbox_inches='tight')
         plt.close()
 
 
@@ -165,7 +180,7 @@ def plot_percentage_explained(tuning_curves, title=""):
 def plot_frac_of_var(tuning_curves, title="", bin_size=0.0025, xlim=0.85):
     frac_of_vars = get_all_fraction_of_variance(tuning_curves)
     bins = np.arange(0, 1 + bin_size, bin_size)
-    plt.hist(frac_of_vars, bins, bottom=0, width=bin_size, color="cadetblue")
+    plt.hist(frac_of_vars, bins, bottom=0, width=bin_size, color="cadetblue", density=True)
     plt.xticks(np.arange(0, 1 + bin_size, bin_size * 20))
     plt.xlim(xlim, 1)
     plt.title(title)
@@ -192,7 +207,7 @@ def get_mean_firing_rate(tuning_curve, contrast_index=None):
     return np.mean(tuning_curve)
 
 
-def plot_hist(func, responses, contrast_index=7, title="", bin_size=None, bin_num=20):
+def plot_hist(func, responses, contrast_index=7, title="", bin_size=None, bin_num=20, xlim_upper=None):
     circ_vars = []
 
     for response in responses:
@@ -200,10 +215,12 @@ def plot_hist(func, responses, contrast_index=7, title="", bin_size=None, bin_nu
 
     if bin_size is not None:
         bins = np.arange(min(circ_vars), max(circ_vars) + bin_size, bin_size)
-        plt.hist(circ_vars, bins)
+        plt.hist(circ_vars, bins, density=True)
     else:
-        plt.hist(circ_vars, bin_num)
+        plt.hist(circ_vars, bin_num, density=True)
         
+    if xlim_upper is not None:
+        plt.xlim(0, xlim_upper)
     plt.title(title)
     if SHOW:
         plt.show()
@@ -309,26 +326,39 @@ if __name__ == "__main__":
             # w_array = [3.3151170000000003, -1.306025, 1.7146030000000003, 2.265844999999999] 
             # heter_ff = 0.07592
 
-            J_array = [-0.9308613398652443, -2.0604571635972393, -0.30535063458645906, -1.802886963254238]  # config 13: n = 1000
-            P_array = [-1.493925025312256, 1.09861228866811, -1.493925025312256, 1.09861228866811]
-            w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
-            heter_ff = torch.tensor([-1.3862943611198906])
+            # J_array = [-0.9308613398652443, -2.0604571635972393, -0.30535063458645906, -1.802886963254238]  # config 13: n = 1000
+            # P_array = [-1.493925025312256, 1.09861228866811, -1.493925025312256, 1.09861228866811]
+            # w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
+            # heter_ff = torch.tensor([-1.3862943611198906])
+            # heter_ff = torch.tensor([-4])
+
+
+            # J_array = [-1.9308613398652443, -1.0604571635972393, -1.30535063458645906, -1.802886963254238]  # for presentation
+            # P_array = [-1.493925025312256, 1.09861228866811, -1.493925025312256, 1.09861228866811]
+            # w_array = [-1.5314763709643886, -1.5314763709643886, -1.5314763709643886, -1.5314763709643886] 
+            # heter_ff = torch.tensor([-5.3862943611198906])
 
             # J_array = [-0.8656, 0.4346999999999994, 0.6030000000000004, 1.4744000000000004]
             # P_array = [-2.0156, -1.2490000000000003, 0.6560999999999998, 0.06460000000000024]
             # w_array = [-1.8434, -0.6849, -0.044200000000000045, -0.4698999999999998]
-            # heter_ff = torch.tensor([0.8502999999999998])
+            # heter_ff = torch.tensor([0.85029999999999])
 
-            # J_array = [ 0.8031,  0.0952,  1.8234,  0.3603]  # n = 10000  # NES LOWEST ACTUAL DATA
-            # P_array = [2.9309, -0.2961,  2.0060, -0.0998] 
-            # w_array = [3.3356,  0.5527,  3.3324, -0.8895,]
-            # heter_ff = torch.tensor([-1.3264])
+            # J_array = [-0.8656, 0.4346999999999994, 0.6030000000000004, 1.4744000000000004]
+            # P_array = [-2.0156, -1.2490000000000003, 0.6560999999999998, 0.06460000000000024]
+            # w_array = [-1.8434, -0.6849, -0.044200000000000045, -0.4698999999999998]
+            # heter_ff = torch.tensor([0.1])
+
+            J_array = [ 0.8031,  0.0952,  1.8234,  0.3603]  # n = 10000  # NES LOWEST ACTUAL DATA
+            P_array = [2.9309, -0.2961,  2.0060, -0.0998] 
+            w_array = [3.3356,  0.5527,  3.3324, -0.8895,]
+            heter_ff = torch.tensor([-1.3264])
 
             # J_array = [ 0.8031,  0.0952,  1.8234,  0.3603]  # Tryout
             # P_array = [2.9309, 2.9309,  2.0060, 2.0060] 
             # w_array = [-1.5314763709643886,  -1.5314763709643886,  -1.5314763709643886, -1.5314763709643886]
             # heter_ff = torch.tensor([-1.3264])
 
+            # generator = OSDependentWeightsGenerator(J_array, P_array, w_array, neuron_num, feed_forward_num)
             generator = WeightsGeneratorExact(J_array, P_array, w_array, neuron_num, feed_forward_num)
             W = generator.generate_weight_matrix()
             plot_weights(W)
@@ -420,13 +450,16 @@ if __name__ == "__main__":
         plot_frac_of_var(data_E, title="Full fraction of explained variance (degree of contrast invariance) - Excitatory", xlim=0)
         plot_frac_of_var(data_I, title="Full fraction of explained variance (degree of contrast invariance) - Inhibitory", xlim=0)
 
-        plot_hist(get_circ_var, data_E, title="Histogram of the circular variance of the model E tuning curves")
-        plot_hist(get_max_firing_rate, data_E, title="Histogram of the max firing rate of the model E tuning curves")
-        plot_hist(get_mean_firing_rate, data_E, title="Histogram of the mean firing rate of the model E tuning curves")
+        plot_hist(get_circ_var, data_E, title="Circular variance of E neurons (model)")
+        plot_hist(get_max_firing_rate, data_E, title="Max firing rate of E neurons (model)")
+        plot_hist(get_mean_firing_rate, data_E, title="Mean firing rate of E neurons (model)")
 
-        plot_hist(get_circ_var, data_I, title="Histogram of the circular variance of the model I tuning curves")
-        plot_hist(get_max_firing_rate, data_I, title="Histogram of the max firing rate of the model I tuning curves")
-        plot_hist(get_mean_firing_rate, data_I, title="Histogram of the mean firing rate of the model I tuning curves")
+        plot_hist(get_circ_var, data_I, title="Circular variance of I neurons (model)")
+        plot_hist(get_max_firing_rate, data_I, title="Max firing rate of I neurons (model)")
+        plot_hist(get_mean_firing_rate, data_I, title="Mean firing rate of I neurons (model)")
+
+        plot_hist(get_max_firing_rate, data, title="Max firing rate (model)", xlim_upper=55, bin_size=2.5)
+        plot_hist(get_circ_var, data, title="Circular variance (model)", xlim_upper=1, bin_size=0.1)
 
     else:
         # Get the data
@@ -457,10 +490,14 @@ if __name__ == "__main__":
         plot_frac_of_var(data_E, title="Data tuning curve (E)")
         plot_frac_of_var(data_I, title="Data tuning curve (I)")
 
-        plot_hist(get_circ_var, data_E, title="Histogram of the circular variance of the data E tuning curves")
-        plot_hist(get_max_firing_rate, data_E, title="Histogram of the max firing rate of the data E tuning curves")
-        plot_hist(get_mean_firing_rate, data_E, title="Histogram of the mean firing rate of the data E tuning curves")
+        plot_hist(get_circ_var, data_E, title="Circular variance of E neurons (data)")
+        plot_hist(get_max_firing_rate, data_E, title="Max firing rate of E neurons (data)")
+        plot_hist(get_mean_firing_rate, data_E, title="Mean firing rate of E neurons (data)")
 
-        plot_hist(get_circ_var, data_I, title="Histogram of the circular variance of the data I tuning curves")
-        plot_hist(get_max_firing_rate, data_I, title="Histogram of the max firing rate of the data I tuning curves")
-        plot_hist(get_mean_firing_rate, data_I, title="Histogram of the mean firing rate of the data I tuning curves")
+        plot_hist(get_circ_var, data_I, title="Circular variance of I neurons (data)")
+        plot_hist(get_max_firing_rate, data_I, title="Max firing rate of I neurons (data)")
+        plot_hist(get_mean_firing_rate, data_I, title="Mean firing rate of I neurons (data)")
+
+        plot_hist(get_max_firing_rate, data, title="Max firing rate (data)", xlim_upper=55, bin_size=2.5)
+        plot_hist(get_circ_var, data, title="Circular variance (data)", xlim_upper=1, bin_size=0.1)
+
